@@ -22,6 +22,7 @@ plan/
     ├── 01-kien-truc-he-thong-va-apps-script.md        # Kiến trúc luồng dữ liệu, Idempotency lock, OAuth scopes
     ├── 02-quy-trinh-uat-va-nghiem-thu-3-milestone.md  # Quy trình 3 Milestone & checklist nghiệm thu UAT
     ├── 03-gioi-han-ky-thuat-va-quy-tac-stop-loss.md   # Giới hạn phạm vi (In/Out-of-Scope) & dừng lỗ theo giờ
+    ├── 04-huong-dan-tich-hop-paypal-bao-mat.md        # Kiến trúc bảo mật thanh toán PayPal, chống gian lận & lộ secret
     └── design-system/                                 # Hệ thống thiết kế UI/UX & Design Tokens
         └── sheetautomate/
             └── MASTER.md                              # Source of Truth cho bảng màu, typography, WCAG 2.2 AA

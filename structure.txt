@@ -67,6 +67,7 @@ sheetautomate.com/
 │       ├── 01-kien-truc-he-thong-va-apps-script.md    <-- Pipeline, Idempotency lock, OAuth scopes
 │       ├── 02-quy-trinh-uat-va-nghiem-thu-3-milestone.md <-- Quy trình 3 Milestone & Checklist UAT
 │       ├── 03-gioi-han-ky-thuat-va-quy-tac-stop-loss.md <-- Giới hạn Scope & dừng lỗ theo giờ
+│       ├── 04-huong-dan-tich-hop-paypal-bao-mat.md    <-- Hướng dẫn bảo mật thanh toán PayPal & chống gian lận
 │       └── design-system/           <-- Hệ thống thiết kế UI & Design Tokens
 │           └── sheetautomate/
 │               └── MASTER.md        <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
@@ -78,7 +79,8 @@ sheetautomate.com/
     ├── 003-kenh-tiep-can-khach-hang-0-connects.txt     <-- Vì sao ngừng mua Upwork Connects
     ├── 004-kien-truc-web-react-vite-cloudflare.txt     <-- Vì sao chọn React + Cloudflare Pages
     ├── 005-co-cau-gia-pilot-450-usd-va-3-milestones.txt <-- Vì sao giá $450 & chia 3 Milestone
-    └── 006-quy-uoc-to-chuc-cau-truc-du-an.txt          <-- Vì sao tổ chức cấu trúc theo chuẩn này
+    ├── 006-quy-uoc-to-chuc-cau-truc-du-an.txt          <-- Vì sao tổ chức cấu trúc theo chuẩn này
+    └── 007-chinh-sach-va-kien-truc-thanh-toan-paypal-an-toan.txt <-- Vì sao chọn Zero-Trust & bảo mật PayPal
 
 --------------------------------------------------------------------------------
 2. QUY ƯỚC ĐỊNH DẠNG & NGUYÊN TẮC LÀM VIỆC
