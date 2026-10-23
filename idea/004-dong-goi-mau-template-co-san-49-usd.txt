@@ -1,0 +1,17 @@
+Ý TƯỞNG 004: ĐÓNG GÓI BỘ TEMPLATE TỰ ĐỘNG CÓ SẴN (GÓI $49 CHO NGƯỜI TỰ LÀM)
+Ngày ghi nhận: 23/10/2026
+Trạng thái: Kế hoạch tương lai (Giai đoạn sau khi có 5-10 khách hàng)
+
+1. MÔ TẢ Ý TƯỞNG
+Sau khi hoàn thành 5–10 hợp đồng dịch vụ $450 thành công, chúng tôi sẽ sở hữu một bộ thư viện mã nguồn và mẫu tài liệu Google Docs cực kỳ chuẩn mực và đã được kiểm nghiệm thực tế.
+Nhiều khách hàng cá nhân hoặc doanh nghiệp siêu nhỏ có thể không có ngân sách $450 để thuê làm dịch vụ chìa khóa trao tay, nhưng họ sẵn sàng trả $29 - $49 để nhận một template "Copy & Run".
+
+2. CẤU TRÚC GÓI SẢN PHẨM $49
+- 1 file Google Sheets có sẵn script Apps Script tối ưu hóa (đã cài đặt sẵn cơ chế khóa chống trùng và định dạng tiền tệ).
+- 1 file Google Docs Template chuẩn đẹp mắt (B2B Invoice, Service Receipt hoặc Certificate).
+- Video hướng dẫn 5 phút: Khách chỉ cần bấm "Make a Copy", cấp quyền OAuth và dùng ngay.
+- Kênh bán: Gumroad hoặc trực tiếp trên SheetAutomate.com qua Stripe checkout.
+
+3. LỢI THẾ CỦA MÔ HÌNH NÀY
+- Tạo ra dòng thu nhập thụ động hoàn toàn (Passive Income) không tốn thêm giờ công.
+- Đóng vai trò là bước đệm: Khách hàng mua gói $49, khi doanh nghiệp của họ phát triển hoặc cần tùy biến thêm trường dữ liệu phức tạp, họ sẽ nâng cấp lên gói dịch vụ $450 hoặc $750 của SheetAutomate.

@@ -1,0 +1,29 @@
+QUYẾT ĐỊNH 004: KIẾN TRÚC LANDING PAGE BẰNG REACT, VITE VÀ CLOUDFLARE PAGES
+Ngày quyết định: 23/10/2026
+Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
+
+1. BỐI CẢNH (CONTEXT)
+Để hiện thực hóa chiến lược Inbound và chứng minh năng lực kỹ thuật, SheetAutomate cần một Landing Page tốc độ cao, giao diện hiện đại, có tính năng tương tác thực tế (Interactive Simulator và ROI Calculator) cho khách hàng quốc tế.
+Các lựa chọn công nghệ:
+- Phương án A: Dùng No-code builder (Webflow, WordPress, Framer).
+- Phương án B: Tự phát triển bằng React + TypeScript + Vite + Tailwind CSS và deploy trên hạ tầng Cloudflare Pages.
+
+2. QUYẾT ĐỊNH (DECISION)
+Lựa chọn Phương án B: Tự phát triển Landing Page hoàn chỉnh bằng React 18, TypeScript, Tailwind CSS, Lucide Icons và triển khai lên Cloudflare Pages.
+Toàn bộ mã nguồn website được đóng gói riêng biệt trong thư mục `web/`.
+
+3. TẠI SAO QUYẾT ĐỊNH NHƯ THẾ (RATIONALE / WHY)
+- Chi phí $0 vận hành trọn đời (Zero Hosting Cost): Cloudflare Pages cung cấp gói miễn phí với băng thông không giới hạn, SSL tự động, mạng lưới CDN toàn cầu trên 300+ thành phố và 500 lượt build/tháng. Giúp giữ trọn vẹn ngân sách dự án.
+- Tốc độ tải trang đạt điểm tối đa (Core Web Vitals): Website thuần static HTML/CSS/JS tải dưới 1 giây ở bất kỳ đâu trên thế giới (Mỹ, Anh, Úc).
+- Khả năng xây dựng tính năng tương tác cao cấp:
+  + Interactive Workflow Simulator: Mô phỏng quy trình tạo tài liệu qua 4 bước kỹ thuật, xem trước PDF giả lập, hiệu ứng confetti.
+  + ROI Calculator: Tính toán thời gian và số tiền tiết kiệm thời gian thực khi người dùng kéo thanh trượt.
+  + Việc này trên Webflow hoặc WordPress đòi hỏi plugin trả phí hoặc custom code phức tạp, khó kiểm soát chất lượng.
+- Bảo mật và kiểm soát tối đa: Không lo bị hack plugin như WordPress; có thể tùy chỉnh bảo mật nghiêm ngặt qua file `_headers` (CSP, HSTS, X-Frame-Options).
+
+4. CÁC PHƯƠNG ÁN ĐÃ XEM XÉT VÀ BỊ LOẠI BỎ
+- Loại bỏ WordPress / Webflow: Webflow tốn $14 - $29/tháng; WordPress cần máy chủ VPS và dễ bị tấn công bảo mật, tốc độ tải trang chậm khi người dùng ở Mỹ truy cập.
+
+5. HỆ QUẢ VÀ TÁC ĐỘNG (CONSEQUENCES)
+- Tích cực: Trải nghiệm khách hàng mượt mà, chuyên nghiệp chuẩn SaaS quốc tế; chi phí hosting bằng 0; dễ dàng mở rộng và tích hợp API sau này.
+- Yêu cầu: Cần kiểm tra kỹ build TypeScript và đóng gói trong thư mục `web/` để quy trình CI/CD của Cloudflare Pages trỏ đúng root directory (`web`).
