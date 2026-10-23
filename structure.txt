@@ -36,7 +36,7 @@ sheetautomate.com/
 │           ├── InteractiveDemo.tsx  <-- Trình giả lập quy trình tạo tài liệu (Simulator)
 │           ├── RoiCalculator.tsx    <-- Bảng tính thời gian & chi phí tiết kiệm
 │           ├── HowItWorks.tsx       <-- Quy trình 3 bước thực hiện cho khách
-│           ├── Pricing.tsx          <-- Bảng giá gói Pilot $450 & Custom $750+
+│           ├── Pricing.tsx          <-- Bảng giá One-Time: Gói từ $5 & Custom Workflow theo yêu cầu
 │           ├── WhenFit.tsx          <-- Bảng so sánh Why Us vs Autocrat vs SaaS
 │           ├── SecurityArchitecture.tsx <-- Sơ đồ bảo mật 100% trong Google Drive
 │           ├── Faq.tsx              <-- Câu hỏi thường gặp giải tỏa thắc mắc
@@ -44,43 +44,35 @@ sheetautomate.com/
 │           ├── LegalModals.tsx      <-- Modal Điều khoản dịch vụ & Chính sách bảo mật
 │           └── Footer.tsx           <-- Chân trang & liên kết hỗ trợ
 │
-├── idea/                            <-- CÁC Ý TƯỞNG TRONG QUÁ TRÌNH TRIỂN KHAI (Định dạng .txt)
+├── idea/                            <-- CÁC Ý TƯỞNG (Định dạng .txt, <= 20 dòng, bullet list)
 │   ├── README.txt                   <-- Quy ước ghi chép và đặt tên file ý tưởng
 │   ├── 001-interactive-simulator-mo-rong-cac-nganh.txt  <-- Ý tưởng mở rộng ngành trong demo
-│   ├── 002-lead-magnet-free-sheet-validator.txt        <-- Mini tool kiểm tra dữ liệu bẩn
-│   ├── 003-chuoi-video-loom-giai-quyet-loi-autocrat.txt <-- Video hướng dẫn kéo traffic tự nhiên
-│   ├── 004-dong-goi-mau-template-co-san-49-usd.txt     <-- Lộ trình bán template đóng gói
-│   └── 005-cac-loai-tai-lieu-tiem-nang-theo-nganh.txt  <-- Ma trận cơ hội tài liệu theo ngành
+│   ├── 003-chuoi-video-loom-giai-quyet-loi-autocrat.txt <-- Video ngắn kéo traffic tự nhiên
+│   ├── 005-cac-loai-tai-lieu-tiem-nang-theo-nganh.txt  <-- Ma trận cơ hội tài liệu theo ngành
+│   ├── 006-chrome-extension-ho-tro-sheets.txt          <-- Tiện ích Chrome / Add-on kéo traffic organic
+│   ├── 007-phat-trien-kenh-organic.txt                 <-- Kênh social kéo traffic bền vững
+│   └── 008-20-use-case-tu-dong-hoa-sheets.txt          <-- Danh mục các ca sử dụng tự động hóa mẫu
 │
 ├── plan/                            <-- KẾ HOẠCH PHÁT TRIỂN SẢN PHẨM & THƯƠNG HIỆU (.md)
 │   ├── README.md                    <-- Mục lục và hướng dẫn tra cứu tài liệu kế hoạch
-│   ├── KE_HOACH_TRIEN_KHAI_SHEETAUTOMATE.md           <-- Kế hoạch tổng thể 90 ngày ban đầu
-│   ├── KHUNG_HANH_DONG_SHEETAUTOMATE_V2.md            <-- Khung hành động cập nhật chính thức
+│   ├── KE_HOACH_TRIEN_KHAI_SHEETAUTOMATE.md           <-- Kế hoạch tổng thể 90 ngày ban đầu (lịch sử)
+│   ├── KHUNG_HANH_DONG_SHEETAUTOMATE_V2.md            <-- Khung hành động tham khảo trước khi chuyển sang định hướng gói từ $5
 │   ├── TONG_HOP_PHAN_BIEN_KE_HOACH_SHEETAUTOMATE.md  <-- Tổng hợp phản biện & stress-test
 │   │
 │   ├── marketing/                   <-- Kế hoạch tiếp thị, khách hàng & thương hiệu
 │   │   ├── 01-chien-luoc-tiep-can-khach-hang-gtm.md   <-- GTM 90 ngày, chiến lược 0 Connects
-│   │   ├── 02-dinh-vi-thuong-hieu-va-offer.md         <-- UVP, Brand Voice & Đóng gói Offer
-│   │   └── 03-phan-tich-doi-thu-va-loi-the-canh-tranh.md <-- Autocrat/SaaS & Objection Handling
+│   │   └── 02-dinh-vi-thuong-hieu-va-offer.md         <-- UVP, Brand Voice & định hướng offer (gói từ $5 & Custom Workflow)
 │   │
 │   └── tech/                        <-- Kế hoạch kiến trúc kỹ thuật & kiểm soát chất lượng
-│       ├── 01-kien-truc-he-thong-va-apps-script.md    <-- Pipeline, Idempotency lock, OAuth scopes
-│       ├── 02-quy-trinh-uat-va-nghiem-thu-3-milestone.md <-- Quy trình 3 Milestone & Checklist UAT
-│       ├── 03-gioi-han-ky-thuat-va-quy-tac-stop-loss.md <-- Giới hạn Scope & dừng lỗ theo giờ
 │       ├── 04-huong-dan-tich-hop-paypal-bao-mat.md    <-- Hướng dẫn bảo mật thanh toán PayPal & chống gian lận
 │       └── design-system/           <-- Hệ thống thiết kế UI & Design Tokens
 │           └── sheetautomate/
 │               └── MASTER.md        <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
 │
-└── decision/                        <-- CÁC QUYẾT ĐỊNH QUAN TRỌNG ĐÃ CHỐT (Định dạng .txt)
-    ├── README.txt                   <-- Quy ước ghi nhận quyết định (ADR standard)
-    ├── 001-mo-hinh-productized-service-truoc-saas.txt  <-- Vì sao làm dịch vụ trước, SaaS sau
-    ├── 002-offer-quy-trinh-hoan-tat-thay-vi-tinh-nang-xuat-pdf.txt <-- Vì sao không bán nút xuất PDF
-    ├── 003-kenh-tiep-can-khach-hang-0-connects.txt     <-- Vì sao ngừng mua Upwork Connects
-    ├── 004-kien-truc-web-react-vite-cloudflare.txt     <-- Vì sao chọn React + Cloudflare Pages
-    ├── 005-co-cau-gia-pilot-450-usd-va-3-milestones.txt <-- Vì sao giá $450 & chia 3 Milestone
-    ├── 006-quy-uoc-to-chuc-cau-truc-du-an.txt          <-- Vì sao tổ chức cấu trúc theo chuẩn này
-    └── 007-chinh-sach-va-kien-truc-thanh-toan-paypal-an-toan.txt <-- Vì sao chọn Zero-Trust & bảo mật PayPal
+└── decision/                        <-- CÁC QUYẾT ĐỊNH ĐÃ CHỐT (.txt, <= 20 dòng, bullet list)
+    ├── README.txt                   <-- Quy ước ghi nhận quyết định
+    ├── 001-mo-hinh-productized-service-truoc-saas.txt  <-- Dịch vụ trọn gói & template trước SaaS
+    └── 007-chinh-sach-va-kien-truc-thanh-toan-paypal-an-toan.txt <-- Zero-Trust & bảo mật PayPal
 
 --------------------------------------------------------------------------------
 2. QUY ƯỚC ĐỊNH DẠNG & NGUYÊN TẮC LÀM VIỆC
@@ -89,19 +81,19 @@ sheetautomate.com/
 | Thư mục     | Định dạng file | Mục đích sử dụng | Nguyên tắc bắt buộc |
 | :---------- | :------------- | :--------------- | :------------------ |
 | `web/`      | .tsx, .ts, .css| Toàn bộ mã nguồn chạy landing page | Tự chứa (Self-contained), build sạch 0 lỗi |
-| `idea/`     | .txt           | Ý tưởng mới nảy sinh trong lúc làm | Đặt tên [stt]-[tên-ý-tưởng].txt |
-| `plan/`     | .md (Markdown) | Kế hoạch sản phẩm & thương hiệu  | Phân loại vào marketing/ hoặc tech/ |
-| `decision/` | .txt           | Các quyết định kiến trúc/kinh doanh| Phải nêu rõ TẠI SAO QUYẾT ĐỊNH NHƯ THẾ |
+| `idea/`     | .txt           | Ý tưởng mới nảy sinh trong lúc làm | Đặt tên [stt]-[tên].txt, <= 20 dòng bullet |
+| `plan/`     | .md (Markdown) | Kế hoạch sản phẩm & thương hiệu  | Note <= 20 dòng; tài liệu chuyên sâu giữ nguyên |
+| `decision/` | .txt           | Các quyết định kiến trúc/kinh doanh| Đặt tên [stt]-[tên].txt, <= 20 dòng bullet |
 
 --------------------------------------------------------------------------------
 3. QUY TRÌNH PHỐI HỢP GIỮA CÁC THÀNH PHẦN (LIFECYCLE)
 --------------------------------------------------------------------------------
 
-                    [Ý TƯỞNG MỚI]  --> Lưu vào `idea/*.txt`
+                    [Ý TƯỞNG MỚI]  --> Lưu vào `idea/*.txt` (<= 20 dòng)
                           │
                           ▼
-                  [THẢO LUẬN & CHỐT] --> Quyết định lưu vào `decision/*.txt`
-                          │              (Ghi rõ lý do tại sao chọn và tại sao loại bỏ)
+                  [THẢO LUẬN & CHỐT] --> Quyết định lưu vào `decision/*.txt` (<= 20 dòng)
+                          │
                           ▼
                  [KẾ HOẠCH HÀNH ĐỘNG] --> Chi tiết hóa vào `plan/marketing/` hoặc `plan/tech/`
                           │

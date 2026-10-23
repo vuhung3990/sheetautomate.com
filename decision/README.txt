@@ -1,17 +1,9 @@
 QUY ƯỚC LƯU TRỮ QUYẾT ĐỊNH TRONG THƯ MỤC decision/
-
-1. MỤC ĐÍCH
-Thư mục `decision/` dùng để lưu trữ toàn bộ các quyết định chiến lược về mô hình kinh doanh, định vị thị trường, kiến trúc công nghệ và tổ chức vận hành của dự án SheetAutomate.
-
-2. ĐỊNH DẠNG BẮT BUỘC
-- Mọi file trong thư mục này PHẢI có đuôi mở rộng `.txt`.
-- Đặt tên file theo cấu trúc: `[stt]-[ten-quyet-dinh-ngan-gon].txt` (Ví dụ: `001-mo-hinh-productized-service-truoc-saas.txt`).
-
-3. CẤU TRÚC BẮT BUỘC CỦA MỘT FILE QUYẾT ĐỊNH:
-- TIÊU ĐỀ QUYẾT ĐỊNH & Ngày ban hành
-- Trạng thái (ĐÃ PHÊ DUYỆT / ĐANG XEM XÉT / BỊ THAY THẾ)
-- 1. BỐI CẢNH (CONTEXT): Tại sao vấn đề này phát sinh và các áp lực thực tế là gì?
-- 2. QUYẾT ĐỊNH (DECISION): Lựa chọn được phê duyệt là gì?
-- 3. TẠI SAO QUYẾT ĐỊNH NHƯ THẾ (RATIONALE / WHY): LÝ DO CỐT LÕI VÀ BẰNG CHỨNG THỰC TẾ.
-- 4. CÁC PHƯƠNG ÁN ĐÃ XEM XÉT VÀ BỊ LOẠI BỎ (ALTERNATIVES CONSIDERED)
-- 5. HỆ QUẢ VÀ TÁC ĐỘNG (CONSEQUENCES): Lợi ích thu được và những đánh đổi/giới hạn cần lưu ý.
+- Bối cảnh: Các quyết định chiến lược và kỹ thuật cần được lưu vết rõ ràng để đảm bảo tính nhất quán và tránh thảo luận lặp lại.
+- Nội dung: Lưu trữ các quyết định về mô hình kinh doanh, kiến trúc công nghệ, bảo mật dưới định dạng file .txt.
+- Mục tiêu: Ghi nhận minh bạch quyết định đã chọn, lý do cốt lõi và điều kiện xem xét lại.
+- Quy tắc định dạng:
+  + Tên file: NNN-ten-quyet-dinh-ngan-gon.txt (giữ nguyên số thứ tự, không tái sử dụng số đã xóa).
+  + Độ dài: Tối đa 20 dòng mỗi file, trình bày theo dạng bullet list ngắn gọn.
+  + Cấu trúc bắt buộc: Tiêu đề, Ngày ban hành, Trạng thái (ĐÃ PHÊ DUYỆT/ĐANG XEM XÉT/BỊ THAY THẾ), Bối cảnh, Nội dung, Mục tiêu, Tham chiếu (nếu có).
+  + Chuẩn file: UTF-8, có ký tự xuống dòng cuối file, không có khoảng trắng thừa cuối dòng.

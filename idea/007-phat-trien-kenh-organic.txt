@@ -1,0 +1,9 @@
+Ý TƯỞNG 007: PHÁT TRIỂN HỆ THỐNG KÊNH NỘI DUNG TỰ NHIÊN (ORGANIC)
+- Trạng thái: Đề xuất (DRAFT)
+- Bối cảnh: Chi phí quảng cáo cao và thiếu bền vững; dự án cần nguồn khách hàng tiềm năng tự nhiên, ổn định lâu dài.
+- Nội dung:
+  + Cân nhắc xây dựng kênh nội dung giải quyết bài toán Google Sheets trên: YouTube, LinkedIn, Facebook, TikTok.
+  + Chia sẻ case study, mẹo tối ưu bảng tính, template mẫu để thu hút tệp khách hàng doanh nghiệp nhỏ.
+- Mục tiêu: Xây dựng tài sản thương hiệu bền vững, tạo phễu thu hút khách hàng mà không phụ thuộc hoàn toàn vào Ads.
+- Kiểm chứng: Chọn một kênh ưu tiên (YouTube/LinkedIn) làm trước, đo lường lượt truy cập và yêu cầu tư vấn về website.
+- Tham chiếu: Chuỗi video ngắn tại idea/003; tiện ích tại idea/006.

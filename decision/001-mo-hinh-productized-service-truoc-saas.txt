@@ -1,26 +1,8 @@
 QUYẾT ĐỊNH 001: MÔ HÌNH PRODUCTIZED SERVICE TRƯỚC, SAAS SAU
-Ngày quyết định: 23/10/2026
-Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
-
-1. BỐI CẢNH (CONTEXT)
-SheetAutomate bắt đầu từ con số 0: chưa có khách hàng, chưa có ngách thị trường được chứng minh, chưa có người dùng thử nghiệm, ngân sách tối đa $100/tháng và quỹ thời gian 30 giờ/tuần của founder.
-Khi bắt đầu một dự án phần mềm tự động hóa, thường có sự phân vân giữa hai hướng đi:
-- Hướng A: Xây dựng một ứng dụng SaaS hoặc Google Workspace Add-on hoàn chỉnh rồi mới đi tìm người dùng mua gói thuê bao hàng tháng.
-- Hướng B: Cung cấp dịch vụ cài đặt và tùy biến quy trình tự động hóa trọn gói (Productized Service) có phạm vi cố định cho khách hàng đầu tiên.
-
-2. QUYẾT ĐỊNH (DECISION)
-Triển khai mô hình Dịch vụ tự động hóa trọn gói phạm vi cố định (Productized Service) trước. Website SheetAutomate.com đóng vai trò là nơi chứng minh năng lực kỹ thuật và tiếp nhận yêu cầu.
-Chỉ xem xét đóng gói thành sản phẩm SaaS hoặc Add-on khi đã có tối thiểu 3–5 khách hàng dịch vụ trả tiền với các bài toán đủ tương đồng và có bằng chứng khách hàng sẵn sàng trả phí cho một giải pháp tiêu chuẩn.
-
-3. TẠI SAO QUYẾT ĐỊNH NHƯ THẾ (RATIONALE / WHY)
-- Giảm thiểu rủi ro xây dựng thứ không ai cần: Xây dựng SaaS đòi hỏi hàng trăm giờ code backend, cổng thanh toán Stripe, quản lý user, máy chủ và bảo trì trong khi chưa biết khách hàng thực tế thực sự gặp đau đớn ở bước nào.
-- Dòng tiền tức thì (Cash Flow): Với mô hình dịch vụ, mỗi hợp đồng Pilot mang lại ngay $450 doanh thu, giúp trang trải chi phí và kiểm chứng mức độ sẵn sàng chi trả của thị trường ngay từ tháng đầu.
-- Thu thập dữ liệu và thấu hiểu bài toán thực tế: Làm việc trực tiếp trên Google Workspace của khách hàng giúp nhìn thấy cấu trúc dữ liệu bẩn thực tế, các xung đột phân quyền Google Admin và các lỗi mà add-on hiện có không xử lý được. Đây là tri thức quý giá nhất để thiết kế SaaS sau này.
-- Tận dụng thế mạnh cá nhân: Người sáng lập có năng lực lập trình Google Apps Script, Python, JavaScript và tích hợp API linh hoạt, phù hợp để giải quyết triệt để từng vấn đề của khách hàng.
-
-4. CÁC PHƯƠNG ÁN ĐÃ XEM XÉT VÀ BỊ LOẠI BỎ
-- Loại bỏ: Xây dựng Google Workspace Add-on hoặc SaaS ngay từ ngày 1. Lý do: Thị trường Add-on đã bão hòa với hàng loạt công cụ miễn phí (Autocrat) hoặc giá rẻ ($80/năm của Document Studio). Nếu không có mạng lưới phân phối và case study người dùng thật, SaaS mới sẽ không thể có người dùng trả phí.
-
-5. HỆ QUẢ VÀ TÁC ĐỘNG (CONSEQUENCES)
-- Tích cực: Có thể ra mắt và chào hàng ngay lập tức; không tốn chi phí hạ tầng máy chủ SaaS; thu được tiền ngay từ khách đầu tiên.
-- Tiêu cực / Giới hạn: Dịch vụ không thể mở rộng quy mô vô hạn (scale) nhanh như SaaS, cần kiểm soát chặt chẽ số giờ làm việc trực tiếp để không bị lỗ công sức (được giải quyết bằng Quy tắc dừng lỗ Stop-Loss ở Quyết định 005).
+- Ngày quyết định: 23/10/2026 | Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
+- Bối cảnh: Khởi đầu từ con số 0 (chưa có khách, chưa chứng minh ngách, ngân sách $100/tháng, 30h/tuần); xây dựng SaaS ngay tiềm ẩn rủi ro lãng phí nguồn lực lớn.
+- Nội dung:
+  + Định hướng bán gói thanh toán một lần từ $5 cho template tự triển khai; gói Custom Workflow được khảo sát và báo giá riêng theo phạm vi yêu cầu (chưa chốt bảng giá cố định).
+  + Website SheetAutomate.com đóng vai trò chứng minh năng lực kỹ thuật và phễu tiếp nhận yêu cầu.
+  + Chỉ xem xét chuyển đổi thành SaaS khi có đủ số lượng khách hàng với bài toán lặp lại tương đồng.
+- Mục tiêu: Kiểm chứng nhu cầu chi trả thực tế của thị trường, tạo dòng tiền tức thì và thấu hiểu bài toán thực tế của khách hàng.

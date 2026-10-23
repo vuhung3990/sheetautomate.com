@@ -1,24 +1,8 @@
-Ý TƯỞNG 003: CHUỖI VIDEO LOOM 2 PHÚT GIẢI QUYẾT LỖI AUTOCRAT VÀ GOOGLE SHEETS
-Ngày ghi nhận: 23/10/2026
-Trạng thái: Đang chuẩn bị kịch bản (IN PLANNING)
-
-1. MÔ TẢ Ý TƯỞNG
-Sản xuất chuỗi 5 video ngắn (2 đến 3 phút) quay màn hình bằng Loom, giải thích nguyên nhân và cách xử lý các lỗi kinh điển mà người dùng Google Sheets/Autocrat thường gặp phải.
-Video được nhúng vào các bài trả lời hỗ trợ trên Reddit (r/googlesheets, r/gsuite) và đăng lên kênh YouTube cá nhân của SheetAutomate.
-
-2. DANH SÁCH 5 CHỦ ĐỀ VIDEO
-Video 1: "Why Autocrat Fails with 50+ Rows (And How Script Locks Fix It)"
-- Giải thích giới hạn 6 phút execution timeout của Apps Script và cách khắc phục bằng batch processing.
-Video 2: "Stop Duplicate PDF Invoices in Google Sheets (Idempotency Mutex Lock in 60s)"
-- Hướng dẫn đoạn code ngắn dùng LockService để ngăn chặn người dùng bấm đúp gửi trùng 2 hóa đơn.
-Video 3: "How to Format Currency & Dates Properly in Google Docs Template"
-- Hướng dẫn cách xử lý ngày tháng bị chuyển thành số timestamp nguyên thủy khi merge.
-Video 4: "Multi-line Item Tables: Generating Dynamic Rows in Google Docs from Sheets"
-- Hướng dẫn cách chèn các dòng sản phẩm vào bảng Google Doc mà không làm vỡ viền bảng.
-Video 5: "Should You Use a 3rd-Party SaaS or Keep Everything Native in Google Drive?"
-- Phân tích chi phí và rủi ro rò rỉ dữ liệu khi đẩy bảng tính qua các dịch vụ SaaS trung gian.
-
-3. MỤC TIÊU ĐẠT ĐƯỢC
-- Không cần chi ngân sách quảng cáo.
-- Xây dựng hình ảnh chuyên gia giải quyết vấn đề kỹ thuật (Technical Problem Solver).
-- Kèm link đến SheetAutomate.com dưới mô tả để người bận rộn có thể thuê làm trọn gói.
+Ý TƯỞNG 003: CHUỖI VIDEO NGẮN GIẢI QUYẾT LỖI TỰ ĐỘNG HÓA GOOGLE SHEETS
+- Trạng thái: Đang chuẩn bị (IN PLANNING)
+- Bối cảnh: Người dùng Google Sheets/Autocrat thường gặp lỗi kỹ thuật nhưng thiếu hướng dẫn xử lý trực quan, tin cậy.
+- Nội dung:
+  + Quay chuỗi video 2–3 phút: xử lý timeout Apps Script, chống tạo trùng bằng Mutex Lock, định dạng ngày/tiền tệ, bảng dòng hàng động.
+  + Phân phối qua kênh YouTube của thương hiệu và hỗ trợ giải đáp trên cộng đồng (Reddit, Facebook).
+- Mục tiêu: Xây dựng uy tín chuyên gia kỹ thuật thực chiến và thu hút khách hàng tiềm năng tự nhiên (Organic) về website.
+- Kiểm chứng: Làm 1 video thử nghiệm trước, đo lượt xem và tỷ lệ click vào link dịch vụ SheetAutomate.com dưới mô tả.

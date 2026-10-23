@@ -1,0 +1,10 @@
+Ý TƯỞNG 008: 20 USE CASE TỰ ĐỘNG HÓA CÔNG VIỆC VỚI GOOGLE SHEETS
+- Trạng thái: Đề xuất (DRAFT)
+- Bối cảnh: Khách hàng cần nhìn thấy các bản demo thực tế, gần gũi với công việc hàng ngày để hiểu rõ khả năng tự động hóa.
+- Nội dung:
+  + Xây dựng danh mục các ca sử dụng tự động hóa lặp lại điển hình trên Google Workspace.
+  + Ví dụ 1: Tự động quét và thu thập thông tin email billing/invoice từ Gmail vào Sheet, tổng hợp theo ngày/tháng/quý.
+  + Ví dụ 2: Tự động tạo trang tính mới, ẩn/đóng và khóa sheet phân quyền cho việc ghi nhận log OT hàng tháng.
+- Mục tiêu: Chứng minh sức mạnh tự động hóa quy trình với chi phí rất nhỏ cho doanh nghiệp.
+- Kiểm chứng: Xây dựng trước 1–2 bản demo hoàn chỉnh, đo lường thời gian tiết kiệm và mức độ quan tâm của khách.
+- Giới hạn: Mức độ tự động hóa phụ thuộc vào quyền hạn tài khoản, hạn ngạch Google Apps Script và cấu trúc dữ liệu.

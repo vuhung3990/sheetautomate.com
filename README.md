@@ -13,9 +13,9 @@ Dự án được tái cấu trúc rành mạch thành 4 phân vùng độc lậ
 - **[`web/`](./web/)**: Toàn bộ mã nguồn ứng dụng web Landing Page (React 18 + TypeScript + Tailwind CSS + Vite), sẵn sàng deploy lên Cloudflare Pages.
 - **[`idea/`](./idea/)**: Nơi lưu trữ toàn bộ ý tưởng nảy sinh trong quá trình triển khai (định dạng `.txt`).
 - **[`plan/`](./plan/)**: Kế hoạch phát triển sản phẩm & thương hiệu (định dạng `.md`):
-  - **[`plan/marketing/`](./plan/marketing/)**: Kế hoạch tiếp cận khách hàng GTM 90 ngày, định vị thương hiệu, phân tích đối thủ cạnh tranh.
-  - **[`plan/tech/`](./plan/tech/)**: Kiến trúc Google Apps Script, quy trình nghiệm thu 3 Milestone, giới hạn kỹ thuật, kiến trúc bảo mật PayPal và dừng lỗ (Stop-Loss).
-- **[`decision/`](./decision/)**: Nhật ký các quyết định kiến trúc & kinh doanh cốt lõi (định dạng `.txt`), ghi rõ bối cảnh và lý do **tại sao quyết định như thế**.
+  - **[`plan/marketing/`](./plan/marketing/)**: Kế hoạch tiếp cận khách hàng GTM 90 ngày, định vị thương hiệu & định hướng offer (gói từ $5 & Custom Workflow).
+  - **[`plan/tech/`](./plan/tech/)**: Hướng dẫn bảo mật tích hợp thanh toán PayPal và hệ thống thiết kế (Design Tokens).
+- **[`decision/`](./decision/)**: Nhật ký các quyết định kiến trúc & kinh doanh cốt lõi (định dạng `.txt`, <= 20 dòng dạng bullet).
 
 ---
 

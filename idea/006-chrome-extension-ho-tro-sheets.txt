@@ -1,0 +1,9 @@
+Ý TƯỞNG 006: TIỆN ÍCH CHROME HOẶC WORKSPACE ADD-ON HỖ TRỢ GOOGLE SHEETS
+- Trạng thái: Đề xuất (DRAFT)
+- Bối cảnh: Cần tạo kênh tiếp cận người dùng mới trực tiếp trong luồng làm việc hàng ngày, giảm phụ thuộc vào quảng cáo trả phí.
+- Nội dung:
+  + Phát triển tiện ích nhỏ (Chrome Extension hoặc Google Workspace Add-on) giải quyết thao tác tiện ích trên Google Sheets.
+  + Tích hợp giới thiệu và dẫn link về các giải pháp tự động hóa trọn gói của SheetAutomate.com.
+- Mục tiêu: Thu hút lượng người dùng tương tác tự nhiên (Organic Traffic) và xây dựng nhận diện thương hiệu dài hạn.
+- Kiểm chứng: Xác nhận nhu cầu cộng đồng trước khi xây dựng bản thử nghiệm tối thiểu (MVP).
+- Giới hạn: Chưa cam kết phát triển hệ thống nhiều tính năng; chỉ ưu tiên tiện ích giải quyết một nỗi đau nhỏ.

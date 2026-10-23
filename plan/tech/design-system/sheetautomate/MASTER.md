@@ -52,28 +52,21 @@
 
 ## 3. Productized Pricing Tiers & Scope Definitions
 
-1. **Self-Deploy Template ($5 one-time):**
+1. **Self-Deploy Template (From $5 one-time):**
    - Instant copy link to production-ready Google Sheet + matching Google Doc template + Apps Script.
    - Choose 1 document type: Invoice, Work Order, or Certificate.
    - Includes idempotency duplicate prevention, custom sheet menu button, and quickstart guide.
    - Unlimited exports within Google Workspace quotas, $0/month forever.
-2. **Configured Workflow ($35 one-time):**
-   - 1 production workflow configured by an engineer in your Google Workspace.
-   - Custom branding: company logo, typography, color scheme.
-   - Mapped to your existing spreadsheet columns or Google Form questions.
-   - Folder auto-sorting in Google Drive + Sheet audit logging.
-   - 14-day bug warranty & 1 test revision cycle. Delivered within 48 hours.
-3. **Turnkey Custom Workflow ($95 one-time):**
-   - 1 advanced workflow with dynamic multi-row line items (itemized invoices, quotes).
-   - Automated Google Form instant trigger or conditional routing logic.
-   - Optional webhook alert (Slack or Gmail dispatch).
-   - 30-day bug warranty & staff video walkthrough. Delivered within 3–5 business days.
+2. **Custom Workflow (Scoped & Quoted per Project):**
+   - Workflow configured or custom tailored based on specific client requirements.
+   - Mapped to existing spreadsheet columns, custom branding, or complex multi-row tables.
+   - Quoted individually based on technical scope and integration needs (no rigid fixed price).
 
 ---
 
 ## 4. Architectural Comparison Against Recurring SaaS
 
-- **Pricing:** Fixed $5–$35 one-time purchase vs $30–$80/mo ($360–$960/yr) recurring on multi-app subscription tools.
+- **Pricing:** One-time purchase model (from $5) vs $30–$80/mo ($360–$960/yr) recurring on multi-app subscription tools.
 - **Privacy:** 100% In-tenant Google Drive & Apps Script processing. No external middleware databases.
 - **Quotas:** Zero SheetAutomate document caps or per-export fees. Standard Google Workspace Apps Script execution limits apply.
 - **Ownership:** Complete editable source code inside your Google Sheet with perpetual internal-use rights.

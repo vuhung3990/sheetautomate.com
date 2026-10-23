@@ -1,46 +1,10 @@
-QUYẾT ĐỊNH 007: KIẾN TRÚC VÀ CHÍNH SÁCH BẢO MẬT TÍCH HỢP THANH TOÁN PAYPAL
-Ngày quyết định: 23/10/2026
-Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
-
-1. BỐI CẢNH (CONTEXT)
-Khi phục vụ khách hàng quốc tế cho dịch vụ SheetAutomate hoặc bán các gói mẫu tự động hóa/dịch vụ trọn gói (Pilot $450, Template $49, Custom $750+), PayPal là kênh thanh toán phổ biến hàng đầu mà khách hàng doanh nghiệp vừa và nhỏ (SMBs) tại Mỹ/EU ưa chuộng.
-Tuy nhiên, việc tích hợp PayPal cho hàng số và dịch vụ từ tài khoản Việt Nam tiềm ẩn nhiều rủi ro nghiêm trọng:
-- Nguy cơ lộ lọt credential trên frontend: Lộ Client Secret, OAuth access token hoặc cấu hình bảo mật do nhúng trực tiếp vào bundle phía client (Vite/React).
-- Nguy cơ bị tấn công tài chính: Sửa đổi giá phía trình duyệt (Price Tampering), thanh toán trùng lặp (Double Spending), lỗi race condition giữa webhook và callback, hoặc replay attack.
-- Nguy cơ bị lợi dụng thử thẻ (Carding/BIN attack): Bot tự động dùng cổng thanh toán để test hàng loạt thẻ tín dụng bị đánh cắp, dẫn đến tỷ lệ decline cao và tài khoản PayPal bị chấm dứt hoạt động vĩnh viễn.
-- Nguy cơ bị đóng băng tài khoản (180-day limitation / reserve / dispute): Tài khoản PayPal Việt Nam đối mặt với chính sách kiểm duyệt khắt khe, rủi ro chargeback cao nếu thiếu bằng chứng giao nhận sản phẩm số hợp lệ theo điều khoản Seller Protection.
-
-2. QUYẾT ĐỊNH (DECISION)
-Phê duyệt và áp dụng Kiến trúc bảo mật Zero-Trust Client cho toàn bộ quy trình tích hợp PayPal v2:
-1. Kiến trúc Server-Side Orders v2 (Client Zero-Trust):
-   - Trình duyệt/Frontend TUYỆT ĐỐI KHÔNG tính giá, không gửi amount/currency, không gọi trực tiếp API PayPal tạo order hay capture tiền.
-   - Frontend chỉ gửi SKU/Dịch vụ và attemptKey. Backend chịu trách nhiệm đối chiếu bảng giá server, kiểm tra quyền, tạo Order trên PayPal qua OAuth server-to-server và trả về duy nhất Order ID cho JS SDK.
-   - Quá trình chuyển giao hàng số/cấp quyền CHỈ diễn ra sau khi Backend gọi capture thành công với trạng thái COMPLETED và số tiền capture thực tế khớp 100% với snapshot đơn hàng.
-2. Bảo mật Credential và Dữ liệu:
-   - Client Secret, OAuth Tokens, Webhook ID và Database credentials chỉ tồn tại trong backend runtime / Secret Manager, tuyệt đối không đưa vào biến môi trường Vite (`VITE_*`), bundle mã nguồn, source maps hay Git.
-   - Client ID là thông tin công khai duy nhất được phép cung cấp cho PayPal JS SDK qua API bootstrap.
-   - Ẩn toàn bộ chi tiết lỗi nội bộ (stack trace, raw PayPal error payload, database queries) trước khi trả về client.
-3. Chống mất tiền & Race Condition 3 lớp:
-   - Sử dụng Idempotency Key (`PayPal-Request-Id`) cố định cho mỗi lần thử capture để chống trừ tiền kép do timeout mạng.
-   - Áp dụng ràng buộc duy nhất (UNIQUE constraint) trong cơ sở dữ liệu trên PayPal Order ID, Capture ID và Webhook Event ID.
-   - Quản lý trạng thái bằng State Machine nguyên tử (CREATING -> PENDING -> CAPTURING -> COMPLETED / VERIFYING / REVIEW) và cơ chế khóa bản ghi (advisory lock / row-level lock) ngăn chặn việc cấp tài nguyên 2 lần khi webhook và callback chạy song song.
-4. Xác thực Webhook bất đối xứng:
-   - Bắt buộc xác thực chữ ký số Webhook từ PayPal (`verify-webhook-signature`), kiểm tra chặt chẽ `cert_url` chống lỗ hổng SSRF.
-   - Lưu trữ sự kiện vào bảng Durable Inbox trước khi xử lý, đảm bảo không bỏ sót thanh toán kể cả khi khách tắt trình duyệt trước khi callback frontend kịp hoàn tất.
-5. Bảo vệ tài khoản và phòng ngừa rủi ro tranh chấp:
-   - Triển khai Rate Limiting và Cloudflare Turnstile trước endpoint tạo đơn để chặn đứng Carding Bot.
-   - Lưu trữ nhật ký bàn giao server-side (thời gian UTC, SKU snapshot, hash bàn giao, email xác nhận) để đáp ứng điều kiện bảo vệ người bán (Seller Protection cho Intangible Goods) theo chính sách PayPal Việt Nam.
-
-3. TẠI SAO QUYẾT ĐỊNH NHƯ THẾ (RATIONALE / WHY)
-- Không có đường tắt cho bảo mật thanh toán: Việc để client xử lý tiền hoặc capture trực tiếp là nguyên nhân số 1 dẫn đến việc bị hacker sửa giá về $0.01 hoặc bypass hoàn toàn bước thanh toán.
-- Bảo vệ sự sống còn của tài khoản PayPal: Đối với doanh nghiệp khởi nghiệp tại Việt Nam, việc bị PayPal limit 180 ngày hoặc đưa vào danh sách đen vì carding attack sẽ làm tê liệt toàn bộ kênh thu ngoại tệ.
-- Đảm bảo tính nhất quán dữ liệu (Data Integrity): Xử lý đối soát tập trung qua Backend và Webhook Worker giúp hệ thống tự phục hồi ngay cả khi đường truyền mạng quốc tế chập chờn hoặc timeout.
-
-4. CÁC PHƯƠNG ÁN ĐÃ XEM XÉT VÀ BỊ LOẠI BỎ
-- Loại bỏ: Tích hợp PayPal trực tiếp hoàn toàn trên React Frontend (Client-side Checkout) không cần backend. Lý do: Rò rỉ Client Secret, hacker có thể sửa giá tùy ý trong browser console, không có cơ chế đối soát khi user tắt tab.
-- Loại bỏ: Tin tưởng callback `onApprove` từ client để gửi link tải/bàn giao tài liệu ngay. Lý do: Rất dễ bị giả mạo request, chưa chứng minh tiền đã vào tài khoản (mới chỉ là khách bấm duyệt trên PayPal, chưa thực sự capture tiền).
-- Loại bỏ: Dùng shared HMAC secret tự sinh để kiểm tra webhook. Lý do: PayPal REST API sử dụng chữ ký bất đối xứng RSA/cert, việc dùng sai phương thức xác thực sẽ mở toang lỗ hổng cho phép hacker gửi webhook giả.
-
-5. HỆ QUẢ VÀ TÁC ĐỘNG (CONSEQUENCES)
-- Yêu cầu kiến trúc: Cần có một backend Node.js/TypeScript độc lập (Express/Fastify/Cloudflare Workers/Serverless) kết nối PostgreSQL để lưu trữ trạng thái đơn hàng, snapshot và xử lý webhook.
-- Tài liệu quy chuẩn: Toàn bộ chi tiết kiến trúc, mã nguồn tham chiếu backend/frontend, cơ chế worker và checklist audit trước Go-Live được quy định tại `plan/tech/04-huong-dan-tich-hop-paypal-bao-mat.md`.
+QUYẾT ĐỊNH 007: KIẾN TRÚC VÀ BẢO MẬT TÍCH HỢP THANH TOÁN PAYPAL
+- Ngày quyết định: 23/10/2026 | Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
+- Bối cảnh: Thu ngoại tệ quốc tế qua PayPal từ tài khoản Việt Nam đối mặt rủi ro lộ credential client, sửa giá, gian lận thẻ (carding), race condition và bị đóng băng tài khoản (180-day limitation).
+- Nội dung:
+  + Áp dụng kiến trúc Zero-Trust Client: Frontend không tính giá, không capture; Server-side Orders v2 quản lý giá và capture tiền.
+  + Bảo mật thông tin: Client Secret, Webhook ID lưu trong backend/Secret Manager; chỉ công khai Client ID cho JS SDK.
+  + Chống gian lận & mất tiền: Idempotency Key (PayPal-Request-Id), State Machine đơn hàng nguyên tử, xác thực chữ ký Webhook RSA/cert.
+  + Bảo vệ tài khoản: Rate limit và Cloudflare Turnstile chống Carding Bot; lưu nhật ký bàn giao server-side làm bằng chứng Seller Protection.
+- Mục tiêu: Giảm thiểu tối đa rủi ro lộ bí mật, sửa giá, thu tiền trùng và cấp hàng sai; hỗ trợ đối soát và bảo vệ tài khoản PayPal.
+- Tham chiếu chi tiết: plan/tech/04-huong-dan-tich-hop-paypal-bao-mat.md.

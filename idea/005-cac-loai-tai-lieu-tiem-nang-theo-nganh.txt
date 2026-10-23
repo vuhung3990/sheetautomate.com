@@ -1,25 +1,10 @@
-Ý TƯỞNG 005: MA TRẬN CÁC LOẠI TÀI LIỆU TIỀM NĂNG CAO THEO NGÀNH
-Ngày ghi nhận: 23/10/2026
-Trạng thái: Tài liệu tham chiếu cơ hội thị trường
-
-Dưới đây là danh sách các loại tài liệu lặp lại thủ công có nhu cầu tự động hóa cao nhất tại thị trường Mỹ, Úc, Anh, được phân loại theo ngành và mức độ sẵn sàng chi trả:
-
-1. NGÀNH DỊCH VỤ HIỆN TRƯỜNG & BẢO TRÌ (FIELD SERVICES - HVAC, PLUMBING, ROOFING)
-- Tài liệu: Work Order, Field Inspection Report, Service Completion Sign-off.
-- Nỗi đau: Kỹ thuật viên đi làm việc tại nhà khách, ghi chép vào Form trên điện thoại. Công ty cần xuất ngay một bản PDF có ảnh chụp hiện trạng để gửi khách hàng thanh toán.
-- Mức độ chi trả: Rất cao ($450 - $1,000).
-
-2. NGÀNH TƯ VẤN & B2B AGENCIES (MARKETING, DESIGN, LEGAL, IT)
-- Tài liệu: Monthly Retainer Invoice, Project Scope Agreement, NDA / Work Authorization.
-- Nỗi đau: Quản lý phải tự điền các thông số báo giá và hợp đồng từ bảng kế hoạch dự án.
-- Mức độ chi trả: Cao ($450 - $750).
-
-3. NGÀNH ĐÀO TẠO & WORKSHOP (EDUCATION, E-LEARNING, WEBINARS)
-- Tài liệu: Certificate of Attendance / Completion, Báo cáo tiến độ học tập (Student Progress Report).
-- Nỗi đau: Sau mỗi khóa học 100-500 học viên, người tổ chức phải gõ tên và điểm số từng người vào chứng chỉ. Autocrat thường xuyên bị lỗi khi danh sách dài.
-- Mức độ chi trả: Trung bình - Khá ($350 - $500).
-
-4. NGÀNH BÁN LẺ & THƯƠNG MẠI ĐIỆN TỬ B2B (WHOLESALE, DISTRIBUTION)
-- Tài liệu: Purchase Order (PO), Phiếu giao hàng (Packing Slip), Hóa đơn bán buôn (Wholesale Invoice).
-- Nỗi đau: Đơn hàng có nhiều dòng sản phẩm (Line items), cần tự động tính tổng tiền và xuất PDF lưu trữ kế toán.
-- Mức độ chi trả: Rất cao ($600 - $1,200).
+Ý TƯỞNG 005: MA TRẬN CÁC LOẠI TÀI LIỆU TIỀM NĂNG THEO NGÀNH
+- Trạng thái: Giả thuyết cần kiểm chứng
+- Bối cảnh: Cần xác định các loại tài liệu lặp lại thủ công có nhu cầu tự động hóa cao để tối ưu định vị offer.
+- Nội dung:
+  + Dịch vụ hiện trường: Work Order, biên bản kiểm tra, nghiệm thu (nhu cầu cấp thiết).
+  + Tư vấn & B2B Agencies: Retainer Invoice, thỏa thuận phạm vi, biên bản bàn giao.
+  + Đào tạo & Workshop: Chứng chỉ hoàn thành, báo cáo tiến độ học tập.
+  + Bán buôn B2B: Purchase Order, Packing Slip, hóa đơn bán buôn nhiều dòng hàng.
+- Mục tiêu: Chọn ra một quy trình lặp lại có khách hàng sẵn sàng chi trả dịch vụ.
+- Kiểm chứng: Ghi nhận yêu cầu mua, tần suất, ngân sách và phản hồi thực tế từ các nhóm ngành mục tiêu.

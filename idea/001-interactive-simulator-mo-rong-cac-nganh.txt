@@ -1,24 +1,9 @@
-Ý TƯỞNG 001: MỞ RỘNG CÁC LOẠI TÀI LIỆU TRÊN INTERACTIVE SIMULATOR
-Ngày ghi nhận: 23/10/2026
-Trạng thái: Ý tưởng đang chờ kiểm thử (DRAFT)
-
-1. MÔ TẢ Ý TƯỞNG
-Hiện tại bộ Interactive Simulator trên website SheetAutomate.com đang hỗ trợ 3 mẫu tài liệu:
-1. B2B Client Invoice
-2. Field Service / Work Order
-3. Certificate of Completion
-
-Ý tưởng mở rộng thêm 3 ngành dọc có nhu cầu tài liệu thủ công rất lớn:
-A. Logistics & Kho vận: Phiếu xuất kho kiêm vận chuyển (Delivery Note / Packing Slip).
-   - Dữ liệu đầu vào: Mã đơn, tên tài xế, danh sách mặt hàng, chữ ký người nhận.
-   - Nỗi đau: Nhân viên kho phải copy tay từ Sheet sang file in phiếu giao hàng.
-B. Bất động sản & Quản lý tòa nhà: Biên bản kiểm tra hiện trạng phòng (Property Move-in Inspection Checklist).
-   - Dữ liệu đầu vào: Tên phòng, người thuê, tình trạng từng phòng (Đạt/Hỏng), link ảnh hiện trạng.
-   - Nỗi đau: Kỹ thuật viên đi kiểm tra bằng Google Forms trên điện thoại nhưng không biết cách xuất ra biên bản nghiệm thu PDF đẹp mắt để gửi chủ nhà.
-C. Nhân sự & Đào tạo: Thư mời nhận việc tự động (Job Offer Letter & Onboarding Packet).
-   - Dữ liệu đầu vào: Họ tên ứng viên, vị trí, mức lương, ngày bắt đầu, quản lý trực tiếp.
-   - Nỗi đau: HR phải gõ lại từng hợp đồng thử việc và dễ lộ dữ liệu mức lương nếu gửi nhầm người.
-
-2. CÁCH THỬ NGHIỆM NHANH
-- Thêm một tab chọn ngành nghề trong Simulator trên landing page.
-- Đo lường số lượt click vào từng ngành nghề để xác định ngành nào có tỷ lệ quan tâm cao nhất.
+Ý TƯỞNG 001: MỞ RỘNG MẪU TÀI LIỆU TRÊN INTERACTIVE SIMULATOR
+- Trạng thái: Đề xuất (DRAFT)
+- Bối cảnh: Simulator hiện chỉ có 3 mẫu (Invoice, Work Order, Certificate); cần mở rộng sang các ngành có thao tác thủ công lớn.
+- Nội dung:
+  + Cân nhắc thêm mẫu: Phiếu xuất kho (Logistics), Biên bản kiểm tra phòng (Bất động sản), Thư mời nhận việc (HR).
+  + Bổ sung tab chọn ngành nghề trực tiếp trong simulator trên landing page.
+- Mục tiêu: Tìm ngành có nhu cầu tự động hóa cao nhất và tăng tỷ lệ chuyển đổi khách hàng tiềm năng.
+- Kiểm chứng: Thử nghiệm từng mẫu, đo lường lượt tương tác và yêu cầu tư vấn trước khi triển khai chính thức.
+- Giới hạn: Chỉ mở rộng khi có tín hiệu nhu cầu thực tế từ người dùng; không làm đồng thời cả 3 mẫu.
