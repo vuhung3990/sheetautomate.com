@@ -14,7 +14,11 @@ sheetautomate.com/
 ├── README.md                        <-- Giới thiệu dự án cấp root & điều hướng nhanh
 ├── .gitignore                       <-- Cấu hình loại trừ file rác / dependencies
 │
-├── web/                             <-- TOÀN BỘ MÃ NGUỒN WEBSITE (Frontend Application)
+├── web/                             <-- TOÀN BỘ MÃ NGUỒN WEBSITE & DESIGN SYSTEM
+│   ├── .agents/                     <-- Kỹ năng & công cụ hỗ trợ UI/UX (Skills: ui-ux-pro-max, brand...)
+│   ├── design-system/               <-- Hệ thống thiết kế UI & Design Tokens chuẩn
+│   │   └── sheetautomate/
+│   │       └── MASTER.md            <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
 │   ├── index.html                   <-- File HTML chính của Landing Page
 │   ├── package.json                 <-- Quản lý dependencies & scripts npm của web
 │   ├── package-lock.json            <-- Khóa phiên bản dependencies chính xác
@@ -65,10 +69,6 @@ sheetautomate.com/
 │   │
 │   └── tech/                        <-- Kế hoạch kiến trúc kỹ thuật & kiểm soát chất lượng
 │       └── 04-huong-dan-tich-hop-paypal-bao-mat.md    <-- Hướng dẫn bảo mật thanh toán PayPal & chống gian lận
-│
-├── design-system/                   <-- Hệ thống thiết kế UI & Design Tokens
-│   └── sheetautomate/
-│       └── MASTER.md                <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
 │
 └── decision/                        <-- CÁC QUYẾT ĐỊNH ĐÃ CHỐT (.txt, <= 20 dòng, bullet list)
     ├── README.txt                   <-- Quy ước ghi nhận quyết định
