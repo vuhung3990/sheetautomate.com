@@ -9,6 +9,5 @@
     + `02-dinh-vi-thuong-hieu-va-offer.md`: Định vị thương hiệu và định hướng offer (gói từ $5 & Custom Workflow theo yêu cầu).
   - `tech/`:
     + `04-huong-dan-tich-hop-paypal-bao-mat.md`: Hướng dẫn chuyên sâu và mã tham chiếu tích hợp PayPal.
-    + `design-system/sheetautomate/MASTER.md`: Hệ thống thiết kế UI & tokens chuẩn.
 - **Mục tiêu:** Định hướng thực thi chuẩn xác, đồng bộ thông tin mô hình kinh doanh và kiến trúc kỹ thuật.
 - **Quy tắc:** Các file note duy trì độ dài tối đa 20 dòng dạng bullet list; tài liệu hướng dẫn kỹ thuật chuyên sâu được giữ nguyên vẹn.

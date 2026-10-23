@@ -64,10 +64,11 @@ sheetautomate.com/
 │   │   └── 02-dinh-vi-thuong-hieu-va-offer.md         <-- UVP, Brand Voice & định hướng offer (gói từ $5 & Custom Workflow)
 │   │
 │   └── tech/                        <-- Kế hoạch kiến trúc kỹ thuật & kiểm soát chất lượng
-│       ├── 04-huong-dan-tich-hop-paypal-bao-mat.md    <-- Hướng dẫn bảo mật thanh toán PayPal & chống gian lận
-│       └── design-system/           <-- Hệ thống thiết kế UI & Design Tokens
-│           └── sheetautomate/
-│               └── MASTER.md        <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
+│       └── 04-huong-dan-tich-hop-paypal-bao-mat.md    <-- Hướng dẫn bảo mật thanh toán PayPal & chống gian lận
+│
+├── design-system/                   <-- Hệ thống thiết kế UI & Design Tokens
+│   └── sheetautomate/
+│       └── MASTER.md                <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
 │
 └── decision/                        <-- CÁC QUYẾT ĐỊNH ĐÃ CHỐT (.txt, <= 20 dòng, bullet list)
     ├── README.txt                   <-- Quy ước ghi nhận quyết định
