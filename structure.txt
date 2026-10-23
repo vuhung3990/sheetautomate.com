@@ -1,0 +1,129 @@
+================================================================================
+                    TỔNG QUAN CẤU TRÚC DỰ ÁN SHEETAUTOMATE.COM
+================================================================================
+Cập nhật lần cuối: 23/10/2026
+Mục đích: Đọc file này là hiểu ngay toàn bộ bố cục, vai trò từng thư mục và cách làm việc.
+
+--------------------------------------------------------------------------------
+1. SƠ ĐỒ CÂY THƯ MỤC TỔNG THỂ (DIRECTORY MAP)
+--------------------------------------------------------------------------------
+
+sheetautomate.com/
+│
+├── structure.txt                    <-- BẠN ĐANG ĐỌC FILE NÀY: Bản đồ tổng quan dự án
+├── README.md                        <-- Giới thiệu dự án cấp root & điều hướng nhanh
+├── .gitignore                       <-- Cấu hình loại trừ file rác / dependencies
+│
+├── web/                             <-- TOÀN BỘ MÃ NGUỒN WEBSITE (Frontend Application)
+│   ├── index.html                   <-- File HTML chính của Landing Page
+│   ├── package.json                 <-- Quản lý dependencies & scripts npm của web
+│   ├── package-lock.json            <-- Khóa phiên bản dependencies chính xác
+│   ├── vite.config.ts               <-- Cấu hình bundler Vite
+│   ├── tsconfig.json                <-- Cấu hình trình biên dịch TypeScript
+│   ├── tailwind.config.js           <-- Cấu hình giao diện Tailwind & Color Palette
+│   ├── postcss.config.js            <-- Cấu hình xử lý CSS PostCSS
+│   ├── README.md                    <-- Hướng dẫn chi tiết chạy dev & deploy Cloudflare
+│   ├── public/                      <-- Static assets & file cấu hình máy chủ Cloudflare
+│   │   ├── _headers                 <-- Security headers (CSP, HSTS, X-Frame-Options)
+│   │   └── _redirects               <-- Quy tắc điều hướng SPA routing
+│   └── src/                         <-- Mã nguồn TypeScript / React components
+│       ├── main.tsx                 <-- Entry point khởi chạy React
+│       ├── App.tsx                  <-- Component gốc tích hợp toàn bộ các Section
+│       ├── index.css                <-- Global CSS & font imports
+│       └── components/              <-- Các thành phần giao diện Landing Page
+│           ├── Navbar.tsx           <-- Thanh điều hướng, Logo & Nút đổi Dark/Light mode
+│           ├── Hero.tsx             <-- Hero Banner, UVP, Badge bảo mật, CTA chính
+│           ├── InteractiveDemo.tsx  <-- Trình giả lập quy trình tạo tài liệu (Simulator)
+│           ├── RoiCalculator.tsx    <-- Bảng tính thời gian & chi phí tiết kiệm
+│           ├── HowItWorks.tsx       <-- Quy trình 3 bước thực hiện cho khách
+│           ├── Pricing.tsx          <-- Bảng giá gói Pilot $450 & Custom $750+
+│           ├── WhenFit.tsx          <-- Bảng so sánh Why Us vs Autocrat vs SaaS
+│           ├── SecurityArchitecture.tsx <-- Sơ đồ bảo mật 100% trong Google Drive
+│           ├── Faq.tsx              <-- Câu hỏi thường gặp giải tỏa thắc mắc
+│           ├── IntakeModal.tsx      <-- Form thu thập yêu cầu từ khách (Smart Lead)
+│           ├── LegalModals.tsx      <-- Modal Điều khoản dịch vụ & Chính sách bảo mật
+│           └── Footer.tsx           <-- Chân trang & liên kết hỗ trợ
+│
+├── idea/                            <-- CÁC Ý TƯỞNG TRONG QUÁ TRÌNH TRIỂN KHAI (Định dạng .txt)
+│   ├── README.txt                   <-- Quy ước ghi chép và đặt tên file ý tưởng
+│   ├── 001-interactive-simulator-mo-rong-cac-nganh.txt  <-- Ý tưởng mở rộng ngành trong demo
+│   ├── 002-lead-magnet-free-sheet-validator.txt        <-- Mini tool kiểm tra dữ liệu bẩn
+│   ├── 003-chuoi-video-loom-giai-quyet-loi-autocrat.txt <-- Video hướng dẫn kéo traffic tự nhiên
+│   ├── 004-dong-goi-mau-template-co-san-49-usd.txt     <-- Lộ trình bán template đóng gói
+│   └── 005-cac-loai-tai-lieu-tiem-nang-theo-nganh.txt  <-- Ma trận cơ hội tài liệu theo ngành
+│
+├── plan/                            <-- KẾ HOẠCH PHÁT TRIỂN SẢN PHẨM & THƯƠNG HIỆU (.md)
+│   ├── README.md                    <-- Mục lục và hướng dẫn tra cứu tài liệu kế hoạch
+│   ├── KE_HOACH_TRIEN_KHAI_SHEETAUTOMATE.md           <-- Kế hoạch tổng thể 90 ngày ban đầu
+│   ├── KHUNG_HANH_DONG_SHEETAUTOMATE_V2.md            <-- Khung hành động cập nhật chính thức
+│   ├── TONG_HOP_PHAN_BIEN_KE_HOACH_SHEETAUTOMATE.md  <-- Tổng hợp phản biện & stress-test
+│   │
+│   ├── marketing/                   <-- Kế hoạch tiếp thị, khách hàng & thương hiệu
+│   │   ├── 01-chien-luoc-tiep-can-khach-hang-gtm.md   <-- GTM 90 ngày, chiến lược 0 Connects
+│   │   ├── 02-dinh-vi-thuong-hieu-va-offer.md         <-- UVP, Brand Voice & Đóng gói Offer
+│   │   └── 03-phan-tich-doi-thu-va-loi-the-canh-tranh.md <-- Autocrat/SaaS & Objection Handling
+│   │
+│   └── tech/                        <-- Kế hoạch kiến trúc kỹ thuật & kiểm soát chất lượng
+│       ├── 01-kien-truc-he-thong-va-apps-script.md    <-- Pipeline, Idempotency lock, OAuth scopes
+│       ├── 02-quy-trinh-uat-va-nghiem-thu-3-milestone.md <-- Quy trình 3 Milestone & Checklist UAT
+│       ├── 03-gioi-han-ky-thuat-va-quy-tac-stop-loss.md <-- Giới hạn Scope & dừng lỗ theo giờ
+│       └── design-system/           <-- Hệ thống thiết kế UI & Design Tokens
+│           └── sheetautomate/
+│               └── MASTER.md        <-- Design tokens chuẩn, Light/Dark mode, WCAG 2.2 AA
+│
+└── decision/                        <-- CÁC QUYẾT ĐỊNH QUAN TRỌNG ĐÃ CHỐT (Định dạng .txt)
+    ├── README.txt                   <-- Quy ước ghi nhận quyết định (ADR standard)
+    ├── 001-mo-hinh-productized-service-truoc-saas.txt  <-- Vì sao làm dịch vụ trước, SaaS sau
+    ├── 002-offer-quy-trinh-hoan-tat-thay-vi-tinh-nang-xuat-pdf.txt <-- Vì sao không bán nút xuất PDF
+    ├── 003-kenh-tiep-can-khach-hang-0-connects.txt     <-- Vì sao ngừng mua Upwork Connects
+    ├── 004-kien-truc-web-react-vite-cloudflare.txt     <-- Vì sao chọn React + Cloudflare Pages
+    ├── 005-co-cau-gia-pilot-450-usd-va-3-milestones.txt <-- Vì sao giá $450 & chia 3 Milestone
+    └── 006-quy-uoc-to-chuc-cau-truc-du-an.txt          <-- Vì sao tổ chức cấu trúc theo chuẩn này
+
+--------------------------------------------------------------------------------
+2. QUY ƯỚC ĐỊNH DẠNG & NGUYÊN TẮC LÀM VIỆC
+--------------------------------------------------------------------------------
+
+| Thư mục     | Định dạng file | Mục đích sử dụng | Nguyên tắc bắt buộc |
+| :---------- | :------------- | :--------------- | :------------------ |
+| `web/`      | .tsx, .ts, .css| Toàn bộ mã nguồn chạy landing page | Tự chứa (Self-contained), build sạch 0 lỗi |
+| `idea/`     | .txt           | Ý tưởng mới nảy sinh trong lúc làm | Đặt tên [stt]-[tên-ý-tưởng].txt |
+| `plan/`     | .md (Markdown) | Kế hoạch sản phẩm & thương hiệu  | Phân loại vào marketing/ hoặc tech/ |
+| `decision/` | .txt           | Các quyết định kiến trúc/kinh doanh| Phải nêu rõ TẠI SAO QUYẾT ĐỊNH NHƯ THẾ |
+
+--------------------------------------------------------------------------------
+3. QUY TRÌNH PHỐI HỢP GIỮA CÁC THÀNH PHẦN (LIFECYCLE)
+--------------------------------------------------------------------------------
+
+                    [Ý TƯỞNG MỚI]  --> Lưu vào `idea/*.txt`
+                          │
+                          ▼
+                  [THẢO LUẬN & CHỐT] --> Quyết định lưu vào `decision/*.txt`
+                          │              (Ghi rõ lý do tại sao chọn và tại sao loại bỏ)
+                          ▼
+                 [KẾ HOẠCH HÀNH ĐỘNG] --> Chi tiết hóa vào `plan/marketing/` hoặc `plan/tech/`
+                          │
+                          ▼
+                  [HIỆN THỰC HÓA]  --> Lập trình vào `web/` (Giao diện, tính năng, demo)
+
+--------------------------------------------------------------------------------
+4. HƯỚNG DẪN THAO TÁC VỚI WEBSITE (`web/`)
+--------------------------------------------------------------------------------
+
+- Cài đặt thư viện:
+  $ cd web
+  $ npm install
+
+- Chạy môi trường phát triển (Dev server):
+  $ cd web
+  $ npm run dev
+
+- Kiểm tra lỗi kiểu dữ liệu & Đóng gói sản phẩm (Build):
+  $ cd web
+  $ npm run build
+
+- Triển khai lên Cloudflare Pages:
+  + Root directory: `web`
+  + Build command: `npm run build`
+  + Output directory: `dist`
+================================================================================

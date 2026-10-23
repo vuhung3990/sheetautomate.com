@@ -1,0 +1,31 @@
+QUYẾT ĐỊNH 003: CHIẾN LƯỢC TIẾP CẬN KHÁCH HÀNG 0 CONNECTS UPWORK
+Ngày quyết định: 23/10/2026
+Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
+
+1. BỐI CẢNH (CONTEXT)
+Bản kế hoạch gốc dự kiến chi $40/tháng (trong tổng ngân sách $100/tháng) để mua Upwork Connects và nộp proposal ứng tuyển các job về Google Sheets và Automation.
+Tuy nhiên, sau khi phân tích kỹ lưỡng thực tế Upwork năm 2026:
+- Chi phí Connects là $0.15/connect. Một công việc chất lượng thường yêu cầu từ 12 đến 16 Connects (thậm chí có tính năng đấu giá đẩy giá bid lên 20-30 Connects).
+- Ngân sách $40 chỉ đủ nộp tối đa khoảng 16 proposal mỗi tháng.
+- Profile của người sáng lập hiện tại là 0 review, 0 Job Success Score (JSS). Trên Upwork, tỷ lệ chuyển đổi proposal thành hợp đồng của profile mới thường dao động từ 1% đến 3%.
+- Xác suất toán học: Với 16 proposal, khả năng không có bất kỳ phản hồi nào trong tháng đầu là hơn 70%, dẫn đến nguy cơ mất trắng $40 và mất tinh thần làm việc.
+
+2. QUYẾT ĐỊNH (DECISION)
+Ngừng hoàn toàn việc chi ngân sách mua Connects trên Upwork ($0 Connects Policy).
+Dồn 100% thời gian tiếp cận khách hàng vào các kênh trực tiếp có ý định tìm kiếm cao (High-Intent Channels) và không tốn phí nộp đơn:
+- Reddit: Tìm kiếm và giải đáp kỹ thuật trong r/googlesheets, r/gsuite, r/smallbusiness.
+- Outbound Value-Audit: Tiếp cận doanh nghiệp nhỏ bằng video Loom demo lỗi/giải pháp thực tế.
+- Inbound qua Landing Page SheetAutomate.com (Interactive Demo + ROI Calculator).
+Vẫn sẵn sàng sử dụng Upwork Escrow như một phương thức ký hợp đồng và thanh toán bảo chứng an toàn nếu khách hàng bên ngoài yêu cầu, nhưng không coi Upwork Job Board là phễu tìm kiếm lead chính.
+
+3. TẠI SAO QUYẾT ĐỊNH NHƯ THẾ (RATIONALE / WHY)
+- Hiệu quả trên từng USD bỏ ra (Capital Efficiency): Với ngân sách giới hạn $100/tháng, $40 là 40% ngân sách. Đổ vào một kênh có rủi ro mất trắng cao là sai lầm về phân bổ vốn.
+- Kênh Reddit và cộng đồng tập trung đúng những người đang gặp nỗi đau thực tế: Những người đăng bài "Autocrat is failing", "Sheet formula timeout" là những người đang cần giải pháp ngay hôm nay. Hỗ trợ họ một cách chuyên nghiệp tạo ra lòng tin nhanh hơn nhiều so với một proposal xa lạ trên Upwork.
+- Xây dựng tài sản thương hiệu dài hạn: Các video hướng dẫn hoặc bài phân tích trên cộng đồng sẽ tiếp tục mang lại traffic và sự chú ý trong nhiều tháng sau đó, trong khi proposal Upwork sẽ biến mất ngay sau khi job đóng.
+
+4. CÁC PHƯƠNG ÁN ĐÃ XEM XÉT VÀ BỊ LOẠI BỎ
+- Loại bỏ: Chạy quảng cáo Google Ads hoặc Facebook Ads. Lý do: Ngân sách $100/tháng là quá nhỏ để chạy test từ khóa B2B thị trường Mỹ/Âu (CPC từ khóa B2B automation thường từ $5-$15/click).
+
+5. HỆ QUẢ VÀ TÁC ĐỘNG (CONSEQUENCES)
+- Tích cực: Tiết kiệm $40/tháng; tập trung nỗ lực vào việc tạo ra giá trị thực sự cho người dùng trên mạng xã hội kỹ thuật; chủ động 100% trong việc tiếp cận.
+- Thách thức: Đòi hỏi sự kiên trì trong việc rà soát các bài đăng trên cộng đồng hàng ngày và tương tác một cách chân thành, tránh bị coi là spam.

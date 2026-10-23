@@ -1,101 +1,39 @@
-# SheetAutomate.com — High-Converting Landing Page
+# SheetAutomate.com
 
-Landing page hiện đại, tốc độ cao dành cho **SheetAutomate** — dịch vụ & giải pháp tự động hoá tài liệu Google Workspace (Google Sheets / Forms $\rightarrow$ PDF).
-
-Trang web được tối ưu hoá chuyển đổi (Conversion-Focused), giao diện Dark Mode công nghệ hiện đại, có mô phỏng luồng chạy thời gian thực (Interactive Simulator) và bảng tính ROI tự động. Sẵn sàng 100% để deploy trực tiếp lên **Cloudflare Pages**.
-
----
-
-## 🚀 Các Tính Năng Nổi Bật Trên Trang
-
-1. **Hero Section Siêu Đẹp & Thông Điệp Chắc Nịch:**
-   - Đánh trúng nỗi đau khách hàng quốc tế: Tốn hàng chục giờ gõ tay hoá đơn, báo giá, chứng chỉ từ bảng tính.
-   - Định vị UVP độc quyền: **100% Google Workspace Native, Không phí thuê bao hàng tháng (Zero recurring SaaS), Không lưu dữ liệu qua server bên thứ 3**.
-   - Cam kết bảo hành lỗi 30 ngày & hỗ trợ ký hợp đồng Escrow (Upwork Fixed-Price).
-
-2. **Interactive Workflow Simulator (Trải Nghiệm Tương Tác Sống Động):**
-   - Cho phép khách hàng trải nghiệm thực tế với 3 loại tài liệu:
-     - *B2B Client Invoice*
-     - *Field Service / Work Order*
-     - *Certificate of Completion*
-   - Khách có thể nhập dữ liệu trực tiếp $\rightarrow$ Bấm **"Run Automation Pipeline"** $\rightarrow$ Hệ thống mô phỏng 4 bước kỹ thuật:
-     1. Kiểm tra Schema & Format Ngày/Tiền tệ
-     2. Khóa chống chạy trùng (Idempotency Lock)
-     3. Trộn dữ liệu vào Google Doc Template
-     4. Xuất PDF lưu Google Drive & ghi link ngược lại ô Sheet.
-   - Bật popup xem tài liệu mô phỏng sắc nét và hiệu ứng pháo giấy confetti ăn mừng.
-
-3. **ROI & Time-Saved Calculator (Bảng Tính Lợi Nhuận Trực Quan):**
-   - 3 thanh trượt điều chỉnh: Số lượng tài liệu/tháng, Số phút làm thủ công, Chi phí nhân sự/giờ.
-   - Tự động tính toán: Số giờ lãng phí mỗi tháng, Số tiền thất thoát mỗi năm, Số ngày hoàn vốn gói Pilot $450 (thường chỉ 15–20 ngày), Tỷ suất sinh lời ROI (+1,500% – 2,500%).
-
-4. **Bảng So Sánh Minh Bạch (Why Us vs. Autocrat vs. Monthly SaaS):**
-   - Phân tích thẳng thắn lý do tại sao khách hàng nên chọn gói Pilot $450 thay vì vật lộn với add-on miễn phí (Autocrat) dễ gãy hoặc phần mềm SaaS đắt đỏ ($300–$1,200/năm).
-
-5. **Mô Hình 3 Giai Đoạn Milestone An Toàn Tuyệt Đối Cho Khách:**
-   - **M1: Feasibility Preflight ($75)** — Kiểm tra quyền Admin/OAuth, schema, cam kết hoàn 100% nếu triển khai build.
-   - **M2: Build & Staging Test ($300)** — Lập trình Apps Script, khóa chống trùng, kiểm thử tải.
-   - **M3: Production Handover & Video ($75)** — Bàn giao, quay video Loom cho nhân viên, kích hoạt bảo hành 30 ngày.
-
-6. **Form Nhận Yêu Cầu Đa Bước & Lưu Trữ Tự Động (Smart Lead Capture):**
-   - Thu thập thông tin quy trình, loại tài liệu, khối lượng và email làm việc.
-   - Tự động lưu lead vào `localStorage` của trình duyệt.
-
-7. **Bảo Mật & Điều Khoản Pháp Lý (Privacy & Terms Modals):**
-   - Tích hợp sẵn modal Chính sách bảo mật dữ liệu & Điều khoản dịch vụ.
+> **100% Google Workspace Native Document Automation**  
+> Dịch vụ & giải pháp tự động hoá tài liệu trọn gói từ Google Sheets / Forms sang Google Docs / PDF. Zero recurring SaaS fees. Zero 3rd-party data risk.
 
 ---
 
-## 🛠️ Hướng Dẫn Deploy Lên Cloudflare Pages
+## 📌 Tổng Quan Cấu Trúc Dự Án
 
-### Cách 1: Kết nối trực tiếp qua Git (GitHub / GitLab) — Khuyên dùng
+Dự án được tái cấu trúc rành mạch thành 4 phân vùng độc lập nhằm tối ưu hóa việc phát triển song song giữa kỹ thuật, kinh doanh và quản trị ý tưởng:
 
-1. Khởi tạo Git repository trong thư mục này và push lên GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: complete modern sheetautomate landing page"
-   git branch -M main
-   git remote add origin https://github.com/<your-username>/sheetautomate.git
-   git push -u origin main
-   ```
-2. Đăng nhập vào dashboard **Cloudflare** $\rightarrow$ Chọn mục **Workers & Pages** $\rightarrow$ **Create Application** $\rightarrow$ **Pages** $\rightarrow$ **Connect to Git**.
-3. Chọn repo `sheetautomate`.
-4. Cấu hình Build Settings:
-   - **Framework preset:** `Vite`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-5. Nhấn **Save and Deploy**. Cloudflare Pages sẽ tự động build và cấp domain miễn phí dạng `*.pages.dev` kèm chứng chỉ SSL tự động!
-6. Trỏ custom domain `sheetautomate.com` vào Cloudflare Pages trong tab **Custom domains**.
+- **[`structure.txt`](./structure.txt)**: Bản đồ tổng thể dự án. Đọc file này để nắm bắt ngay sơ đồ tổ chức, quy ước đặt tên và cách phối hợp giữa các thành phần.
+- **[`web/`](./web/)**: Toàn bộ mã nguồn ứng dụng web Landing Page (React 18 + TypeScript + Tailwind CSS + Vite), sẵn sàng deploy lên Cloudflare Pages.
+- **[`idea/`](./idea/)**: Nơi lưu trữ toàn bộ ý tưởng nảy sinh trong quá trình triển khai (định dạng `.txt`).
+- **[`plan/`](./plan/)**: Kế hoạch phát triển sản phẩm & thương hiệu (định dạng `.md`):
+  - **[`plan/marketing/`](./plan/marketing/)**: Kế hoạch tiếp cận khách hàng GTM 90 ngày, định vị thương hiệu, phân tích đối thủ cạnh tranh.
+  - **[`plan/tech/`](./plan/tech/)**: Kiến trúc Google Apps Script, quy trình nghiệm thu 3 Milestone, giới hạn kỹ thuật và dừng lỗ (Stop-Loss).
+- **[`decision/`](./decision/)**: Nhật ký các quyết định kiến trúc & kinh doanh cốt lõi (định dạng `.txt`), ghi rõ bối cảnh và lý do **tại sao quyết định như thế**.
 
 ---
 
-### Cách 2: Deploy Nhanh bằng Wrangler CLI (Không cần qua GitHub)
+## ⚡ Hướng Dẫn Nhanh Cho Lập Trình Viên
 
-Nếu bạn muốn deploy tức thì từ máy tính:
-
-1. Build dự án ra thư mục `dist`:
-   ```bash
-   npm run build
-   ```
-2. Deploy trực tiếp thư mục `dist` bằng lệnh Wrangler:
-   ```bash
-   npx wrangler pages deploy dist --project-name=sheetautomate
-   ```
-   *(Trình duyệt sẽ mở ra để bạn xác thực tài khoản Cloudflare một lần duy nhất).*
-
----
-
-## 💻 Chạy Thử Ở Môi Trường Local
-
+### Chạy Website Landing Page
 ```bash
-# Cài đặt thư viện (nếu chưa cài)
+# 1. Đi vào thư mục web
+cd web
+
+# 2. Cài đặt dependencies
 npm install
 
-# Khởi động dev server
+# 3. Khởi động môi trường dev
 npm run dev
 
-# Kiểm tra bản build production
+# 4. Kiểm tra build sản phẩm
 npm run build
-npm run preview
 ```
+
+Chi tiết xem tại [`web/README.md`](./web/README.md).
