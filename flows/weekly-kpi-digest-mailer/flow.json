@@ -1,0 +1,98 @@
+{
+  "id": "weekly-kpi-digest-mailer",
+  "title": "Automated Weekly Executive KPI Digest Mailer",
+  "shortDescription": "Aggregate weekly revenue, cost, margin, and task completion KPIs across Sheets tabs, email a responsive HTML digest, and log run hashes.",
+  "category": "Finance & Ops",
+  "tags": [
+    "Executive KPI",
+    "Weekly Digest",
+    "Finance & Ops",
+    "MailApp"
+  ],
+  "trigger": "Weekly Monday Schedule / Menu",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "4 hrs/wk",
+  "featured": false,
+  "copySheetUrl": "",
+  "services": [
+    "Sheets",
+    "Gmail"
+  ],
+  "setupSteps": [
+    "Create a Weekly_KPI_Data tab matching the 7-column schema (plus optional Tasks_Log tab) and add weekly department metrics.",
+    "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+    "Configure STAKEHOLDER_EMAILS via SheetAutomate -> Configure Stakeholder Recipients, then run Send Weekly KPI Digest."
+  ],
+  "sheetSchema": {
+    "tabName": "Weekly_KPI_Data",
+    "headers": [
+      "Week_Label",
+      "Department",
+      "Revenue",
+      "Cost",
+      "Tasks_Completed",
+      "Tasks_Planned",
+      "Row_Status"
+    ],
+    "sampleRows": [
+      [
+        "2026-W46",
+        "Enterprise Sales",
+        "84500.00",
+        "29100.00",
+        "18",
+        "20",
+        "READY"
+      ],
+      [
+        "2026-W46",
+        "Managed Services",
+        "42300.00",
+        "19800.00",
+        "24",
+        "25",
+        "READY"
+      ],
+      [
+        "2026-W46",
+        "Customer Success",
+        "18200.00",
+        "7400.00",
+        "14",
+        "15",
+        "READY"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "2026-W46",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Reporting Week",
+        "defaultValue": "2026-W46",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Aggregated Revenue & Cost",
+        "defaultValue": "$145,000.00 rev / $56,300.00 cost"
+      },
+      {
+        "key": "field3",
+        "label": "Gross Margin & Task Rate",
+        "defaultValue": "61.2% Margin ($88,700) | 93.3% Tasks (56/60)",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Stakeholder Distribution",
+        "defaultValue": "Configured STAKEHOLDER_EMAILS Property"
+      }
+    ],
+    "outputType": "email-dispatch",
+    "outputTitle": "Weekly KPI Digest Dispatched",
+    "outputSubtitle": "Responsive HTML summary emailed; SHA-256 run hash logged",
+    "auditColumn": "Digest_Audit tab (Run_Hash & Sent_Timestamp)"
+  }
+}

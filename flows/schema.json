@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SheetAutomate Flow Metadata",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "shortDescription",
+    "category",
+    "tags",
+    "trigger",
+    "difficulty",
+    "timeSavedPerWeek",
+    "featured",
+    "copySheetUrl",
+    "services",
+    "setupSteps",
+    "sheetSchema",
+    "demo"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 70
+    },
+    "shortDescription": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 200
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Document & PDF",
+        "Email & Gmail",
+        "Finance & Ops",
+        "HR & Team",
+        "Alerts & Sync"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 5,
+      "items": { "type": "string" }
+    },
+    "trigger": {
+      "type": "string",
+      "minLength": 3
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": ["Beginner", "Intermediate"]
+    },
+    "timeSavedPerWeek": {
+      "type": "string",
+      "minLength": 3
+    },
+    "featured": { "type": "boolean" },
+    "copySheetUrl": { "type": "string" },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": ["Sheets", "Docs", "Drive", "Gmail", "Forms", "Chat/Webhook"]
+      }
+    },
+    "setupSteps": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "type": "string" }
+    },
+    "sheetSchema": {
+      "type": "object",
+      "required": ["tabName", "headers", "sampleRows"],
+      "properties": {
+        "tabName": { "type": "string", "minLength": 1 },
+        "headers": {
+          "type": "array",
+          "minItems": 3,
+          "items": { "type": "string" }
+        },
+        "sampleRows": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "demo": {
+      "type": "object",
+      "required": ["recordId", "fields", "outputType", "outputTitle", "outputSubtitle", "auditColumn"],
+      "properties": {
+        "recordId": { "type": "string", "minLength": 2 },
+        "fields": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "defaultValue"],
+            "properties": {
+              "key": { "type": "string", "enum": ["field1", "field2", "field3", "field4"] },
+              "label": { "type": "string" },
+              "defaultValue": { "type": "string" },
+              "required": { "type": "boolean" },
+              "highlight": { "type": "boolean" },
+              "multiline": { "type": "boolean" }
+            }
+          }
+        },
+        "outputType": {
+          "type": "string",
+          "enum": ["pdf-document", "email-dispatch", "sheet-ops", "alert-webhook"]
+        },
+        "outputTitle": { "type": "string" },
+        "outputSubtitle": { "type": "string" },
+        "auditColumn": { "type": "string" }
+      }
+    }
+  }
+}

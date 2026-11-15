@@ -1,0 +1,219 @@
+name: Audit Flows & Deploy SheetAutomate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'flows/**'
+      - 'web/**'
+      - 'extension/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'flows/**'
+      - 'web/**'
+      - 'extension/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+concurrency:
+  group: sheetautomate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: write
+  models: read
+  pull-requests: write
+
+jobs:
+  audit-and-deploy:
+    name: Validate, Audit, Verify & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'web/package-lock.json'
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Ensure PyYAML for workflow checks
+        run: python3 -c "import yaml" 2>/dev/null || python3 -m pip install --quiet pyyaml
+
+      - name: Install web and test dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Ensure Playwright Chromium browser
+        working-directory: web
+        run: |
+          if ! command -v google-chrome >/dev/null 2>&1; then
+            npx playwright install --with-deps chromium
+          fi
+
+      - name: Run VirusTotal & SHA-256 integrity audit
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+        run: node scripts/virustotal-audit.mjs
+
+      - name: Run AI + Static AST security audit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node scripts/ai-security-audit.mjs --output-md /tmp/ai-audit-report.md
+
+      - name: Upsert security audit comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- sheetautomate-security-audit -->';
+            try {
+              const auditStatus = JSON.parse(fs.readFileSync('flows/audit-status.json', 'utf8'));
+              const aiReport = fs.existsSync('/tmp/ai-audit-report.md')
+                ? fs.readFileSync('/tmp/ai-audit-report.md', 'utf8')
+                : '';
+
+              const vt = auditStatus.virustotal || {};
+              const ai = auditStatus.aiSecurity || {};
+
+              const body = [
+                marker,
+                '## SheetAutomate Security Audit Summary',
+                '',
+                `- **Total Flows:** ${auditStatus.totalFlows}`,
+                `- **VirusTotal:** \`${vt.status || 'pending'}\` — **${vt.label || 'N/A'}** ([Report](${vt.reportUrl || 'https://www.virustotal.com/gui/home/search'}))`,
+                `- **Bundle SHA-256:** \`${vt.bundleSha256 || 'N/A'}\``,
+                `- **AI Security Gate:** \`${ai.status || 'passed'}\` — **${ai.label || 'N/A'}** (${ai.provider || 'Static AST'})`,
+                '',
+                aiReport,
+              ].join('\n');
+
+              const { owner, repo } = context.repo;
+              const issue_number = context.issue.number;
+              const { data: comments } = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number,
+                per_page: 100,
+              });
+
+              const existing = comments.find((c) => c.body && c.body.includes(marker));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number,
+                  body,
+                });
+              }
+            } catch (err) {
+              core.warning(`Unable to post PR security comment (e.g. fork permissions): ${err.message}`);
+            }
+
+      - name: Run full verification and QA evidence pipeline
+        run: |
+          node scripts/run-all-checks.mjs --ci
+          if [ -f reports/qa-evidence-report.md ]; then
+            cat reports/qa-evidence-report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload QA evidence reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-evidence-reports
+          path: reports/
+          if-no-files-found: warn
+
+      - name: Commit updated audit status, badges, bundles & SEO assets on main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          ASSETS=(
+            "flows/audit-status.json"
+            "web/public/flows-manifest.json"
+            "extension/flows-bundle.json"
+            "web/public/downloads/sheetautomate-chrome-extension.zip"
+            "web/public/robots.txt"
+            "web/public/sitemap.xml"
+            "web/public/llms.txt"
+            "web/public/llms-full.txt"
+            "web/public/og-image.png"
+            "web/public/favicon.svg"
+            "web/public/manifest.webmanifest"
+            "web/index.html"
+          )
+
+          for asset in "${ASSETS[@]}"; do
+            if [ -f "$asset" ]; then
+              git add "$asset"
+            fi
+          done
+
+          if ls web/public/badges/*.svg >/dev/null 2>&1; then
+            git add web/public/badges/*.svg
+          fi
+
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(audit): update flows audit-status, badges, bundles & SEO assets [skip ci]"
+            if ! git pull --rebase --autostash origin main; then
+              echo "::warning::git pull --rebase failed; aborting rebase and skipping automated push."
+              git rebase --abort || true
+            elif ! git push origin HEAD:main; then
+              echo "::warning::git push failed (e.g. branch protection or concurrent push); continuing workflow."
+            fi
+          else
+            echo "No changes to audit-status.json, badges, bundles, or generated SEO assets."
+          fi
+
+      - name: Deploy web/dist to Cloudflare Pages
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        if: github.event_name != 'pull_request' && env.CF_API_TOKEN != '' && env.CF_ACCOUNT_ID != ''
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy web/dist --project-name=sheetautomate
+
+      - name: Cloudflare Pages setup notice (when secrets are unset)
+        env:
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        if: github.event_name != 'pull_request' && (env.CF_API_TOKEN == '' || env.CF_ACCOUNT_ID == '')
+        run: |
+          {
+            echo "### Cloudflare Pages Deployment Skipped"
+            echo ""
+            echo "To enable automatic deployment to Cloudflare Pages, add the following repository secrets in **Settings -> Secrets and variables -> Actions**:"
+            echo "- \`CLOUDFLARE_API_TOKEN\` (Cloudflare API token with **Cloudflare Pages: Edit** permission)"
+            echo "- \`CLOUDFLARE_ACCOUNT_ID\` (Your Cloudflare Account ID)"
+            echo ""
+            echo "The production site bundle was still verified and built cleanly in \`web/dist\`."
+          } >> "$GITHUB_STEP_SUMMARY"

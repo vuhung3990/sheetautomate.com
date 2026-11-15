@@ -1,0 +1,17 @@
+{
+  "name": "SheetAutomate — Free Open-Source Google Sheets Automation",
+  "short_name": "SheetAutomate",
+  "description": "Free MIT open-source Google Sheets automation flows, interactive demos, Code.gs templates, and Manifest V3 Chrome Extension.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

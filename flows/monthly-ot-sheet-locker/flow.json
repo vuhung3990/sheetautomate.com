@@ -1,0 +1,90 @@
+{
+  "id": "monthly-ot-sheet-locker",
+  "title": "Monthly Attendance & OT Sheet Provisioner + Auto-Lock",
+  "shortDescription": "On the 1st of each month, clone _Template for the new month's OT tab with editable hour cells, lock the closing month's tab, and log to Audit_Log.",
+  "category": "HR & Team",
+  "tags": ["Overtime", "Sheet Protection", "HR Ops", "Monthly Schedule"],
+  "trigger": "Monthly Schedule",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "3 hrs/wk",
+  "featured": false,
+  "copySheetUrl": "",
+  "services": ["Sheets"],
+  "setupSteps": [
+    "Run SheetAutomate > Initialize _Template & Audit_Log Tabs to scaffold the template sheet and audit log.",
+    "Customize employee rows and formulas in _Template (columns D and E remain editable for staff hours).",
+    "Run SheetAutomate > Provision Next Month & Lock Previous or click Install Monthly Trigger for the 1st of each month."
+  ],
+  "sheetSchema": {
+    "tabName": "_Template",
+    "headers": [
+      "Employee_ID",
+      "Employee_Name",
+      "Department",
+      "Regular_Hours",
+      "OT_Hours",
+      "Manager_Approval",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "EMP-101",
+        "Maya Chen",
+        "Field Engineering",
+        "160",
+        "12.5",
+        "Approved",
+        "READY"
+      ],
+      [
+        "EMP-102",
+        "Liam Patel",
+        "Warehouse Ops",
+        "160",
+        "8.0",
+        "Approved",
+        "READY"
+      ],
+      [
+        "EMP-103",
+        "Elena Rostova",
+        "Support Desk",
+        "152",
+        "4.5",
+        "Pending",
+        "READY"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "OT_2026_12",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Source Template Tab",
+        "defaultValue": "_Template",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Next Month Tab",
+        "defaultValue": "OT_2026_12"
+      },
+      {
+        "key": "field3",
+        "label": "Editable Staff Range",
+        "defaultValue": "D2:E100 (Regular & OT Hours)"
+      },
+      {
+        "key": "field4",
+        "label": "Previous Tab to Lock",
+        "defaultValue": "OT_2026_11"
+      }
+    ],
+    "outputType": "sheet-ops",
+    "outputTitle": "Created OT_2026_12 & Locked OT_2026_11",
+    "outputSubtitle": "Preserved D2:E100 editable range and appended entry to Audit_Log",
+    "auditColumn": "Audit_Log Tab Col F (Audit_Status)"
+  }
+}

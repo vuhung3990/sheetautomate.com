@@ -1,0 +1,81 @@
+{
+  "id": "gmail-invoice-extractor",
+  "title": "Gmail Billing & Receipt Scanner to Sheets",
+  "shortDescription": "Scan Gmail threads matching a configurable billing query, archive PDF attachments to Drive, and log metadata to Sheets without duplicate message IDs.",
+  "category": "Email & Gmail",
+  "tags": ["Gmail", "PDF Archive", "Bookkeeping", "Idempotent"],
+  "trigger": "Hourly Gmail Trigger",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "4 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": ["Sheets", "Gmail", "Drive"],
+  "setupSteps": [
+    "Run SheetAutomate > Initialize Billing_Log Sheet to create the log tab with required columns.",
+    "Use SheetAutomate > Configure Gmail Query & Folder to customize your search filter (e.g. label:billing OR subject:invoice) and target Drive folder ID.",
+    "Run SheetAutomate > Scan Gmail for PDF Invoices or click Install Hourly Trigger for hands-free archiving."
+  ],
+  "sheetSchema": {
+    "tabName": "Billing_Log",
+    "headers": [
+      "Logged_At",
+      "Message_ID",
+      "Sender",
+      "Subject",
+      "Attachment_Name",
+      "Drive_PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "2026-11-12T09:15:00Z",
+        "1930a4f8b2c1d9e0",
+        "billing@cloudvendor.example",
+        "Invoice #CV-8841 - November Hosting",
+        "CV-8841.pdf",
+        "https://drive.google.com/file/d/example-cv-8841/view",
+        "COMPLETED"
+      ],
+      [
+        "2026-11-13T14:22:10Z",
+        "1930f12c9a7e4b11",
+        "receipts@saas-suite.example",
+        "Your Monthly SaaS Receipt #4092",
+        "receipt-4092.pdf",
+        "https://drive.google.com/file/d/example-4092/view",
+        "COMPLETED"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "MSG-1930A4F8",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Gmail Search Query",
+        "defaultValue": "has:attachment filename:pdf (label:billing OR subject:invoice)",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Sender Email",
+        "defaultValue": "billing@cloudvendor.example"
+      },
+      {
+        "key": "field3",
+        "label": "Email Subject",
+        "defaultValue": "Invoice #CV-8841 - November Hosting"
+      },
+      {
+        "key": "field4",
+        "label": "PDF Attachment",
+        "defaultValue": "CV-8841.pdf"
+      }
+    ],
+    "outputType": "sheet-ops",
+    "outputTitle": "Archived CV-8841.pdf & Logged Message ID",
+    "outputSubtitle": "Saved PDF to Drive folder and appended deduplicated Billing_Log row",
+    "auditColumn": "Col B (Message_ID) & Col G (Audit_Status)"
+  }
+}

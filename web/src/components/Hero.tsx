@@ -1,179 +1,257 @@
 import React from 'react';
-import { ArrowRight, Play, Database, DollarSign, Shield, Lock } from 'lucide-react';
+import {
+  Search,
+  X,
+  ShieldCheck,
+  Bot,
+  Code2,
+  SlidersHorizontal,
+  ArrowUpDown,
+  Chrome,
+} from 'lucide-react';
+import type { FlowCategory, FlowSortOption } from '../types/flow';
+import { AUDIT_STATUS, CATEGORIES, FLOWS } from '../lib/flowRegistry';
 
 interface HeroProps {
-  onOpenIntake: () => void;
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  selectedCategory: FlowCategory | 'All';
+  onCategoryChange: (category: FlowCategory | 'All') => void;
+  selectedTrigger: string;
+  onTriggerChange: (trigger: string) => void;
+  triggers: string[];
+  sortBy: FlowSortOption;
+  onSortChange: (sort: FlowSortOption) => void;
+  categoryCounts: Record<string, number>;
+  filteredCount: number;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOpenIntake }) => {
+export const Hero: React.FC<HeroProps> = ({
+  searchQuery,
+  onSearchChange,
+  selectedCategory,
+  onCategoryChange,
+  selectedTrigger,
+  onTriggerChange,
+  triggers,
+  sortBy,
+  onSortChange,
+  categoryCounts,
+  filteredCount,
+}) => {
   return (
-    <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-brand-500/10 rounded-full blur-[130px] pointer-events-none" />
+    <section className="relative pt-24 pb-6 md:pt-28 md:pb-8 overflow-hidden border-b border-slate-200/80 dark:border-slate-800/70">
+      {/* Subtle ambient glow */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[560px] h-[220px] bg-brand-500/10 rounded-full blur-[110px] pointer-events-none"
+        aria-hidden="true"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-3xl mx-auto">
-          {/* Eyebrow badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-slate-700/80 text-xs sm:text-sm font-semibold text-emerald-800 dark:text-brand-300 shadow-xs mb-6 backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" aria-hidden="true" />
-            <span>Zero Subscriptions</span>
-            <span className="text-slate-400 dark:text-slate-600" aria-hidden="true">•</span>
-            <span>Fixed Workflows Starting at $5 One-Time</span>
-          </div>
+        {/* Compact Conversion Header */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-6">
+          <div className="max-w-3xl">
+            {/* Live Triple-Audit Pills */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <a
+                href="#security"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/60 text-[11px] font-mono font-bold text-emerald-800 dark:text-brand-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>VirusTotal {AUDIT_STATUS.virustotal.label}</span>
+              </a>
 
-          {/* Main Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-6">
-            Turn Google Sheets & Forms Into{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-teal-800 to-sky-800 dark:from-brand-300 dark:via-brand-400 dark:to-accent-400">
-              Consistent, Branded PDFs.
-            </span>
-          </h1>
+              <a
+                href="#security"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700/60 text-[11px] font-mono font-bold text-sky-800 dark:text-accent-300 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors"
+              >
+                <Bot className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{AUDIT_STATUS.aiSecurity.label}</span>
+              </a>
 
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-8 max-w-2xl mx-auto font-normal">
-            Stop paying $30–$80/month for document merge SaaS subscriptions. Buy your automated workflow once starting from $5, and run it directly inside your Google Drive with zero per-document fees and complete script ownership.
-          </p>
-
-          {/* Call to Actions */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-            <button
-              onClick={onOpenIntake}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-xl bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-base tracking-wide shadow-lg shadow-brand-500/20 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer min-h-[48px]"
-            >
-              <span>Get Your Workflow (From $5)</span>
-              <ArrowRight className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
-            </button>
-
-            <a
-              href="#examples"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-slate-100 dark:bg-dark-900/80 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-base transition-all duration-200 shadow-xs backdrop-blur-sm min-h-[48px]"
-            >
-              <Play className="w-4 h-4 text-emerald-700 dark:text-brand-400 fill-brand-400/20" aria-hidden="true" />
-              <span>See Live Interactive Demo</span>
-            </a>
-          </div>
-
-          {/* Positioning note */}
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-12">
-            One-time purchase • $0/month forever • In-tenant Drive storage • Standard Google Workspace limits apply
-          </p>
-
-          {/* Trust Pillars */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-left max-w-3xl mx-auto pt-6 border-t border-slate-200 dark:border-slate-800/80">
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/60 shadow-xs">
-              <DollarSign className="w-5 h-5 text-emerald-700 dark:text-brand-400 shrink-0" aria-hidden="true" />
-              <div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white">Pay Once ($5+)</div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400">Zero recurring software fees</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/60 shadow-xs">
-              <Lock className="w-5 h-5 text-sky-700 dark:text-accent-400 shrink-0" aria-hidden="true" />
-              <div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white">In-Tenant Privacy</div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400">Runs 100% inside your Drive</div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/60 shadow-xs">
-              <Shield className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" aria-hidden="true" />
-              <div>
-                <div className="text-xs font-bold text-slate-900 dark:text-white">Zero Per-Doc Fees</div>
-                <div className="text-[11px] text-slate-600 dark:text-slate-400">No SheetAutomate export quotas</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Workflow Diagram */}
-        <div className="mt-12 max-w-5xl mx-auto">
-          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-dark-900/90 shadow-xl overflow-hidden glass-panel">
-            {/* Window bar */}
-            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-100 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5" aria-hidden="true">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700 inline-block" />
-                </div>
-                <span className="font-mono text-slate-700 dark:text-slate-400 ml-2">Workflow Architecture Overview</span>
-              </div>
-              <span className="font-mono text-emerald-800 dark:text-emerald-400 text-[11px] font-bold">
-                Google Apps Script Native
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-[11px] font-mono font-semibold text-slate-800 dark:text-slate-200">
+                <Code2 className="w-3.5 h-3.5 text-emerald-700 dark:text-brand-400" aria-hidden="true" />
+                <span>MIT Open Source • $0 Forever</span>
               </span>
             </div>
 
-            {/* Workflow Diagram Grid */}
-            <div className="p-6 md:p-8 grid md:grid-cols-12 gap-6 items-center">
-              {/* Step 1: Source */}
-              <div className="md:col-span-5 bg-slate-50 dark:bg-dark-950/70 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center justify-between mb-3 text-xs">
-                  <span className="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
-                    <Database className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-                    1. Input: Google Sheet Row
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 font-mono text-[10px] font-semibold">
-                    Row #142 (Approved)
-                  </span>
-                </div>
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800/80">
-                    <span className="text-slate-600 dark:text-slate-400">Client:</span>
-                    <span className="text-slate-900 dark:text-slate-200 font-semibold">Acme Industrial Ltd</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800/80">
-                    <span className="text-slate-600 dark:text-slate-400">Total Due:</span>
-                    <span className="text-emerald-800 dark:text-emerald-400 font-bold">$3,850.00</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-400">Trigger:</span>
-                    <span className="text-sky-700 dark:text-accent-400 font-medium">Custom Menu Click</span>
-                  </div>
-                </div>
-              </div>
+            <h1 className="text-2xl sm:text-4xl lg:text-[2.6rem] font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.12] mb-2.5">
+              Open-Source Google Sheets{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-teal-700 to-sky-700 dark:from-brand-300 dark:via-brand-400 dark:to-accent-400">
+                Automation Catalog.
+              </span>
+            </h1>
 
-              {/* Connecting Flow Arrow */}
-              <div className="md:col-span-2 flex flex-col items-center justify-center py-2 md:py-0">
-                <div className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 dark:bg-brand-500/10 border border-emerald-300 dark:border-brand-500/30 text-emerald-800 dark:text-brand-400">
-                  <ArrowRight className="w-5 h-5 stroke-[2.5]" aria-hidden="true" />
-                </div>
-                <span className="text-[11px] font-mono font-semibold text-slate-600 dark:text-slate-400 mt-2 text-center">
-                  Apps Script Merge
-                </span>
-              </div>
+            <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
+              Test live interactive demos, copy clean least-privilege <code className="font-mono text-xs px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-emerald-800 dark:text-brand-300">Code.gs</code> scripts, and paste starter tables into <strong className="font-semibold text-slate-900 dark:text-white">your own Google Drive</strong> in 60 seconds.
+            </p>
+          </div>
 
-              {/* Step 2: Output */}
-              <div className="md:col-span-5 bg-slate-50 dark:bg-dark-950/70 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
-                <div className="flex items-center justify-between mb-3 text-xs">
-                  <span className="font-bold text-slate-900 dark:text-slate-200 flex items-center gap-1.5">
-                    <Shield className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
-                    2. Output: Drive PDF & Log
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-mono text-[10px] font-bold">
-                    Generated in 2.1s
-                  </span>
-                </div>
-                <div className="space-y-2 text-xs font-mono">
-                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800/80">
-                    <span className="text-slate-600 dark:text-slate-400">PDF File:</span>
-                    <span className="text-slate-900 dark:text-slate-200 font-semibold truncate max-w-[150px]">
-                      INV-142_Acme.pdf
-                    </span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-slate-200 dark:border-slate-800/80">
-                    <span className="text-slate-600 dark:text-slate-400">Google Drive:</span>
-                    <span className="text-slate-900 dark:text-slate-200">/Finance/Invoices/</span>
-                  </div>
-                  <div className="flex justify-between py-1">
-                    <span className="text-slate-600 dark:text-slate-400">Sheet Audit:</span>
-                    <span className="text-emerald-800 dark:text-emerald-400 font-semibold">Col G: Link Written ✓</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Quick Chrome Extension CTA Pill */}
+          <div className="shrink-0">
+            <a
+              href="#extension"
+              className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-white dark:bg-dark-900 border border-slate-300 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-brand-500 shadow-xs text-xs sm:text-sm font-semibold text-slate-900 dark:text-white transition-all min-h-[44px]"
+            >
+              <Chrome className="w-4 h-4 text-emerald-700 dark:text-brand-400 shrink-0" aria-hidden="true" />
+              <span>Chrome Extension (MV3)</span>
+              <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-brand-500/20 text-emerald-800 dark:text-brand-300 font-mono text-[10px] font-bold">
+                FREE
+              </span>
+            </a>
           </div>
         </div>
+
+        {/* Search, Trigger & Sort Control Bar */}
+        <search
+          aria-label="Filter automation flows"
+          className="block bg-white dark:bg-dark-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 sm:p-4 shadow-sm glass-panel space-y-3"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            {/* Search Input */}
+            <div className="md:col-span-6 relative">
+              <label htmlFor="flow-search-input" className="sr-only">
+                Search automation flows by title, tag, or service
+              </label>
+              <Search
+                className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
+              <input
+                id="flow-search-input"
+                type="search"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search flows (e.g. invoice, Gmail, PDF, onboarding, Slack)..."
+                className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:border-emerald-600 dark:focus:border-brand-500 focus:outline-none min-h-[44px]"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => onSearchChange('')}
+                  aria-label="Clear search query"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-4 h-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+
+            {/* Trigger Filter */}
+            <div className="md:col-span-3 relative">
+              <label htmlFor="flow-trigger-select" className="sr-only">
+                Filter by trigger type
+              </label>
+              <SlidersHorizontal
+                className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
+              <select
+                id="flow-trigger-select"
+                value={selectedTrigger}
+                onChange={(e) => onTriggerChange(e.target.value)}
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-600 dark:focus:border-brand-500 focus:outline-none min-h-[44px] cursor-pointer"
+              >
+                <option value="All">All Triggers</option>
+                {triggers.map((trigger) => (
+                  <option key={trigger} value={trigger}>
+                    {trigger}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Sort Selector */}
+            <div className="md:col-span-3 relative">
+              <label htmlFor="flow-sort-select" className="sr-only">
+                Sort flows
+              </label>
+              <ArrowUpDown
+                className="w-4 h-4 text-slate-500 dark:text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden="true"
+              />
+              <select
+                id="flow-sort-select"
+                value={sortBy}
+                onChange={(e) => onSortChange(e.target.value as FlowSortOption)}
+                className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-50 dark:bg-dark-950 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-600 dark:focus:border-brand-500 focus:outline-none min-h-[44px] cursor-pointer"
+              >
+                <option value="featured">Sort: Featured First</option>
+                <option value="alphabetical">Sort: Title (A–Z)</option>
+                <option value="least-scopes">Sort: Least OAuth Scopes</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Category Filter Pills with Live Counts */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div
+              role="group"
+              aria-label="Filter flows by category"
+              className="flex flex-wrap items-center gap-1.5"
+            >
+              <button
+                type="button"
+                onClick={() => onCategoryChange('All')}
+                aria-pressed={selectedCategory === 'All'}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer min-h-[36px] flex items-center gap-1.5 ${
+                  selectedCategory === 'All'
+                    ? 'bg-brand-500 border-brand-600 text-slate-950 font-bold shadow-xs'
+                    : 'bg-slate-100 dark:bg-dark-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                }`}
+              >
+                <span>All</span>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                    selectedCategory === 'All'
+                      ? 'bg-slate-950/15 text-slate-950'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  {FLOWS.length}
+                </span>
+              </button>
+
+              {CATEGORIES.map((category) => {
+                const count = categoryCounts[category] ?? 0;
+                const active = selectedCategory === category;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => onCategoryChange(category)}
+                    aria-pressed={active}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors cursor-pointer min-h-[36px] flex items-center gap-1.5 ${
+                      active
+                        ? 'bg-brand-500 border-brand-600 text-slate-950 font-bold shadow-xs'
+                        : 'bg-slate-100 dark:bg-dark-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>{category}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono ${
+                        active
+                          ? 'bg-slate-950/15 text-slate-950'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <output
+              htmlFor="flow-search-input flow-trigger-select flow-sort-select"
+              aria-live="polite"
+              className="text-xs font-mono text-slate-600 dark:text-slate-400"
+            >
+              Showing <strong className="text-slate-900 dark:text-white">{filteredCount}</strong> of{' '}
+              <strong className="text-slate-900 dark:text-white">{FLOWS.length}</strong> flows
+            </output>
+          </div>
+        </search>
       </div>
     </section>
   );

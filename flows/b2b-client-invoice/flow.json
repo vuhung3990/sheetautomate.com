@@ -1,0 +1,95 @@
+{
+  "id": "b2b-client-invoice",
+  "title": "B2B Client Invoice PDF Generator",
+  "shortDescription": "Merge approved Google Sheets invoice rows into a branded Google Docs template, export PDFs to Drive, and log links back with LockService idempotency.",
+  "category": "Document & PDF",
+  "tags": ["Invoicing", "PDF Export", "Google Docs", "Idempotent"],
+  "trigger": "Sheet Menu / Status Change",
+  "difficulty": "Beginner",
+  "timeSavedPerWeek": "6 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": ["Sheets", "Docs", "Drive"],
+  "setupSteps": [
+    "Create the Invoices tab with the required headers and paste your Google Docs template ID and Drive folder ID in SheetAutomate > Configure Template & Folder.",
+    "Add {{Invoice_ID}}, {{Client_Name}}, {{Client_Email}}, {{Service_Description}}, {{Amount_USD}}, and {{Issue_Date}} placeholders to your Docs template.",
+    "Mark ready rows as Approved in the Status column and run SheetAutomate > Generate Approved Invoice PDFs."
+  ],
+  "sheetSchema": {
+    "tabName": "Invoices",
+    "headers": [
+      "Invoice_ID",
+      "Client_Name",
+      "Client_Email",
+      "Service_Description",
+      "Amount_USD",
+      "Status",
+      "PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "INV-2026-104",
+        "Acme Robotics Inc.",
+        "ap@acmerobotics.example",
+        "Q4 Cloud Automation Retainer",
+        "4850.00",
+        "Approved",
+        "",
+        ""
+      ],
+      [
+        "INV-2026-103",
+        "Northwind Logistics",
+        "billing@northwind.example",
+        "Warehouse API Integration",
+        "3200.00",
+        "Approved",
+        "https://drive.google.com/file/d/example-inv-103/view",
+        "COMPLETED"
+      ],
+      [
+        "INV-2026-105",
+        "Summit Health Group",
+        "finance@summithealth.example",
+        "HIPAA Reporting Dashboard",
+        "2750.00",
+        "Draft",
+        "",
+        ""
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "INV-2026-104",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Client Name",
+        "defaultValue": "Acme Robotics Inc.",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Service Description",
+        "defaultValue": "Q4 Cloud Automation Retainer",
+        "multiline": true
+      },
+      {
+        "key": "field3",
+        "label": "Amount (USD)",
+        "defaultValue": "$4,850.00"
+      },
+      {
+        "key": "field4",
+        "label": "Approval Status",
+        "defaultValue": "Approved"
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "INV-2026-104_Acme_Robotics_Inc.pdf",
+    "outputSubtitle": "Exported from Google Docs template to Drive & logged in Sheet",
+    "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+  }
+}

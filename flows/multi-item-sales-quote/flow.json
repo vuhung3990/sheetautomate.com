@@ -1,0 +1,95 @@
+{
+  "id": "multi-item-sales-quote",
+  "title": "Dynamic Multi-Row Sales Quote & Proposal PDF",
+  "shortDescription": "Group multiple line-item rows sharing a Quote_ID in Google Sheets into a formatted multi-row table inside a Google Docs quote template and export as PDF.",
+  "category": "Finance & Ops",
+  "tags": ["Sales Quote", "Line Items", "Google Docs", "PDF Export"],
+  "trigger": "Sheet Menu / Batch Run",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "6 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": ["Sheets", "Docs", "Drive"],
+  "setupSteps": [
+    "Run SheetAutomate > Initialize Quote_Line_Items Sheet to scaffold the multi-row line-item table.",
+    "Add {{Quote_ID}}, {{Client_Name}}, {{Quote_Date}}, {{Grand_Total}}, and {{LINE_ITEMS_TABLE}} to your Google Docs quote template, then save Template & Folder IDs.",
+    "Set Status to Approved across all line items for a Quote_ID and run SheetAutomate > Generate Multi-Item Quote PDFs."
+  ],
+  "sheetSchema": {
+    "tabName": "Quote_Line_Items",
+    "headers": [
+      "Quote_ID",
+      "Client_Name",
+      "Item_Description",
+      "Quantity",
+      "Unit_Price_USD",
+      "Status",
+      "PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "QT-2026-301",
+        "Northstar Logistics",
+        "RFID Dock Scanner Hardware",
+        "4",
+        "650.00",
+        "Approved",
+        "",
+        ""
+      ],
+      [
+        "QT-2026-301",
+        "Northstar Logistics",
+        "Onsite Calibration & Training",
+        "2",
+        "900.00",
+        "Approved",
+        "",
+        ""
+      ],
+      [
+        "QT-2026-302",
+        "Vertex Manufacturing",
+        "Annual Telemetry License",
+        "10",
+        "240.00",
+        "Draft",
+        "",
+        ""
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "QT-2026-301",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Client Name",
+        "defaultValue": "Northstar Logistics",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Grouped Line Items",
+        "defaultValue": "4x RFID Dock Scanner ($650) + 2x Onsite Calibration ($900)",
+        "multiline": true
+      },
+      {
+        "key": "field3",
+        "label": "Grand Total (USD)",
+        "defaultValue": "$4,400.00"
+      },
+      {
+        "key": "field4",
+        "label": "Quote Status",
+        "defaultValue": "Approved"
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "QT-2026-301_Northstar_Logistics.pdf",
+    "outputSubtitle": "Grouped 2 line items into dynamic Docs table & logged PDF link",
+    "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+  }
+}

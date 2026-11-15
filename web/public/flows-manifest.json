@@ -1,0 +1,1396 @@
+{
+  "generatedAt": "2026-11-14T01:24:22.534Z",
+  "totalFlows": 12,
+  "repository": "https://github.com/hungvvinfinity/sheetautomate.com",
+  "auditSummary": {
+    "virustotalLabel": "Pending VT_API_KEY (SHA-256 Verified)",
+    "virustotalUrl": "https://www.virustotal.com/gui/home/search",
+    "aiLabel": "AI Verified (100%)",
+    "aiProvider": "Local Deep Static Security Analyzer"
+  },
+  "flows": [
+    {
+      "id": "b2b-client-invoice",
+      "title": "B2B Client Invoice PDF Generator",
+      "shortDescription": "Merge approved Google Sheets invoice rows into a branded Google Docs template, export PDFs to Drive, and log links back with LockService idempotency.",
+      "category": "Document & PDF",
+      "tags": [
+        "Invoicing",
+        "PDF Export",
+        "Google Docs",
+        "Idempotent"
+      ],
+      "trigger": "Sheet Menu / Status Change",
+      "difficulty": "Beginner",
+      "timeSavedPerWeek": "6 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Docs",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Create the Invoices tab with the required headers and paste your Google Docs template ID and Drive folder ID in SheetAutomate > Configure Template & Folder.",
+        "Add {{Invoice_ID}}, {{Client_Name}}, {{Client_Email}}, {{Service_Description}}, {{Amount_USD}}, and {{Issue_Date}} placeholders to your Docs template.",
+        "Mark ready rows as Approved in the Status column and run SheetAutomate > Generate Approved Invoice PDFs."
+      ],
+      "sheetSchema": {
+        "tabName": "Invoices",
+        "headers": [
+          "Invoice_ID",
+          "Client_Name",
+          "Client_Email",
+          "Service_Description",
+          "Amount_USD",
+          "Status",
+          "PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "INV-2026-104",
+            "Acme Robotics Inc.",
+            "ap@acmerobotics.example",
+            "Q4 Cloud Automation Retainer",
+            "4850.00",
+            "Approved",
+            "",
+            ""
+          ],
+          [
+            "INV-2026-103",
+            "Northwind Logistics",
+            "billing@northwind.example",
+            "Warehouse API Integration",
+            "3200.00",
+            "Approved",
+            "https://drive.google.com/file/d/example-inv-103/view",
+            "COMPLETED"
+          ],
+          [
+            "INV-2026-105",
+            "Summit Health Group",
+            "finance@summithealth.example",
+            "HIPAA Reporting Dashboard",
+            "2750.00",
+            "Draft",
+            "",
+            ""
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "INV-2026-104",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Client Name",
+            "defaultValue": "Acme Robotics Inc.",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Service Description",
+            "defaultValue": "Q4 Cloud Automation Retainer",
+            "multiline": true
+          },
+          {
+            "key": "field3",
+            "label": "Amount (USD)",
+            "defaultValue": "$4,850.00"
+          },
+          {
+            "key": "field4",
+            "label": "Approval Status",
+            "defaultValue": "Approved"
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "INV-2026-104_Acme_Robotics_Inc.pdf",
+        "outputSubtitle": "Exported from Google Docs template to Drive & logged in Sheet",
+        "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * @OnlyCurrentDoc\n *\n * SheetAutomate Flow: B2B Client Invoice PDF Generator\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst INVOICE_CONFIG = {\n  TAB_NAME: 'Invoices',\n  PROP_TEMPLATE_ID: 'SA_INVOICE_TEMPLATE_DOC_ID',\n  PROP_FOLDER_ID: 'SA_INVOICE_OUTPUT_FOLDER_ID',\n  LOCK_TIMEOUT_MS: 10000,\n  REQUIRED_HEADERS: [\n    'Invoice_ID',\n    'Client_Name',\n    'Client_Email',\n    'Service_Description',\n    'Amount_USD',\n    'Status',\n    'PDF_Link',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Generate Approved Invoice PDFs', 'generateApprovedInvoicePdfs')\n    .addItem('Configure Template & Folder IDs', 'configureInvoiceSettings')\n    .addItem('Initialize Invoices Sheet', 'initializeInvoicesSheet')\n    .addToUi();\n}\n\n/**\n * Prompts the user to save the Google Docs template ID and output Drive folder ID.\n */\nfunction configureInvoiceSettings() {\n  const ui = SpreadsheetApp.getUi();\n  const props = PropertiesService.getScriptProperties();\n\n  const currentDocId = props.getProperty(INVOICE_CONFIG.PROP_TEMPLATE_ID) || '';\n  const docResp = ui.prompt(\n    'Step 1 of 2: Google Docs Template ID',\n    'Paste the Google Docs Template ID (from the Doc URL between /d/ and /edit):' +\n      (currentDocId ? '\\nCurrent: ' + currentDocId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (docResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const docId = docResp.getResponseText().trim();\n  if (!docId) {\n    ui.alert('Template Doc ID cannot be empty.');\n    return;\n  }\n\n  const currentFolderId = props.getProperty(INVOICE_CONFIG.PROP_FOLDER_ID) || '';\n  const folderResp = ui.prompt(\n    'Step 2 of 2: Output Drive Folder ID',\n    'Paste the Google Drive Folder ID where exported PDFs should be saved:' +\n      (currentFolderId ? '\\nCurrent: ' + currentFolderId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const folderId = folderResp.getResponseText().trim();\n  if (!folderId) {\n    ui.alert('Output Folder ID cannot be empty.');\n    return;\n  }\n\n  props.setProperty(INVOICE_CONFIG.PROP_TEMPLATE_ID, docId);\n  props.setProperty(INVOICE_CONFIG.PROP_FOLDER_ID, folderId);\n  ui.alert('Configuration saved. You can now run \"Generate Approved Invoice PDFs\".');\n}\n\n/**\n * Creates or verifies the Invoices tab and header row.\n */\nfunction initializeInvoicesSheet() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sheet = ss.getSheetByName(INVOICE_CONFIG.TAB_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(INVOICE_CONFIG.TAB_NAME);\n  }\n  const headerRange = sheet.getRange(1, 1, 1, INVOICE_CONFIG.REQUIRED_HEADERS.length);\n  const existingHeaders = headerRange.getValues()[0];\n  const hasHeaders = existingHeaders.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n  if (!hasHeaders) {\n    headerRange.setValues([INVOICE_CONFIG.REQUIRED_HEADERS]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Invoices sheet is ready.');\n}\n\n/**\n * Merges Approved rows into the configured Docs template, exports PDFs to Drive,\n * and records the PDF link and COMPLETED audit status in the sheet.\n */\nfunction generateApprovedInvoicePdfs() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(INVOICE_CONFIG.LOCK_TIMEOUT_MS)) {\n    SpreadsheetApp.getUi().alert('Another invoice batch is currently running. Please try again in a moment.');\n    return;\n  }\n\n  try {\n    const props = PropertiesService.getScriptProperties();\n    const templateDocId = (props.getProperty(INVOICE_CONFIG.PROP_TEMPLATE_ID) || '').trim();\n    const folderId = (props.getProperty(INVOICE_CONFIG.PROP_FOLDER_ID) || '').trim();\n\n    if (!templateDocId || !folderId) {\n      SpreadsheetApp.getUi().alert('Please run SheetAutomate > Configure Template & Folder IDs first.');\n      return;\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sheet = ss.getSheetByName(INVOICE_CONFIG.TAB_NAME);\n    if (!sheet) {\n      SpreadsheetApp.getUi().alert('Sheet tab \"' + INVOICE_CONFIG.TAB_NAME + '\" was not found.');\n      return;\n    }\n\n    const data = sheet.getDataRange().getValues();\n    if (data.length < 2) {\n      SpreadsheetApp.getUi().alert('No invoice rows found to process.');\n      return;\n    }\n\n    const headers = data[0].map(function (h) {\n      return String(h).trim();\n    });\n    const colIndex = mapHeaderIndices_(headers, INVOICE_CONFIG.REQUIRED_HEADERS);\n\n    const templateFile = DriveApp.getFileById(templateDocId);\n    const outputFolder = DriveApp.getFolderById(folderId);\n    const issueDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');\n\n    let processedCount = 0;\n    let skippedCount = 0;\n    let errorCount = 0;\n\n    for (let r = 1; r < data.length; r++) {\n      const row = data[r];\n      const rowNum = r + 1;\n\n      const invoiceId = String(row[colIndex.Invoice_ID] || '').trim();\n      const clientName = String(row[colIndex.Client_Name] || '').trim();\n      const clientEmail = String(row[colIndex.Client_Email] || '').trim();\n      const description = String(row[colIndex.Service_Description] || '').trim();\n      const rawAmount = row[colIndex.Amount_USD];\n      const status = String(row[colIndex.Status] || '').trim();\n      const existingPdfLink = String(row[colIndex.PDF_Link] || '').trim();\n      const auditStatus = String(row[colIndex.Audit_Status] || '').trim();\n\n      // Idempotency guard: never re-generate an already completed invoice.\n      if (auditStatus === 'COMPLETED' || existingPdfLink !== '') {\n        skippedCount++;\n        continue;\n      }\n\n      if (status !== 'Approved') {\n        continue;\n      }\n\n      const numericAmount = parseFloat(String(rawAmount).replace(/[^0-9.-]/g, ''));\n      if (!invoiceId || !clientName || !description || isNaN(numericAmount)) {\n        sheet\n          .getRange(rowNum, colIndex.Audit_Status + 1)\n          .setValue('NEEDS_CORRECTION: Missing Invoice_ID, Client_Name, Description, or numeric Amount_USD');\n        errorCount++;\n        continue;\n      }\n\n      const formattedAmount = '$' + numericAmount.toFixed(2);\n      const safeName = sanitizeFilename_(invoiceId + '_' + clientName);\n      const tempDocFile = templateFile.makeCopy(safeName + '_TMP', outputFolder);\n\n      try {\n        const doc = DocumentApp.openById(tempDocFile.getId());\n        const body = doc.getBody();\n        body.replaceText('\\\\{\\\\{Invoice_ID\\\\}\\\\}', escapeReplacement_(invoiceId));\n        body.replaceText('\\\\{\\\\{Client_Name\\\\}\\\\}', escapeReplacement_(clientName));\n        body.replaceText('\\\\{\\\\{Client_Email\\\\}\\\\}', escapeReplacement_(clientEmail));\n        body.replaceText('\\\\{\\\\{Service_Description\\\\}\\\\}', escapeReplacement_(description));\n        body.replaceText('\\\\{\\\\{Amount_USD\\\\}\\\\}', escapeReplacement_(formattedAmount));\n        body.replaceText('\\\\{\\\\{Issue_Date\\\\}\\\\}', escapeReplacement_(issueDate));\n        doc.saveAndClose();\n\n        const pdfBlob = tempDocFile.getAs(MimeType.PDF);\n        pdfBlob.setName(safeName + '.pdf');\n        const pdfFile = outputFolder.createFile(pdfBlob);\n\n        sheet.getRange(rowNum, colIndex.PDF_Link + 1).setValue(pdfFile.getUrl());\n        sheet.getRange(rowNum, colIndex.Audit_Status + 1).setValue('COMPLETED');\n        processedCount++;\n      } finally {\n        tempDocFile.setTrashed(true);\n      }\n    }\n\n    SpreadsheetApp.getUi().alert(\n      'Invoice PDF Run Complete\\n\\nGenerated: ' +\n        processedCount +\n        '\\nSkipped (Already Completed): ' +\n        skippedCount +\n        '\\nNeeds Correction: ' +\n        errorCount\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Maps required header names to zero-based column indices.\n *\n * @param {string[]} headers\n * @param {string[]} required\n * @return {Object.<string, number>}\n */\nfunction mapHeaderIndices_(headers, required) {\n  const map = {};\n  for (let i = 0; i < required.length; i++) {\n    const idx = headers.indexOf(required[i]);\n    if (idx === -1) {\n      throw new Error('Missing required column header: ' + required[i]);\n    }\n    map[required[i]] = idx;\n  }\n  return map;\n}\n\n/**\n * Escapes '$' in replacement strings for DocumentApp Body.replaceText().\n *\n * @param {*} val\n * @return {string}\n */\nfunction escapeReplacement_(val) {\n  return String(val == null ? '' : val).replace(/\\$/g, '\\\\$');\n}\n\n/**\n * Replaces unsafe filename characters with underscores.\n *\n * @param {string} name\n * @return {string}\n */\nfunction sanitizeFilename_(name) {\n  return name.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "f21e76b5fe2942ab261400cebfac37da84b2309d2bf37519d9274d35a5cbe44a",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "completion-certificate-batch",
+      "title": "Training & Course Certificate Batch Issuer",
+      "shortDescription": "Batch-generate completion certificate PDFs for Approved trainees meeting the passing score, with LockService and existing-link duplicate prevention.",
+      "category": "HR & Team",
+      "tags": [
+        "Certificates",
+        "Training",
+        "PDF Export",
+        "HR Ops"
+      ],
+      "trigger": "Sheet Menu / Batch Run",
+      "difficulty": "Beginner",
+      "timeSavedPerWeek": "4 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Docs",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Run SheetAutomate > Initialize Certificates Sheet to create the Certificates tab with required columns.",
+        "Add {{Certificate_ID}}, {{Trainee_Name}}, {{Course_Title}}, {{Score_Pct}}, and {{Completion_Date}} placeholders to your Google Docs certificate template and save IDs + passing score via Configure.",
+        "Ensure eligible rows have Status set to Approved and Score_Pct at or above the passing threshold, then run SheetAutomate > Issue Approved Certificate PDFs."
+      ],
+      "sheetSchema": {
+        "tabName": "Certificates",
+        "headers": [
+          "Certificate_ID",
+          "Trainee_Name",
+          "Course_Title",
+          "Score_Pct",
+          "Completion_Date",
+          "Status",
+          "PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "CERT-2026-881",
+            "Jordan Alvarez",
+            "Workspace Security & Governance",
+            "94",
+            "2026-11-10",
+            "Approved",
+            "",
+            ""
+          ],
+          [
+            "CERT-2026-880",
+            "Nadia Okafor",
+            "Workspace Security & Governance",
+            "98",
+            "2026-11-09",
+            "Approved",
+            "https://drive.google.com/file/d/example-cert-880/view",
+            "COMPLETED"
+          ],
+          [
+            "CERT-2026-882",
+            "Evan Takahashi",
+            "Workspace Security & Governance",
+            "72",
+            "2026-11-11",
+            "Approved",
+            "",
+            ""
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "CERT-2026-881",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Trainee Name",
+            "defaultValue": "Jordan Alvarez",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Course Title",
+            "defaultValue": "Workspace Security & Governance"
+          },
+          {
+            "key": "field3",
+            "label": "Score (%)",
+            "defaultValue": "94"
+          },
+          {
+            "key": "field4",
+            "label": "Approval Status",
+            "defaultValue": "Approved"
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "CERT-2026-881_Jordan_Alvarez.pdf",
+        "outputSubtitle": "Verified score >= 80% & Approved; PDF exported to Drive",
+        "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * @OnlyCurrentDoc\n *\n * SheetAutomate Flow: Training & Course Certificate Batch Issuer\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst CERT_CONFIG = {\n  TAB_NAME: 'Certificates',\n  PROP_TEMPLATE_ID: 'SA_CERT_TEMPLATE_DOC_ID',\n  PROP_FOLDER_ID: 'SA_CERT_OUTPUT_FOLDER_ID',\n  PROP_PASSING_SCORE: 'SA_CERT_PASSING_SCORE',\n  DEFAULT_PASSING_SCORE: 80,\n  LOCK_TIMEOUT_MS: 10000,\n  REQUIRED_HEADERS: [\n    'Certificate_ID',\n    'Trainee_Name',\n    'Course_Title',\n    'Score_Pct',\n    'Completion_Date',\n    'Status',\n    'PDF_Link',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Issue Approved Certificate PDFs', 'issueApprovedCertificates')\n    .addItem('Configure Template, Folder & Passing Score', 'configureCertificateSettings')\n    .addItem('Initialize Certificates Sheet', 'initializeCertificatesSheet')\n    .addToUi();\n}\n\n/**\n * Prompts the user for the certificate Docs template ID, Drive folder ID, and passing score.\n */\nfunction configureCertificateSettings() {\n  const ui = SpreadsheetApp.getUi();\n  const props = PropertiesService.getScriptProperties();\n\n  const currentDocId = props.getProperty(CERT_CONFIG.PROP_TEMPLATE_ID) || '';\n  const docResp = ui.prompt(\n    'Step 1 of 3: Certificate Docs Template ID',\n    'Paste the Google Docs Certificate Template ID:' + (currentDocId ? '\\nCurrent: ' + currentDocId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (docResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const docId = docResp.getResponseText().trim();\n  if (!docId) {\n    ui.alert('Template Doc ID cannot be empty.');\n    return;\n  }\n\n  const currentFolderId = props.getProperty(CERT_CONFIG.PROP_FOLDER_ID) || '';\n  const folderResp = ui.prompt(\n    'Step 2 of 3: Output Drive Folder ID',\n    'Paste the Drive Folder ID for exported certificate PDFs:' +\n      (currentFolderId ? '\\nCurrent: ' + currentFolderId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const folderId = folderResp.getResponseText().trim();\n  if (!folderId) {\n    ui.alert('Output Folder ID cannot be empty.');\n    return;\n  }\n\n  const currentScore = props.getProperty(CERT_CONFIG.PROP_PASSING_SCORE) || String(CERT_CONFIG.DEFAULT_PASSING_SCORE);\n  const scoreResp = ui.prompt(\n    'Step 3 of 3: Minimum Passing Score (%)',\n    'Enter minimum passing percentage (0-100):\\nCurrent: ' + currentScore,\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (scoreResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const parsedScore = parseFloat(scoreResp.getResponseText().trim());\n  if (isNaN(parsedScore) || parsedScore < 0 || parsedScore > 100) {\n    ui.alert('Passing score must be a number between 0 and 100.');\n    return;\n  }\n\n  props.setProperty(CERT_CONFIG.PROP_TEMPLATE_ID, docId);\n  props.setProperty(CERT_CONFIG.PROP_FOLDER_ID, folderId);\n  props.setProperty(CERT_CONFIG.PROP_PASSING_SCORE, String(parsedScore));\n  ui.alert('Certificate batch configuration saved.');\n}\n\n/**\n * Creates or verifies the Certificates sheet tab and header row.\n */\nfunction initializeCertificatesSheet() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sheet = ss.getSheetByName(CERT_CONFIG.TAB_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(CERT_CONFIG.TAB_NAME);\n  }\n  const headerRange = sheet.getRange(1, 1, 1, CERT_CONFIG.REQUIRED_HEADERS.length);\n  const existingHeaders = headerRange.getValues()[0];\n  const hasHeaders = existingHeaders.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n  if (!hasHeaders) {\n    headerRange.setValues([CERT_CONFIG.REQUIRED_HEADERS]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Certificates sheet is ready.');\n}\n\n/**\n * Batch-generates certificate PDFs for Approved rows that meet the passing score\n * and do not already have a generated PDF link.\n */\nfunction issueApprovedCertificates() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(CERT_CONFIG.LOCK_TIMEOUT_MS)) {\n    SpreadsheetApp.getUi().alert('Another certificate batch is already running. Please try again in a moment.');\n    return;\n  }\n\n  try {\n    const props = PropertiesService.getScriptProperties();\n    const templateDocId = (props.getProperty(CERT_CONFIG.PROP_TEMPLATE_ID) || '').trim();\n    const folderId = (props.getProperty(CERT_CONFIG.PROP_FOLDER_ID) || '').trim();\n    const passingScoreRaw = props.getProperty(CERT_CONFIG.PROP_PASSING_SCORE);\n    const passingScore = passingScoreRaw ? parseFloat(passingScoreRaw) : CERT_CONFIG.DEFAULT_PASSING_SCORE;\n\n    if (!templateDocId || !folderId) {\n      SpreadsheetApp.getUi().alert('Please run SheetAutomate > Configure Template, Folder & Passing Score first.');\n      return;\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sheet = ss.getSheetByName(CERT_CONFIG.TAB_NAME);\n    if (!sheet) {\n      SpreadsheetApp.getUi().alert('Sheet tab \"' + CERT_CONFIG.TAB_NAME + '\" was not found.');\n      return;\n    }\n\n    const data = sheet.getDataRange().getValues();\n    if (data.length < 2) {\n      SpreadsheetApp.getUi().alert('No trainee rows found to process.');\n      return;\n    }\n\n    const headers = data[0].map(function (h) {\n      return String(h).trim();\n    });\n    const colIndex = mapHeaderIndices_(headers, CERT_CONFIG.REQUIRED_HEADERS);\n\n    const templateFile = DriveApp.getFileById(templateDocId);\n    const outputFolder = DriveApp.getFolderById(folderId);\n    const timeZone = Session.getScriptTimeZone();\n\n    let issuedCount = 0;\n    let skippedDuplicate = 0;\n    let skippedBelowScore = 0;\n    let errorCount = 0;\n\n    for (let r = 1; r < data.length; r++) {\n      const row = data[r];\n      const rowNum = r + 1;\n\n      const certId = String(row[colIndex.Certificate_ID] || '').trim();\n      const traineeName = String(row[colIndex.Trainee_Name] || '').trim();\n      const courseTitle = String(row[colIndex.Course_Title] || '').trim();\n      const rawScore = row[colIndex.Score_Pct];\n      const completionDate = formatSheetDate_(row[colIndex.Completion_Date], timeZone);\n      const status = String(row[colIndex.Status] || '').trim();\n      const existingPdfLink = String(row[colIndex.PDF_Link] || '').trim();\n      const auditStatus = String(row[colIndex.Audit_Status] || '').trim();\n\n      // Idempotency guard: never reissue a certificate that already has a link or COMPLETED mark.\n      if (auditStatus === 'COMPLETED' || existingPdfLink !== '') {\n        skippedDuplicate++;\n        continue;\n      }\n\n      if (status !== 'Approved') {\n        continue;\n      }\n\n      const numericScore = parseFloat(String(rawScore).replace(/[^0-9.-]/g, ''));\n      if (!certId || !traineeName || !courseTitle || !completionDate || isNaN(numericScore)) {\n        sheet\n          .getRange(rowNum, colIndex.Audit_Status + 1)\n          .setValue('NEEDS_CORRECTION: Missing required certificate fields or invalid Score_Pct');\n        errorCount++;\n        continue;\n      }\n\n      if (numericScore < passingScore) {\n        sheet\n          .getRange(rowNum, colIndex.Audit_Status + 1)\n          .setValue('SKIPPED: Score ' + numericScore + '% below passing threshold (' + passingScore + '%)');\n        skippedBelowScore++;\n        continue;\n      }\n\n      const safeName = sanitizeFilename_(certId + '_' + traineeName);\n      const tempDocFile = templateFile.makeCopy(safeName + '_TMP', outputFolder);\n\n      try {\n        const doc = DocumentApp.openById(tempDocFile.getId());\n        const body = doc.getBody();\n        body.replaceText('\\\\{\\\\{Certificate_ID\\\\}\\\\}', escapeReplacement_(certId));\n        body.replaceText('\\\\{\\\\{Trainee_Name\\\\}\\\\}', escapeReplacement_(traineeName));\n        body.replaceText('\\\\{\\\\{Course_Title\\\\}\\\\}', escapeReplacement_(courseTitle));\n        body.replaceText('\\\\{\\\\{Score_Pct\\\\}\\\\}', escapeReplacement_(numericScore + '%'));\n        body.replaceText('\\\\{\\\\{Completion_Date\\\\}\\\\}', escapeReplacement_(completionDate));\n        doc.saveAndClose();\n\n        const pdfBlob = tempDocFile.getAs(MimeType.PDF);\n        pdfBlob.setName(safeName + '.pdf');\n        const pdfFile = outputFolder.createFile(pdfBlob);\n\n        sheet.getRange(rowNum, colIndex.PDF_Link + 1).setValue(pdfFile.getUrl());\n        sheet.getRange(rowNum, colIndex.Audit_Status + 1).setValue('COMPLETED');\n        issuedCount++;\n      } finally {\n        tempDocFile.setTrashed(true);\n      }\n    }\n\n    SpreadsheetApp.getUi().alert(\n      'Certificate Batch Complete\\n\\nIssued: ' +\n        issuedCount +\n        '\\nSkipped (Already Issued): ' +\n        skippedDuplicate +\n        '\\nSkipped (Below Passing Score): ' +\n        skippedBelowScore +\n        '\\nNeeds Correction: ' +\n        errorCount\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Formats a Google Sheets cell value that may be a Date object or string.\n *\n * @param {Date|string} value\n * @param {string} timeZone\n * @return {string}\n */\nfunction formatSheetDate_(value, timeZone) {\n  if (value instanceof Date) {\n    return Utilities.formatDate(value, timeZone, 'yyyy-MM-dd');\n  }\n  return String(value || '').trim();\n}\n\n/**\n * Maps required header names to zero-based column indices.\n *\n * @param {string[]} headers\n * @param {string[]} required\n * @return {Object.<string, number>}\n */\nfunction mapHeaderIndices_(headers, required) {\n  const map = {};\n  for (let i = 0; i < required.length; i++) {\n    const idx = headers.indexOf(required[i]);\n    if (idx === -1) {\n      throw new Error('Missing required column header: ' + required[i]);\n    }\n    map[required[i]] = idx;\n  }\n  return map;\n}\n\n/**\n * Escapes '$' in replacement strings for DocumentApp Body.replaceText().\n *\n * @param {*} val\n * @return {string}\n */\nfunction escapeReplacement_(val) {\n  return String(val == null ? '' : val).replace(/\\$/g, '\\\\$');\n}\n\n/**\n * Replaces unsafe filename characters with underscores.\n *\n * @param {string} name\n * @return {string}\n */\nfunction sanitizeFilename_(name) {\n  return name.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "0aa3d1063a00897e177080cce4080a58efd05244d1e5a1859b3affa52c3e9195",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "gmail-invoice-extractor",
+      "title": "Gmail Billing & Receipt Scanner to Sheets",
+      "shortDescription": "Scan Gmail threads matching a configurable billing query, archive PDF attachments to Drive, and log metadata to Sheets without duplicate message IDs.",
+      "category": "Email & Gmail",
+      "tags": [
+        "Gmail",
+        "PDF Archive",
+        "Bookkeeping",
+        "Idempotent"
+      ],
+      "trigger": "Hourly Gmail Trigger",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "4 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Gmail",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Run SheetAutomate > Initialize Billing_Log Sheet to create the log tab with required columns.",
+        "Use SheetAutomate > Configure Gmail Query & Folder to customize your search filter (e.g. label:billing OR subject:invoice) and target Drive folder ID.",
+        "Run SheetAutomate > Scan Gmail for PDF Invoices or click Install Hourly Trigger for hands-free archiving."
+      ],
+      "sheetSchema": {
+        "tabName": "Billing_Log",
+        "headers": [
+          "Logged_At",
+          "Message_ID",
+          "Sender",
+          "Subject",
+          "Attachment_Name",
+          "Drive_PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "2026-11-12T09:15:00Z",
+            "1930a4f8b2c1d9e0",
+            "billing@cloudvendor.example",
+            "Invoice #CV-8841 - November Hosting",
+            "CV-8841.pdf",
+            "https://drive.google.com/file/d/example-cv-8841/view",
+            "COMPLETED"
+          ],
+          [
+            "2026-11-13T14:22:10Z",
+            "1930f12c9a7e4b11",
+            "receipts@saas-suite.example",
+            "Your Monthly SaaS Receipt #4092",
+            "receipt-4092.pdf",
+            "https://drive.google.com/file/d/example-4092/view",
+            "COMPLETED"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "MSG-1930A4F8",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Gmail Search Query",
+            "defaultValue": "has:attachment filename:pdf (label:billing OR subject:invoice)",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Sender Email",
+            "defaultValue": "billing@cloudvendor.example"
+          },
+          {
+            "key": "field3",
+            "label": "Email Subject",
+            "defaultValue": "Invoice #CV-8841 - November Hosting"
+          },
+          {
+            "key": "field4",
+            "label": "PDF Attachment",
+            "defaultValue": "CV-8841.pdf"
+          }
+        ],
+        "outputType": "sheet-ops",
+        "outputTitle": "Archived CV-8841.pdf & Logged Message ID",
+        "outputSubtitle": "Saved PDF to Drive folder and appended deduplicated Billing_Log row",
+        "auditColumn": "Col B (Message_ID) & Col G (Audit_Status)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Gmail Billing & Receipt Scanner to Sheets\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst GMAIL_EXTRACTOR_CONFIG = {\n  TAB_NAME: 'Billing_Log',\n  PROP_QUERY: 'SA_GMAIL_INVOICE_QUERY',\n  PROP_FOLDER_ID: 'SA_GMAIL_ARCHIVE_FOLDER_ID',\n  DEFAULT_QUERY: 'has:attachment filename:pdf (label:billing OR subject:invoice)',\n  DEFAULT_FOLDER_NAME: 'SheetAutomate_Gmail_Invoices',\n  MAX_THREADS: 25,\n  LOCK_TIMEOUT_MS: 10000,\n  REQUIRED_HEADERS: [\n    'Logged_At',\n    'Message_ID',\n    'Sender',\n    'Subject',\n    'Attachment_Name',\n    'Drive_PDF_Link',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Scan Gmail for PDF Invoices', 'scanGmailInvoicesInteractive')\n    .addItem('Configure Gmail Query & Folder', 'configureGmailExtractor')\n    .addItem('Install Hourly Trigger', 'installHourlyGmailTrigger')\n    .addItem('Initialize Billing_Log Sheet', 'initializeBillingLogSheet')\n    .addToUi();\n}\n\n/**\n * Prompts the user for the Gmail search query and optional Drive archive folder ID.\n */\nfunction configureGmailExtractor() {\n  const ui = SpreadsheetApp.getUi();\n  const props = PropertiesService.getScriptProperties();\n\n  const currentQuery = props.getProperty(GMAIL_EXTRACTOR_CONFIG.PROP_QUERY) || GMAIL_EXTRACTOR_CONFIG.DEFAULT_QUERY;\n  const queryResp = ui.prompt(\n    'Step 1 of 2: Gmail Search Query',\n    'Enter the Gmail search query for billing emails:\\nCurrent: ' + currentQuery,\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (queryResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const queryText = queryResp.getResponseText().trim();\n  if (!queryText) {\n    ui.alert('Gmail search query cannot be empty.');\n    return;\n  }\n\n  const currentFolderId = props.getProperty(GMAIL_EXTRACTOR_CONFIG.PROP_FOLDER_ID) || '';\n  const folderResp = ui.prompt(\n    'Step 2 of 2: Archive Drive Folder ID (Optional)',\n    'Paste a Drive Folder ID, or leave blank to auto-create \"' +\n      GMAIL_EXTRACTOR_CONFIG.DEFAULT_FOLDER_NAME +\n      '\":' +\n      (currentFolderId ? '\\nCurrent: ' + currentFolderId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  props.setProperty(GMAIL_EXTRACTOR_CONFIG.PROP_QUERY, queryText);\n  const folderId = folderResp.getResponseText().trim();\n  if (folderId) {\n    props.setProperty(GMAIL_EXTRACTOR_CONFIG.PROP_FOLDER_ID, folderId);\n  }\n  ui.alert('Gmail extractor settings saved.');\n}\n\n/**\n * Creates or verifies the Billing_Log sheet and header row.\n */\nfunction initializeBillingLogSheet() {\n  const sheet = ensureBillingLogSheet_();\n  SpreadsheetApp.getUi().alert('Sheet \"' + sheet.getName() + '\" is ready.');\n}\n\n/**\n * Installs an hourly time-driven trigger for extractGmailInvoices if not already present.\n */\nfunction installHourlyGmailTrigger() {\n  const triggers = ScriptApp.getProjectTriggers();\n  const alreadyExists = triggers.some(function (trigger) {\n    return trigger.getHandlerFunction() === 'extractGmailInvoices';\n  });\n\n  if (alreadyExists) {\n    SpreadsheetApp.getUi().alert('An hourly trigger for extractGmailInvoices is already installed.');\n    return;\n  }\n\n  ScriptApp.newTrigger('extractGmailInvoices').timeBased().everyHours(1).create();\n  SpreadsheetApp.getUi().alert('Hourly Gmail extraction trigger installed.');\n}\n\n/**\n * Menu entry point that displays a summary dialog on completion.\n */\nfunction scanGmailInvoicesInteractive() {\n  const summary = runGmailExtraction_();\n  SpreadsheetApp.getUi().alert(summary);\n}\n\n/**\n * Trigger entry point for automated hourly execution without UI alerts.\n */\nfunction extractGmailInvoices() {\n  const summary = runGmailExtraction_();\n  Logger.log(summary);\n}\n\n/**\n * Searches matching Gmail threads, archives PDF attachments to Drive,\n * and logs new rows while skipping previously processed Gmail Message IDs.\n *\n * @return {string}\n */\nfunction runGmailExtraction_() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(GMAIL_EXTRACTOR_CONFIG.LOCK_TIMEOUT_MS)) {\n    return 'Skipped: Another Gmail extraction job is currently running.';\n  }\n\n  try {\n    const props = PropertiesService.getScriptProperties();\n    const query = (props.getProperty(GMAIL_EXTRACTOR_CONFIG.PROP_QUERY) || GMAIL_EXTRACTOR_CONFIG.DEFAULT_QUERY).trim();\n    if (!query) {\n      throw new Error('NEEDS_CORRECTION: Gmail search query is empty.');\n    }\n\n    const sheet = ensureBillingLogSheet_();\n    const folder = resolveArchiveFolder_(props);\n    const existingMessageIds = collectExistingMessageIds_(sheet);\n\n    const threads = GmailApp.search(query, 0, GMAIL_EXTRACTOR_CONFIG.MAX_THREADS);\n    const rowsToAppend = [];\n    let skippedMessages = 0;\n\n    for (let t = 0; t < threads.length; t++) {\n      const messages = threads[t].getMessages();\n      for (let m = 0; m < messages.length; m++) {\n        const message = messages[m];\n        const messageId = String(message.getId() || '').trim();\n\n        // Idempotency guard: skip any Gmail message ID already logged.\n        if (!messageId || existingMessageIds.has(messageId)) {\n          skippedMessages++;\n          continue;\n        }\n\n        const attachments = message.getAttachments({ includeInlineImages: false, includeAttachments: true });\n        const pdfAttachments = attachments.filter(function (att) {\n          const name = String(att.getName() || '').toLowerCase();\n          return att.getContentType() === MimeType.PDF || name.endsWith('.pdf');\n        });\n\n        if (pdfAttachments.length === 0) {\n          continue;\n        }\n\n        const sender = String(message.getFrom() || '').trim();\n        const subject = String(message.getSubject() || '(No Subject)').trim();\n        const loggedAt = new Date().toISOString();\n\n        for (let a = 0; a < pdfAttachments.length; a++) {\n          const pdfAtt = pdfAttachments[a];\n          const cleanName = sanitizeAttachmentName_(pdfAtt.getName(), messageId);\n          const blob = pdfAtt.copyBlob().setName(cleanName);\n          const savedFile = folder.createFile(blob);\n\n          rowsToAppend.push([\n            loggedAt,\n            messageId,\n            sender,\n            subject,\n            cleanName,\n            savedFile.getUrl(),\n            'COMPLETED'\n          ]);\n        }\n\n        existingMessageIds.add(messageId);\n      }\n    }\n\n    if (rowsToAppend.length > 0) {\n      const startRow = sheet.getLastRow() + 1;\n      sheet.getRange(startRow, 1, rowsToAppend.length, GMAIL_EXTRACTOR_CONFIG.REQUIRED_HEADERS.length).setValues(rowsToAppend);\n    }\n\n    return (\n      'Gmail Invoice Scan Complete\\n\\nPDFs Archived: ' +\n      rowsToAppend.length +\n      '\\nMessages Skipped (Already Processed): ' +\n      skippedMessages\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Ensures the Billing_Log tab exists with the required header row.\n *\n * @return {GoogleAppsScript.Spreadsheet.Sheet}\n */\nfunction ensureBillingLogSheet_() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sheet = ss.getSheetByName(GMAIL_EXTRACTOR_CONFIG.TAB_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(GMAIL_EXTRACTOR_CONFIG.TAB_NAME);\n  }\n\n  const headerRange = sheet.getRange(1, 1, 1, GMAIL_EXTRACTOR_CONFIG.REQUIRED_HEADERS.length);\n  const existingHeaders = headerRange.getValues()[0];\n  const hasHeaders = existingHeaders.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n\n  if (!hasHeaders) {\n    headerRange.setValues([GMAIL_EXTRACTOR_CONFIG.REQUIRED_HEADERS]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n\n  return sheet;\n}\n\n/**\n * Collects all Message_ID values already logged in Billing_Log for idempotency.\n *\n * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet\n * @return {Set<string>}\n */\nfunction collectExistingMessageIds_(sheet) {\n  const ids = new Set();\n  const lastRow = sheet.getLastRow();\n  if (lastRow < 2) {\n    return ids;\n  }\n\n  const headers = sheet\n    .getRange(1, 1, 1, sheet.getLastColumn())\n    .getValues()[0]\n    .map(function (h) {\n      return String(h).trim();\n    });\n  const msgColIdx = headers.indexOf('Message_ID');\n  if (msgColIdx === -1) {\n    throw new Error('Missing required column header: Message_ID');\n  }\n\n  const values = sheet.getRange(2, msgColIdx + 1, lastRow - 1, 1).getValues();\n  for (let i = 0; i < values.length; i++) {\n    const id = String(values[i][0] || '').trim();\n    if (id) {\n      ids.add(id);\n    }\n  }\n  return ids;\n}\n\n/**\n * Resolves the target Drive folder from ScriptProperties or creates a dedicated archive folder.\n *\n * @param {GoogleAppsScript.Properties.Properties} props\n * @return {GoogleAppsScript.Drive.Folder}\n */\nfunction resolveArchiveFolder_(props) {\n  const folderId = (props.getProperty(GMAIL_EXTRACTOR_CONFIG.PROP_FOLDER_ID) || '').trim();\n  if (folderId) {\n    return DriveApp.getFolderById(folderId);\n  }\n  const newFolder = DriveApp.createFolder(GMAIL_EXTRACTOR_CONFIG.DEFAULT_FOLDER_NAME);\n  props.setProperty(GMAIL_EXTRACTOR_CONFIG.PROP_FOLDER_ID, newFolder.getId());\n  return newFolder;\n}\n\n/**\n * Builds a clean PDF filename prefixed with the Gmail message ID to avoid Drive collisions.\n *\n * @param {string} rawName\n * @param {string} messageId\n * @return {string}\n */\nfunction sanitizeAttachmentName_(rawName, messageId) {\n  const cleaned = String(rawName || 'invoice.pdf')\n    .replace(/[^a-zA-Z0-9._-]+/g, '_')\n    .replace(/^_+|_+$/g, '');\n  const withExt = cleaned.toLowerCase().endsWith('.pdf') ? cleaned : cleaned + '.pdf';\n  return messageId.slice(0, 8) + '_' + withExt;\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "8b6c76060fde1fa8b47256eafcad396d2cab05d64db6c82b4f8f009001040bb6",
+        "scopesCount": 4,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      }
+    },
+    {
+      "id": "hr-offer-letter-onboarding",
+      "title": "Candidate Offer Letter & Onboarding Folder Pack",
+      "shortDescription": "Merge candidate details into a Google Docs offer template, create a dedicated Drive onboarding folder, export PDF, and log links idempotently.",
+      "category": "HR & Team",
+      "tags": [
+        "HR Onboarding",
+        "Offer Letter",
+        "Drive Folders",
+        "PDF Merge"
+      ],
+      "trigger": "Sheet Menu / HR Batch Run",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "6 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Docs",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Create an Offers tab matching the 8-column schema and enter candidate offer rows.",
+        "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+        "Reload the Sheet, run SheetAutomate -> Create Starter Offer Template (or link your Doc ID), then run Generate Offer Packs."
+      ],
+      "sheetSchema": {
+        "tabName": "Offers",
+        "headers": [
+          "Candidate_ID",
+          "Candidate_Name",
+          "Role_Title",
+          "Start_Date",
+          "Base_Salary",
+          "Folder_Link",
+          "PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "CAND-2026-041",
+            "Elena Vance",
+            "Senior Product Engineer",
+            "2026-12-01",
+            "$145,000 / yr",
+            "",
+            "",
+            ""
+          ],
+          [
+            "CAND-2026-042",
+            "Marcus Chen",
+            "Operations Analyst",
+            "2026-12-08",
+            "$92,000 / yr",
+            "",
+            "",
+            ""
+          ],
+          [
+            "CAND-2026-043",
+            "Priya Nair",
+            "Customer Success Lead",
+            "2026-11-18",
+            "$108,000 / yr",
+            "https://drive.google.com/drive/folders/example-id",
+            "https://drive.google.com/file/d/example-id/view",
+            "COMPLETED"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "CAND-2026-041",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Candidate Name",
+            "defaultValue": "Elena Vance",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Role Title",
+            "defaultValue": "Senior Product Engineer"
+          },
+          {
+            "key": "field3",
+            "label": "Annual Base Salary",
+            "defaultValue": "$145,000 / yr",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Target Start Date",
+            "defaultValue": "2026-12-01"
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "Offer Letter PDF & Onboarding Folder",
+        "outputSubtitle": "Docs template merged & filed in candidate Drive folder",
+        "auditColumn": "Col F (Folder_Link), Col G (PDF_Link) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Candidate Offer Letter & Onboarding Folder Pack\n * License: MIT\n * Telemetry: Zero telemetry, zero external tracking, 100% local execution in your Google account.\n */\n\nvar HR_OFFER_CONFIG = {\n  SHEET_NAME: 'Offers',\n  PROP_TEMPLATE_ID: 'OFFER_TEMPLATE_DOC_ID',\n  PROP_ROOT_FOLDER_ID: 'ONBOARDING_ROOT_FOLDER_ID',\n  DEFAULT_ROOT_FOLDER_NAME: 'SheetAutomate HR Onboarding'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Generate Offer Packs', 'generateOfferPacks')\n    .addItem('Create Starter Offer Template Doc', 'createStarterOfferTemplate')\n    .addItem('Configure Template & Root Folder IDs', 'configureHrTemplateSettings')\n    .addItem('Initialize Offers Sheet', 'initializeOffersSheet')\n    .addToUi();\n}\n\n/**\n * Creates the Offers tab with standard headers if missing.\n */\nfunction initializeOffersSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getSheetByName(HR_OFFER_CONFIG.SHEET_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(HR_OFFER_CONFIG.SHEET_NAME);\n  }\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow([\n      'Candidate_ID',\n      'Candidate_Name',\n      'Role_Title',\n      'Start_Date',\n      'Base_Salary',\n      'Folder_Link',\n      'PDF_Link',\n      'Audit_Status'\n    ]);\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Sheet \"' + HR_OFFER_CONFIG.SHEET_NAME + '\" is ready.');\n}\n\n/**\n * Creates a clean starter Google Docs offer template and stores its ID in Script Properties.\n */\nfunction createStarterOfferTemplate() {\n  var doc = DocumentApp.create('SheetAutomate - Offer Letter Template');\n  var body = doc.getBody();\n  body.appendParagraph('OFFER OF EMPLOYMENT').setHeading(DocumentApp.ParagraphHeading.HEADING1);\n  body.appendParagraph('Date: {{GENERATED_DATE}}');\n  body.appendParagraph('Reference ID: {{CANDIDATE_ID}}');\n  body.appendParagraph('');\n  body.appendParagraph('Dear {{CANDIDATE_NAME}},');\n  body.appendParagraph('');\n  body.appendParagraph(\n    'We are pleased to offer you the position of {{ROLE_TITLE}}. Your anticipated start date is {{START_DATE}}, with an annual base compensation of {{BASE_SALARY}}.'\n  );\n  body.appendParagraph('');\n  body.appendParagraph(\n    'Please review this offer package and retain a copy for your onboarding records.'\n  );\n  body.appendParagraph('');\n  body.appendParagraph('Sincerely,');\n  body.appendParagraph('People Operations Team');\n  doc.saveAndClose();\n\n  var props = PropertiesService.getScriptProperties();\n  props.setProperty(HR_OFFER_CONFIG.PROP_TEMPLATE_ID, doc.getId());\n\n  SpreadsheetApp.getUi().alert(\n    'Starter template created and linked!\\nDoc ID: ' + doc.getId() + '\\nURL: ' + doc.getUrl()\n  );\n}\n\n/**\n * Lets the user manually configure an existing Google Docs template ID and optional Drive root folder ID.\n */\nfunction configureHrTemplateSettings() {\n  var ui = SpreadsheetApp.getUi();\n  var props = PropertiesService.getScriptProperties();\n\n  var currentTpl = props.getProperty(HR_OFFER_CONFIG.PROP_TEMPLATE_ID) || '';\n  var tplPrompt = ui.prompt(\n    'Offer Letter Google Doc Template ID',\n    'Paste the Google Doc ID containing {{CANDIDATE_NAME}}, {{ROLE_TITLE}}, etc. (current: ' + (currentTpl || 'none') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (tplPrompt.getSelectedButton() === ui.Button.OK) {\n    props.setProperty(HR_OFFER_CONFIG.PROP_TEMPLATE_ID, tplPrompt.getResponseText().trim());\n  }\n\n  var currentFolder = props.getProperty(HR_OFFER_CONFIG.PROP_ROOT_FOLDER_ID) || '';\n  var folderPrompt = ui.prompt(\n    'Optional Onboarding Root Drive Folder ID',\n    'Leave blank to auto-create \"' + HR_OFFER_CONFIG.DEFAULT_ROOT_FOLDER_NAME + '\" (current: ' + (currentFolder || 'auto') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderPrompt.getSelectedButton() === ui.Button.OK) {\n    props.setProperty(HR_OFFER_CONFIG.PROP_ROOT_FOLDER_ID, folderPrompt.getResponseText().trim());\n  }\n\n  ui.alert('HR offer template settings saved.');\n}\n\n/**\n * Generates candidate onboarding folders and offer letter PDFs for pending rows.\n */\nfunction generateOfferPacks() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another offer batch is running.');\n  }\n\n  try {\n    var props = PropertiesService.getScriptProperties();\n    var templateId = String(props.getProperty(HR_OFFER_CONFIG.PROP_TEMPLATE_ID) || '').trim();\n    if (!templateId) {\n      throw new Error('Missing OFFER_TEMPLATE_DOC_ID. Run \"Create Starter Offer Template Doc\" or configure template ID first.');\n    }\n\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = ss.getSheetByName(HR_OFFER_CONFIG.SHEET_NAME);\n    if (!sheet) {\n      throw new Error('Missing required tab: ' + HR_OFFER_CONFIG.SHEET_NAME);\n    }\n\n    var lastRow = sheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var rootFolder = resolveRootFolder_(props);\n    var templateFile = DriveApp.getFileById(templateId);\n    var tz = ss.getSpreadsheetTimeZone();\n    var todayFormatted = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd');\n    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var candidateId = String(row[0] || '').trim();\n      var candidateName = String(row[1] || '').trim();\n      var roleTitle = String(row[2] || '').trim();\n      var rawStartDate = row[3];\n      var baseSalary = String(row[4] || '').trim();\n      var existingPdfLink = String(row[6] || '').trim();\n      var auditStatus = String(row[7] || '').trim().toUpperCase();\n\n      if (!candidateId && !candidateName) {\n        continue;\n      }\n\n      if (auditStatus === 'COMPLETED' || existingPdfLink) {\n        continue;\n      }\n\n      var formattedStartDate = formatDateValue_(rawStartDate, tz);\n      if (!candidateId || !candidateName || !roleTitle || !formattedStartDate || !baseSalary) {\n        sheet.getRange(rowNumber, 8).setValue('NEEDS_CORRECTION');\n        continue;\n      }\n\n      var safeFolderName = sanitizeFileName_(candidateId + ' - ' + candidateName + ' Onboarding');\n      var candidateFolder = rootFolder.createFolder(safeFolderName);\n\n      var tempCopy = null;\n      var savedPdf = null;\n      try {\n        tempCopy = templateFile.makeCopy('TMP_' + candidateId + '_' + candidateName, candidateFolder);\n        var doc = DocumentApp.openById(tempCopy.getId());\n        var body = doc.getBody();\n\n        body.replaceText('\\\\{\\\\{CANDIDATE_ID\\\\}\\\\}', escapeReplacement_(candidateId));\n        body.replaceText('\\\\{\\\\{CANDIDATE_NAME\\\\}\\\\}', escapeReplacement_(candidateName));\n        body.replaceText('\\\\{\\\\{ROLE_TITLE\\\\}\\\\}', escapeReplacement_(roleTitle));\n        body.replaceText('\\\\{\\\\{START_DATE\\\\}\\\\}', escapeReplacement_(formattedStartDate));\n        body.replaceText('\\\\{\\\\{BASE_SALARY\\\\}\\\\}', escapeReplacement_(baseSalary));\n        body.replaceText('\\\\{\\\\{GENERATED_DATE\\\\}\\\\}', escapeReplacement_(todayFormatted));\n        doc.saveAndClose();\n\n        var pdfBlob = tempCopy.getAs(MimeType.PDF);\n        var pdfFileName = sanitizeFileName_('Offer_Letter_' + candidateId + '_' + candidateName) + '.pdf';\n        pdfBlob.setName(pdfFileName);\n        savedPdf = candidateFolder.createFile(pdfBlob);\n      } finally {\n        if (tempCopy) {\n          tempCopy.setTrashed(true);\n        }\n      }\n\n      sheet.getRange(rowNumber, 6).setValue(candidateFolder.getUrl());\n      sheet.getRange(rowNumber, 7).setValue(savedPdf.getUrl());\n      sheet.getRange(rowNumber, 8).setValue('COMPLETED');\n    }\n\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction resolveRootFolder_(props) {\n  var folderId = String(props.getProperty(HR_OFFER_CONFIG.PROP_ROOT_FOLDER_ID) || '').trim();\n  if (folderId) {\n    return DriveApp.getFolderById(folderId);\n  }\n  var existing = DriveApp.getFoldersByName(HR_OFFER_CONFIG.DEFAULT_ROOT_FOLDER_NAME);\n  if (existing.hasNext()) {\n    var folder = existing.next();\n    props.setProperty(HR_OFFER_CONFIG.PROP_ROOT_FOLDER_ID, folder.getId());\n    return folder;\n  }\n  var created = DriveApp.createFolder(HR_OFFER_CONFIG.DEFAULT_ROOT_FOLDER_NAME);\n  props.setProperty(HR_OFFER_CONFIG.PROP_ROOT_FOLDER_ID, created.getId());\n  return created;\n}\n\nfunction formatDateValue_(value, tz) {\n  if (value instanceof Date && !isNaN(value.getTime())) {\n    return Utilities.formatDate(value, tz, 'yyyy-MM-dd');\n  }\n  return String(value || '').trim();\n}\n\nfunction sanitizeFileName_(name) {\n  return String(name).replace(/[\\\\/:*?\"<>|]/g, '_').trim();\n}\n\nfunction escapeReplacement_(val) {\n  return String(val == null ? '' : val).replace(/\\$/g, '\\\\$');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "7d72cf74ac508ad6909187c6a1da3d651371196683f546d6115e6c26e8b86d91",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "inventory-low-stock-alert",
+      "title": "Low-Stock Threshold & Reorder Alert Dispatcher",
+      "shortDescription": "Monitor Stock_Qty against Reorder_Point, calculate suggested reorder quantities, and dispatch email digests plus optional webhook alerts.",
+      "category": "Alerts & Sync",
+      "tags": [
+        "Inventory",
+        "Low Stock",
+        "Reorder Alert",
+        "Webhook"
+      ],
+      "trigger": "Hourly / Daily Check & Sheet Menu",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "5 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Gmail",
+        "Chat/Webhook"
+      ],
+      "setupSteps": [
+        "Create an Inventory tab matching the 8-column schema and paste your SKU stock thresholds.",
+        "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save the project.",
+        "Configure ALERT_RECIPIENT_EMAIL (and optional ALERT_WEBHOOK_URL) via the SheetAutomate menu, then run Check Stock Levels."
+      ],
+      "sheetSchema": {
+        "tabName": "Inventory",
+        "headers": [
+          "SKU",
+          "Item_Name",
+          "Stock_Qty",
+          "Reorder_Point",
+          "Target_Stock",
+          "Suggested_Reorder",
+          "Alert_Status",
+          "Last_Alert_Date"
+        ],
+        "sampleRows": [
+          [
+            "SKU-1042",
+            "Thermal Shipping Labels (Roll 1000)",
+            "14",
+            "25",
+            "100",
+            "",
+            "",
+            ""
+          ],
+          [
+            "SKU-2088",
+            "Corrugated Mailer Box 12x9x4",
+            "32",
+            "40",
+            "150",
+            "",
+            "",
+            ""
+          ],
+          [
+            "SKU-3015",
+            "Heavy-Duty Packing Tape 48mm",
+            "120",
+            "30",
+            "150",
+            "0",
+            "OK",
+            ""
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "SKU-1042",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "SKU & Item Name",
+            "defaultValue": "SKU-1042 - Thermal Shipping Labels (Roll 1000)",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Current Stock / Reorder Point",
+            "defaultValue": "14 units (Reorder Point: 25)"
+          },
+          {
+            "key": "field3",
+            "label": "Suggested Reorder Qty",
+            "defaultValue": "86 units (Target: 100)",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Dispatch Channels",
+            "defaultValue": "Digest Email + Optional Script Property Webhook"
+          }
+        ],
+        "outputType": "alert-webhook",
+        "outputTitle": "LOW_STOCK Alert Dispatched",
+        "outputSubtitle": "Digest email & optional JSON webhook triggered",
+        "auditColumn": "Col F (Suggested_Reorder), Col G (Alert_Status) & Col H (Last_Alert_Date)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Low-Stock Threshold & Reorder Alert Dispatcher\n * License: MIT\n * Telemetry: Zero telemetry, zero hardcoded external URLs, 100% user-configured endpoints.\n *\n * @OnlyCurrentDoc\n */\n\nvar INVENTORY_CONFIG = {\n  SHEET_NAME: 'Inventory',\n  PROP_RECIPIENT: 'ALERT_RECIPIENT_EMAIL',\n  PROP_WEBHOOK_URL: 'ALERT_WEBHOOK_URL',\n  TRIGGER_HANDLER: 'checkInventoryLevels'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Check Stock Levels & Alert', 'checkInventoryLevels')\n    .addItem('Configure Alert Recipient & Webhook', 'configureAlertSettings')\n    .addItem('Install Daily Stock Check Trigger', 'installDailyStockTrigger')\n    .addItem('Initialize Inventory Sheet', 'initializeInventorySheet')\n    .addToUi();\n}\n\n/**\n * Creates the Inventory tab with standard headers if missing.\n */\nfunction initializeInventorySheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getSheetByName(INVENTORY_CONFIG.SHEET_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(INVENTORY_CONFIG.SHEET_NAME);\n  }\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow([\n      'SKU',\n      'Item_Name',\n      'Stock_Qty',\n      'Reorder_Point',\n      'Target_Stock',\n      'Suggested_Reorder',\n      'Alert_Status',\n      'Last_Alert_Date'\n    ]);\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Sheet \"' + INVENTORY_CONFIG.SHEET_NAME + '\" is ready.');\n}\n\n/**\n * Prompts the spreadsheet owner to store recipient email and optional webhook URL in Script Properties.\n */\nfunction configureAlertSettings() {\n  var ui = SpreadsheetApp.getUi();\n  var props = PropertiesService.getScriptProperties();\n\n  var currentEmail = props.getProperty(INVENTORY_CONFIG.PROP_RECIPIENT) || '';\n  var emailPrompt = ui.prompt(\n    'Alert Recipient Email',\n    'Enter recipient email for low-stock digests (current: ' + (currentEmail || 'none') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (emailPrompt.getSelectedButton() === ui.Button.OK) {\n    var nextEmail = emailPrompt.getResponseText().trim();\n    if (nextEmail && !isValidEmail_(nextEmail)) {\n      ui.alert('Invalid email format. Recipient setting was not updated.');\n      return;\n    }\n    props.setProperty(INVENTORY_CONFIG.PROP_RECIPIENT, nextEmail);\n  }\n\n  var currentWebhook = props.getProperty(INVENTORY_CONFIG.PROP_WEBHOOK_URL) || '';\n  var hookPrompt = ui.prompt(\n    'Optional Webhook URL (Slack / Chat / HTTPS)',\n    'Leave blank to disable webhook POSTs (current: ' + (currentWebhook ? 'configured' : 'disabled') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (hookPrompt.getSelectedButton() === ui.Button.OK) {\n    var nextWebhook = hookPrompt.getResponseText().trim();\n    if (nextWebhook && !isValidHttpsUrl_(nextWebhook)) {\n      ui.alert('Webhook URL must use HTTPS. Setting was not updated.');\n      return;\n    }\n    props.setProperty(INVENTORY_CONFIG.PROP_WEBHOOK_URL, nextWebhook);\n  }\n\n  ui.alert('Alert configuration saved to Script Properties.');\n}\n\n/**\n * Installs a daily morning stock check trigger without duplicates.\n */\nfunction installDailyStockTrigger() {\n  var triggers = ScriptApp.getProjectTriggers();\n  for (var i = 0; i < triggers.length; i++) {\n    if (triggers[i].getHandlerFunction() === INVENTORY_CONFIG.TRIGGER_HANDLER) {\n      ScriptApp.deleteTrigger(triggers[i]);\n    }\n  }\n  ScriptApp.newTrigger(INVENTORY_CONFIG.TRIGGER_HANDLER)\n    .timeBased()\n    .everyDays(1)\n    .atHour(8)\n    .create();\n  SpreadsheetApp.getUi().alert('Daily inventory check trigger installed (8:00 AM).');\n}\n\n/**\n * Scans inventory rows, computes reorder quantities, and dispatches alerts for newly flagged items.\n */\nfunction checkInventoryLevels() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another inventory check is running.');\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = ss.getSheetByName(INVENTORY_CONFIG.SHEET_NAME);\n    if (!sheet) {\n      throw new Error('Missing required tab: ' + INVENTORY_CONFIG.SHEET_NAME);\n    }\n\n    var lastRow = sheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var todayStr = Utilities.formatDate(new Date(), ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd');\n    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();\n    var lowStockItems = [];\n    var rowsToMarkNotified = [];\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var sku = String(row[0] || '').trim();\n      var itemName = String(row[1] || '').trim();\n      var stockQty = Number(row[2]);\n      var reorderPoint = Number(row[3]);\n      var targetStock = Number(row[4]);\n      var currentStatus = String(row[6] || '').trim().toUpperCase();\n      var lastAlertDate = formatCellDate_(row[7], ss.getSpreadsheetTimeZone());\n\n      if (!sku && !itemName) {\n        continue;\n      }\n\n      if (!sku || !itemName || isNaN(stockQty) || isNaN(reorderPoint) || stockQty < 0 || reorderPoint < 0) {\n        sheet.getRange(rowNumber, 7).setValue('NEEDS_CORRECTION');\n        continue;\n      }\n\n      var effectiveTarget = (!isNaN(targetStock) && targetStock > reorderPoint) ? targetStock : Math.max(reorderPoint * 2, 1);\n\n      if (stockQty <= reorderPoint) {\n        var suggestedReorder = Math.max(1, Math.ceil(effectiveTarget - stockQty));\n        sheet.getRange(rowNumber, 6).setValue(suggestedReorder);\n\n        if (currentStatus === 'LOW_STOCK' && lastAlertDate === todayStr) {\n          continue;\n        }\n\n        sheet.getRange(rowNumber, 7).setValue('LOW_STOCK');\n        lowStockItems.push({\n          rowNumber: rowNumber,\n          sku: sku,\n          itemName: itemName,\n          stockQty: stockQty,\n          reorderPoint: reorderPoint,\n          targetStock: effectiveTarget,\n          suggestedReorder: suggestedReorder\n        });\n        rowsToMarkNotified.push(rowNumber);\n      } else {\n        sheet.getRange(rowNumber, 6).setValue(0);\n        sheet.getRange(rowNumber, 7).setValue('OK');\n      }\n    }\n\n    if (lowStockItems.length === 0) {\n      SpreadsheetApp.flush();\n      return;\n    }\n\n    var props = PropertiesService.getScriptProperties();\n    var recipientEmail = String(props.getProperty(INVENTORY_CONFIG.PROP_RECIPIENT) || '').trim();\n    if (!recipientEmail) {\n      recipientEmail = String(Session.getActiveUser().getEmail() || '').trim();\n    }\n\n    var dispatched = false;\n\n    if (isValidEmail_(recipientEmail)) {\n      var subject = '[LOW_STOCK] ' + lowStockItems.length + ' item(s) require reorder (' + todayStr + ')';\n      MailApp.sendEmail({\n        to: recipientEmail,\n        subject: subject,\n        body: buildDigestText_(lowStockItems, todayStr),\n        htmlBody: buildDigestHtml_(lowStockItems, todayStr)\n      });\n      dispatched = true;\n    }\n\n    var webhookUrl = String(props.getProperty(INVENTORY_CONFIG.PROP_WEBHOOK_URL) || '').trim();\n    if (webhookUrl && isValidHttpsUrl_(webhookUrl)) {\n      var payload = {\n        event: 'LOW_STOCK_DIGEST',\n        date: todayStr,\n        spreadsheetName: ss.getName(),\n        itemCount: lowStockItems.length,\n        items: lowStockItems,\n        text: buildWebhookSummary_(lowStockItems, todayStr)\n      };\n\n      var response = UrlFetchApp.fetch(webhookUrl, {\n        method: 'post',\n        contentType: 'application/json',\n        payload: JSON.stringify(payload),\n        muteHttpExceptions: true\n      });\n      var code = response.getResponseCode();\n      if (code >= 200 && code < 300) {\n        dispatched = true;\n      } else {\n        Logger.log('Webhook returned HTTP ' + code);\n      }\n    }\n\n    if (dispatched) {\n      for (var j = 0; j < rowsToMarkNotified.length; j++) {\n        sheet.getRange(rowsToMarkNotified[j], 8).setValue(todayStr);\n      }\n    }\n\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction buildDigestHtml_(items, dateStr) {\n  var rowsHtml = '';\n  for (var i = 0; i < items.length; i++) {\n    var item = items[i];\n    rowsHtml += [\n      '<tr>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;font-family:monospace;\">' + escapeHtml_(item.sku) + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(item.itemName) + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#b91c1c;font-weight:bold;\">' + item.stockQty + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + item.reorderPoint + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#047857;font-weight:bold;\">' + item.suggestedReorder + '</td>',\n      '</tr>'\n    ].join('');\n  }\n\n  return [\n    '<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#0f172a;\">',\n    '<h2 style=\"margin:0 0 8px;font-size:18px;\">Low-Stock Reorder Digest (' + escapeHtml_(dateStr) + ')</h2>',\n    '<p style=\"margin:0 0 16px;color:#475569;\">The following ' + items.length + ' SKU(s) are at or below their reorder point:</p>',\n    '<table style=\"width:100%;border-collapse:collapse;border:1px solid #e2e8f0;font-size:13px;\">',\n    '<thead><tr style=\"background:#f8fafc;text-align:left;\">',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">SKU</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Item Name</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Stock</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Reorder Pt</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Suggested Reorder</th>',\n    '</tr></thead>',\n    '<tbody>' + rowsHtml + '</tbody>',\n    '</table>',\n    '</div>'\n  ].join('');\n}\n\nfunction buildDigestText_(items, dateStr) {\n  var lines = ['Low-Stock Reorder Digest (' + dateStr + ')', ''];\n  for (var i = 0; i < items.length; i++) {\n    var item = items[i];\n    lines.push(\n      item.sku + ' | ' + item.itemName +\n      ' | Stock: ' + item.stockQty +\n      ' (Reorder Pt: ' + item.reorderPoint + ')' +\n      ' | Suggested Reorder: ' + item.suggestedReorder\n    );\n  }\n  return lines.join('\\n');\n}\n\nfunction buildWebhookSummary_(items, dateStr) {\n  var lines = ['Low-Stock Alert (' + dateStr + '): ' + items.length + ' item(s) below threshold'];\n  for (var i = 0; i < items.length; i++) {\n    lines.push('- ' + items[i].sku + ' (' + items[i].itemName + '): ' + items[i].stockQty + ' left, reorder ' + items[i].suggestedReorder);\n  }\n  return lines.join('\\n');\n}\n\nfunction formatCellDate_(val, tz) {\n  if (val instanceof Date && !isNaN(val.getTime())) {\n    return Utilities.formatDate(val, tz, 'yyyy-MM-dd');\n  }\n  return String(val || '').trim();\n}\n\nfunction isValidEmail_(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction isValidHttpsUrl_(url) {\n  return /^https:\\/\\/[^\\s]+$/i.test(url);\n}\n\nfunction escapeHtml_(value) {\n  return String(value)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.send_mail",
+        "https://www.googleapis.com/auth/script.external_request",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "c32620ea4cc823ae436e2a88abaa1d971b5d360d66077b851214d938b74955b4",
+        "scopesCount": 4,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, Webhook URL guarded via PropertiesService."
+      }
+    },
+    {
+      "id": "multi-item-sales-quote",
+      "title": "Dynamic Multi-Row Sales Quote & Proposal PDF",
+      "shortDescription": "Group multiple line-item rows sharing a Quote_ID in Google Sheets into a formatted multi-row table inside a Google Docs quote template and export as PDF.",
+      "category": "Finance & Ops",
+      "tags": [
+        "Sales Quote",
+        "Line Items",
+        "Google Docs",
+        "PDF Export"
+      ],
+      "trigger": "Sheet Menu / Batch Run",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "6 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Docs",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Run SheetAutomate > Initialize Quote_Line_Items Sheet to scaffold the multi-row line-item table.",
+        "Add {{Quote_ID}}, {{Client_Name}}, {{Quote_Date}}, {{Grand_Total}}, and {{LINE_ITEMS_TABLE}} to your Google Docs quote template, then save Template & Folder IDs.",
+        "Set Status to Approved across all line items for a Quote_ID and run SheetAutomate > Generate Multi-Item Quote PDFs."
+      ],
+      "sheetSchema": {
+        "tabName": "Quote_Line_Items",
+        "headers": [
+          "Quote_ID",
+          "Client_Name",
+          "Item_Description",
+          "Quantity",
+          "Unit_Price_USD",
+          "Status",
+          "PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "QT-2026-301",
+            "Northstar Logistics",
+            "RFID Dock Scanner Hardware",
+            "4",
+            "650.00",
+            "Approved",
+            "",
+            ""
+          ],
+          [
+            "QT-2026-301",
+            "Northstar Logistics",
+            "Onsite Calibration & Training",
+            "2",
+            "900.00",
+            "Approved",
+            "",
+            ""
+          ],
+          [
+            "QT-2026-302",
+            "Vertex Manufacturing",
+            "Annual Telemetry License",
+            "10",
+            "240.00",
+            "Draft",
+            "",
+            ""
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "QT-2026-301",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Client Name",
+            "defaultValue": "Northstar Logistics",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Grouped Line Items",
+            "defaultValue": "4x RFID Dock Scanner ($650) + 2x Onsite Calibration ($900)",
+            "multiline": true
+          },
+          {
+            "key": "field3",
+            "label": "Grand Total (USD)",
+            "defaultValue": "$4,400.00"
+          },
+          {
+            "key": "field4",
+            "label": "Quote Status",
+            "defaultValue": "Approved"
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "QT-2026-301_Northstar_Logistics.pdf",
+        "outputSubtitle": "Grouped 2 line items into dynamic Docs table & logged PDF link",
+        "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * @OnlyCurrentDoc\n *\n * SheetAutomate Flow: Dynamic Multi-Row Sales Quote & Proposal PDF\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst QUOTE_CONFIG = {\n  TAB_NAME: 'Quote_Line_Items',\n  PROP_TEMPLATE_ID: 'SA_QUOTE_TEMPLATE_DOC_ID',\n  PROP_FOLDER_ID: 'SA_QUOTE_OUTPUT_FOLDER_ID',\n  LOCK_TIMEOUT_MS: 10000,\n  REQUIRED_HEADERS: [\n    'Quote_ID',\n    'Client_Name',\n    'Item_Description',\n    'Quantity',\n    'Unit_Price_USD',\n    'Status',\n    'PDF_Link',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Generate Multi-Item Quote PDFs', 'generateMultiItemQuotePdfs')\n    .addItem('Configure Quote Template & Folder', 'configureQuoteSettings')\n    .addItem('Initialize Quote_Line_Items Sheet', 'initializeQuoteSheet')\n    .addToUi();\n}\n\n/**\n * Prompts the user to save the Google Docs quote template ID and Drive folder ID.\n */\nfunction configureQuoteSettings() {\n  const ui = SpreadsheetApp.getUi();\n  const props = PropertiesService.getScriptProperties();\n\n  const currentDocId = props.getProperty(QUOTE_CONFIG.PROP_TEMPLATE_ID) || '';\n  const docResp = ui.prompt(\n    'Step 1 of 2: Quote Docs Template ID',\n    'Paste the Google Docs Quote Template ID:' + (currentDocId ? '\\nCurrent: ' + currentDocId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (docResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const docId = docResp.getResponseText().trim();\n  if (!docId) {\n    ui.alert('Template Doc ID cannot be empty.');\n    return;\n  }\n\n  const currentFolderId = props.getProperty(QUOTE_CONFIG.PROP_FOLDER_ID) || '';\n  const folderResp = ui.prompt(\n    'Step 2 of 2: Output Drive Folder ID',\n    'Paste the Drive Folder ID where quote PDFs should be saved:' +\n      (currentFolderId ? '\\nCurrent: ' + currentFolderId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const folderId = folderResp.getResponseText().trim();\n  if (!folderId) {\n    ui.alert('Output Folder ID cannot be empty.');\n    return;\n  }\n\n  props.setProperty(QUOTE_CONFIG.PROP_TEMPLATE_ID, docId);\n  props.setProperty(QUOTE_CONFIG.PROP_FOLDER_ID, folderId);\n  ui.alert('Sales quote configuration saved.');\n}\n\n/**\n * Creates or verifies the Quote_Line_Items sheet tab and header row.\n */\nfunction initializeQuoteSheet() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sheet = ss.getSheetByName(QUOTE_CONFIG.TAB_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(QUOTE_CONFIG.TAB_NAME);\n  }\n  const headerRange = sheet.getRange(1, 1, 1, QUOTE_CONFIG.REQUIRED_HEADERS.length);\n  const existingHeaders = headerRange.getValues()[0];\n  const hasHeaders = existingHeaders.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n  if (!hasHeaders) {\n    headerRange.setValues([QUOTE_CONFIG.REQUIRED_HEADERS]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Quote_Line_Items sheet is ready.');\n}\n\n/**\n * Groups line items by Quote_ID, builds a formatted table in a Google Docs template,\n * exports each quote as a PDF to Drive, and writes the link back to all matching rows.\n */\nfunction generateMultiItemQuotePdfs() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(QUOTE_CONFIG.LOCK_TIMEOUT_MS)) {\n    SpreadsheetApp.getUi().alert('Another quote generation batch is running. Please try again shortly.');\n    return;\n  }\n\n  try {\n    const props = PropertiesService.getScriptProperties();\n    const templateDocId = (props.getProperty(QUOTE_CONFIG.PROP_TEMPLATE_ID) || '').trim();\n    const folderId = (props.getProperty(QUOTE_CONFIG.PROP_FOLDER_ID) || '').trim();\n\n    if (!templateDocId || !folderId) {\n      SpreadsheetApp.getUi().alert('Please run SheetAutomate > Configure Quote Template & Folder first.');\n      return;\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sheet = ss.getSheetByName(QUOTE_CONFIG.TAB_NAME);\n    if (!sheet) {\n      SpreadsheetApp.getUi().alert('Sheet tab \"' + QUOTE_CONFIG.TAB_NAME + '\" was not found.');\n      return;\n    }\n\n    const data = sheet.getDataRange().getValues();\n    if (data.length < 2) {\n      SpreadsheetApp.getUi().alert('No quote line-item rows found.');\n      return;\n    }\n\n    const headers = data[0].map(function (h) {\n      return String(h).trim();\n    });\n    const colIndex = mapHeaderIndices_(headers, QUOTE_CONFIG.REQUIRED_HEADERS);\n\n    // Group rows by Quote_ID while preserving sheet order.\n    const groups = {};\n    const groupOrder = [];\n\n    for (let r = 1; r < data.length; r++) {\n      const row = data[r];\n      const rowNum = r + 1;\n      const quoteId = String(row[colIndex.Quote_ID] || '').trim();\n\n      if (!quoteId) {\n        sheet.getRange(rowNum, colIndex.Audit_Status + 1).setValue('NEEDS_CORRECTION: Missing Quote_ID');\n        continue;\n      }\n\n      if (!groups[quoteId]) {\n        groups[quoteId] = [];\n        groupOrder.push(quoteId);\n      }\n      groups[quoteId].push({ rowNum: rowNum, row: row });\n    }\n\n    const templateFile = DriveApp.getFileById(templateDocId);\n    const outputFolder = DriveApp.getFolderById(folderId);\n    const quoteDate = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');\n\n    let generatedQuotes = 0;\n    let skippedQuotes = 0;\n    let errorQuotes = 0;\n\n    for (let g = 0; g < groupOrder.length; g++) {\n      const quoteId = groupOrder[g];\n      const entries = groups[quoteId];\n\n      // Idempotency guard: skip quote if all its rows are already completed or linked.\n      const allCompleted = entries.every(function (entry) {\n        const link = String(entry.row[colIndex.PDF_Link] || '').trim();\n        const audit = String(entry.row[colIndex.Audit_Status] || '').trim();\n        return audit === 'COMPLETED' || link !== '';\n      });\n      if (allCompleted) {\n        skippedQuotes++;\n        continue;\n      }\n\n      // Only generate when every line item in the Quote_ID group is Approved.\n      const allApproved = entries.every(function (entry) {\n        return String(entry.row[colIndex.Status] || '').trim() === 'Approved';\n      });\n      if (!allApproved) {\n        continue;\n      }\n\n      let clientName = '';\n      let grandTotal = 0;\n      let hasValidationError = false;\n      const tableData = [['Item Description', 'Qty', 'Unit Price', 'Line Total']];\n\n      for (let i = 0; i < entries.length; i++) {\n        const entry = entries[i];\n        const r = entry.row;\n        const rowClient = String(r[colIndex.Client_Name] || '').trim();\n        const itemDesc = String(r[colIndex.Item_Description] || '').trim();\n        const qty = parseFloat(String(r[colIndex.Quantity]).replace(/[^0-9.-]/g, ''));\n        const unitPrice = parseFloat(String(r[colIndex.Unit_Price_USD]).replace(/[^0-9.-]/g, ''));\n\n        if (!rowClient || !itemDesc || isNaN(qty) || qty <= 0 || isNaN(unitPrice) || unitPrice < 0) {\n          sheet\n            .getRange(entry.rowNum, colIndex.Audit_Status + 1)\n            .setValue('NEEDS_CORRECTION: Invalid Client_Name, Item_Description, Quantity, or Unit_Price_USD');\n          hasValidationError = true;\n          continue;\n        }\n\n        if (!clientName) {\n          clientName = rowClient;\n        }\n        const lineTotal = qty * unitPrice;\n        grandTotal += lineTotal;\n\n        tableData.push([\n          itemDesc,\n          String(qty),\n          '$' + unitPrice.toFixed(2),\n          '$' + lineTotal.toFixed(2)\n        ]);\n      }\n\n      if (hasValidationError || tableData.length < 2) {\n        errorQuotes++;\n        continue;\n      }\n\n      const safeName = sanitizeFilename_(quoteId + '_' + clientName);\n      const tempDocFile = templateFile.makeCopy(safeName + '_TMP', outputFolder);\n\n      try {\n        const doc = DocumentApp.openById(tempDocFile.getId());\n        const body = doc.getBody();\n        body.replaceText('\\\\{\\\\{Quote_ID\\\\}\\\\}', escapeReplacement_(quoteId));\n        body.replaceText('\\\\{\\\\{Client_Name\\\\}\\\\}', escapeReplacement_(clientName));\n        body.replaceText('\\\\{\\\\{Quote_Date\\\\}\\\\}', escapeReplacement_(quoteDate));\n        body.replaceText('\\\\{\\\\{Grand_Total\\\\}\\\\}', escapeReplacement_('$' + grandTotal.toFixed(2)));\n\n        insertFormattedLineItemsTable_(body, tableData);\n        doc.saveAndClose();\n\n        const pdfBlob = tempDocFile.getAs(MimeType.PDF);\n        pdfBlob.setName(safeName + '.pdf');\n        const pdfFile = outputFolder.createFile(pdfBlob);\n        const pdfUrl = pdfFile.getUrl();\n\n        for (let k = 0; k < entries.length; k++) {\n          sheet.getRange(entries[k].rowNum, colIndex.PDF_Link + 1).setValue(pdfUrl);\n          sheet.getRange(entries[k].rowNum, colIndex.Audit_Status + 1).setValue('COMPLETED');\n        }\n        generatedQuotes++;\n      } finally {\n        tempDocFile.setTrashed(true);\n      }\n    }\n\n    SpreadsheetApp.getUi().alert(\n      'Multi-Item Quote Run Complete\\n\\nQuotes Generated: ' +\n        generatedQuotes +\n        '\\nSkipped (Already Completed): ' +\n        skippedQuotes +\n        '\\nQuotes Needing Correction: ' +\n        errorQuotes\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Replaces {{LINE_ITEMS_TABLE}} with a styled multi-row table, or appends it to the document body.\n *\n * @param {GoogleAppsScript.Document.Body} body\n * @param {string[][]} tableData\n */\nfunction insertFormattedLineItemsTable_(body, tableData) {\n  const found = body.findText('\\\\{\\\\{LINE_ITEMS_TABLE\\\\}\\\\}');\n  let table;\n\n  if (found) {\n    const textElement = found.getElement();\n    const paragraph = textElement.getParent();\n    const insertIndex = body.getChildIndex(paragraph);\n    table = body.insertTable(insertIndex, tableData);\n    paragraph.removeFromParent();\n  } else {\n    table = body.appendTable(tableData);\n  }\n\n  table.setBorderColor('#CBD5E1');\n  table.setBorderWidth(1);\n\n  const headerRow = table.getRow(0);\n  for (let c = 0; c < headerRow.getNumCells(); c++) {\n    const cell = headerRow.getCell(c);\n    cell.setBackgroundColor('#0F172A');\n    const text = cell.editAsText();\n    text.setForegroundColor('#FFFFFF');\n    text.setBold(true);\n  }\n}\n\n/**\n * Maps required header names to zero-based column indices.\n *\n * @param {string[]} headers\n * @param {string[]} required\n * @return {Object.<string, number>}\n */\nfunction mapHeaderIndices_(headers, required) {\n  const map = {};\n  for (let i = 0; i < required.length; i++) {\n    const idx = headers.indexOf(required[i]);\n    if (idx === -1) {\n      throw new Error('Missing required column header: ' + required[i]);\n    }\n    map[required[i]] = idx;\n  }\n  return map;\n}\n\n/**\n * Escapes '$' in replacement strings for DocumentApp Body.replaceText().\n *\n * @param {*} val\n * @return {string}\n */\nfunction escapeReplacement_(val) {\n  return String(val == null ? '' : val).replace(/\\$/g, '\\\\$');\n}\n\n/**\n * Replaces unsafe filename characters with underscores.\n *\n * @param {string} name\n * @return {string}\n */\nfunction sanitizeFilename_(name) {\n  return name.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "632e2c29ab9e2aa37838813a57770283b95af2ad91619b92cf37696f867a2035",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "overdue-payment-reminder",
+      "title": "Automated Overdue Invoice Follow-Up Mailer",
+      "shortDescription": "Daily scan of unpaid invoices comparing Due_Date to today and dispatching polite 3, 7, and 14+ day payment reminders once per stage.",
+      "category": "Email & Gmail",
+      "tags": [
+        "Accounts Receivable",
+        "Payment Reminders",
+        "Staged Follow-Up",
+        "MailApp"
+      ],
+      "trigger": "Daily Schedule / Sheet Menu",
+      "difficulty": "Beginner",
+      "timeSavedPerWeek": "4 hrs/wk",
+      "featured": true,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Gmail"
+      ],
+      "setupSteps": [
+        "Create or open a Google Sheet with an Invoices tab matching the 8-column schema and paste the sample data.",
+        "Open Extensions -> Apps Script, replace Code.gs and appsscript.json, and save the project.",
+        "Reload the Sheet, open the SheetAutomate menu, and run Install Daily Trigger or Send Overdue Reminders."
+      ],
+      "sheetSchema": {
+        "tabName": "Invoices",
+        "headers": [
+          "Invoice_ID",
+          "Client_Name",
+          "Client_Email",
+          "Amount_Due",
+          "Due_Date",
+          "Payment_Status",
+          "Last_Reminder_Stage",
+          "Sent_Timestamp"
+        ],
+        "sampleRows": [
+          [
+            "INV-2026-201",
+            "Northstar Logistics Inc.",
+            "ap@northstar-example.com",
+            "4850.00",
+            "2026-11-07",
+            "UNPAID",
+            "",
+            ""
+          ],
+          [
+            "INV-2026-202",
+            "Harborview Retail Group",
+            "billing@harborview-example.com",
+            "1920.50",
+            "2026-10-29",
+            "UNPAID",
+            "STAGE_7",
+            "2026-11-05T09:00:00Z"
+          ],
+          [
+            "INV-2026-203",
+            "Crestline Manufacturing",
+            "finance@crestline-example.com",
+            "6400.00",
+            "2026-11-01",
+            "PAID",
+            "STAGE_3",
+            "2026-11-04T09:00:00Z"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "INV-2026-201",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Client Name",
+            "defaultValue": "Northstar Logistics Inc.",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Client Email",
+            "defaultValue": "ap@northstar-example.com"
+          },
+          {
+            "key": "field3",
+            "label": "Amount Due (USD)",
+            "defaultValue": "$4,850.00",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Reminder Stage & Due Date",
+            "defaultValue": "Stage 2 (7+ Days Overdue) - Due 2026-11-07"
+          }
+        ],
+        "outputType": "email-dispatch",
+        "outputTitle": "Payment Reminder Dispatched",
+        "outputSubtitle": "Staged follow-up sent once per tier via MailApp",
+        "auditColumn": "Col G (Last_Reminder_Stage) & Col H (Sent_Timestamp)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Automated Overdue Invoice Follow-Up Mailer\n * License: MIT\n * Telemetry: Zero telemetry, zero external tracking, 100% local execution in your Google account.\n *\n * @OnlyCurrentDoc\n */\n\nvar FLOW_CONFIG = {\n  SHEET_NAME: 'Invoices',\n  CURRENCY_SYMBOL: '$',\n  STAGE_THRESHOLDS: [\n    { minDays: 14, code: 'STAGE_14', label: 'Final Notice (14+ Days Overdue)' },\n    { minDays: 7, code: 'STAGE_7', label: 'Second Reminder (7+ Days Overdue)' },\n    { minDays: 3, code: 'STAGE_3', label: 'Gentle Reminder (3+ Days Overdue)' }\n  ],\n  TRIGGER_HANDLER: 'sendOverdueReminders'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Send Overdue Reminders Now', 'sendOverdueReminders')\n    .addItem('Install Daily 9 AM Trigger', 'installDailyReminderTrigger')\n    .addItem('Initialize Invoices Sheet', 'initializeInvoicesSheet')\n    .addToUi();\n}\n\n/**\n * Creates the Invoices tab with standard headers if it does not yet exist.\n */\nfunction initializeInvoicesSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getSheetByName(FLOW_CONFIG.SHEET_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(FLOW_CONFIG.SHEET_NAME);\n  }\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow([\n      'Invoice_ID',\n      'Client_Name',\n      'Client_Email',\n      'Amount_Due',\n      'Due_Date',\n      'Payment_Status',\n      'Last_Reminder_Stage',\n      'Sent_Timestamp'\n    ]);\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Sheet \"' + FLOW_CONFIG.SHEET_NAME + '\" is ready.');\n}\n\n/**\n * Installs a daily time-driven trigger at 09:00 without creating duplicates.\n */\nfunction installDailyReminderTrigger() {\n  var triggers = ScriptApp.getProjectTriggers();\n  for (var i = 0; i < triggers.length; i++) {\n    if (triggers[i].getHandlerFunction() === FLOW_CONFIG.TRIGGER_HANDLER) {\n      ScriptApp.deleteTrigger(triggers[i]);\n    }\n  }\n  ScriptApp.newTrigger(FLOW_CONFIG.TRIGGER_HANDLER)\n    .timeBased()\n    .everyDays(1)\n    .atHour(9)\n    .create();\n  SpreadsheetApp.getUi().alert('Daily overdue reminder trigger installed (9:00 AM).');\n}\n\n/**\n * Scans unpaid invoices and dispatches staged reminders once per overdue tier.\n */\nfunction sendOverdueReminders() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another reminder run is active.');\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = ss.getSheetByName(FLOW_CONFIG.SHEET_NAME);\n    if (!sheet) {\n      throw new Error('Missing required tab: ' + FLOW_CONFIG.SHEET_NAME);\n    }\n\n    var lastRow = sheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();\n    var todayMidnight = stripTime_(new Date());\n    var sentCount = 0;\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var invoiceId = String(row[0] || '').trim();\n      var clientName = String(row[1] || '').trim();\n      var clientEmail = String(row[2] || '').trim();\n      var rawAmount = row[3];\n      var rawDueDate = row[4];\n      var paymentStatus = String(row[5] || '').trim().toUpperCase();\n      var lastStage = String(row[6] || '').trim().toUpperCase();\n\n      if (!invoiceId && !clientName && !clientEmail) {\n        continue;\n      }\n\n      if (paymentStatus === 'PAID' || paymentStatus === 'VOID' || paymentStatus === 'CANCELLED') {\n        continue;\n      }\n\n      var parsedDueDate = parseDate_(rawDueDate);\n      var parsedAmount = Number(rawAmount);\n\n      if (!invoiceId || !clientName || !isValidEmail_(clientEmail) || !parsedDueDate || isNaN(parsedAmount) || parsedAmount <= 0) {\n        sheet.getRange(rowNumber, 7).setValue('NEEDS_CORRECTION');\n        sheet.getRange(rowNumber, 8).setValue('Invalid or missing required invoice fields');\n        continue;\n      }\n\n      var dueMidnight = stripTime_(parsedDueDate);\n      var daysOverdue = Math.floor((todayMidnight.getTime() - dueMidnight.getTime()) / 86400000);\n      if (daysOverdue < 3) {\n        continue;\n      }\n\n      var targetStage = resolveStage_(daysOverdue);\n      if (!targetStage) {\n        continue;\n      }\n\n      if (stageRank_(lastStage) >= stageRank_(targetStage.code)) {\n        continue;\n      }\n\n      var formattedAmount = formatCurrency_(parsedAmount);\n      var formattedDueDate = Utilities.formatDate(dueMidnight, ss.getSpreadsheetTimeZone(), 'yyyy-MM-dd');\n      var subject = '[' + targetStage.label + '] Invoice ' + invoiceId + ' - ' + formattedAmount;\n      var htmlBody = buildReminderHtml_({\n        invoiceId: invoiceId,\n        clientName: clientName,\n        amountFormatted: formattedAmount,\n        dueDateFormatted: formattedDueDate,\n        daysOverdue: daysOverdue,\n        stage: targetStage\n      });\n      var plainBody = buildReminderText_({\n        invoiceId: invoiceId,\n        clientName: clientName,\n        amountFormatted: formattedAmount,\n        dueDateFormatted: formattedDueDate,\n        daysOverdue: daysOverdue,\n        stage: targetStage\n      });\n\n      MailApp.sendEmail({\n        to: clientEmail,\n        subject: subject,\n        body: plainBody,\n        htmlBody: htmlBody\n      });\n\n      sheet.getRange(rowNumber, 7).setValue(targetStage.code);\n      sheet.getRange(rowNumber, 8).setValue(new Date().toISOString());\n      sentCount++;\n    }\n\n    SpreadsheetApp.flush();\n    Logger.log('Overdue reminders dispatched: ' + sentCount);\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Resolves the highest matching overdue stage for the given number of days.\n */\nfunction resolveStage_(daysOverdue) {\n  for (var i = 0; i < FLOW_CONFIG.STAGE_THRESHOLDS.length; i++) {\n    if (daysOverdue >= FLOW_CONFIG.STAGE_THRESHOLDS[i].minDays) {\n      return FLOW_CONFIG.STAGE_THRESHOLDS[i];\n    }\n  }\n  return null;\n}\n\n/**\n * Returns numeric progression rank for idempotency comparison.\n */\nfunction stageRank_(stageCode) {\n  if (stageCode === 'STAGE_3') return 1;\n  if (stageCode === 'STAGE_7') return 2;\n  if (stageCode === 'STAGE_14') return 3;\n  return 0;\n}\n\n/**\n * Builds an HTML-escaped reminder email body.\n */\nfunction buildReminderHtml_(data) {\n  var greeting = 'Hello ' + escapeHtml_(data.clientName) + ',';\n  var toneCopy = 'This is a courteous reminder regarding your outstanding invoice listed below.';\n  if (data.stage.code === 'STAGE_7') {\n    toneCopy = 'We are following up again on the open invoice below, which is now ' + data.daysOverdue + ' days past due.';\n  } else if (data.stage.code === 'STAGE_14') {\n    toneCopy = 'This invoice is now ' + data.daysOverdue + ' days past its due date. Please arrange payment or reply with remittance details.';\n  }\n\n  return [\n    '<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#0f172a;line-height:1.5;\">',\n    '<h2 style=\"margin:0 0 12px;color:#0f172a;font-size:18px;\">' + escapeHtml_(data.stage.label) + '</h2>',\n    '<p style=\"margin:0 0 12px;\">' + greeting + '</p>',\n    '<p style=\"margin:0 0 16px;\">' + escapeHtml_(toneCopy) + '</p>',\n    '<table style=\"width:100%;border-collapse:collapse;background:#f8fafc;border:1px solid #e2e8f0;\">',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Invoice ID</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.invoiceId) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Due Date</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.dueDateFormatted) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Days Overdue</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + data.daysOverdue + ' days</td></tr>',\n    '<tr><td style=\"padding:8px 12px;font-weight:bold;\">Amount Due</td><td style=\"padding:8px 12px;font-weight:bold;color:#047857;\">' + escapeHtml_(data.amountFormatted) + '</td></tr>',\n    '</table>',\n    '<p style=\"margin:16px 0 0;font-size:13px;color:#475569;\">If payment has already been sent, please disregard this notice or reply with your payment confirmation.</p>',\n    '</div>'\n  ].join('');\n}\n\n/**\n * Builds plain-text fallback email body.\n */\nfunction buildReminderText_(data) {\n  return [\n    data.stage.label,\n    '',\n    'Hello ' + data.clientName + ',',\n    '',\n    'Invoice ID: ' + data.invoiceId,\n    'Due Date: ' + data.dueDateFormatted,\n    'Days Overdue: ' + data.daysOverdue + ' days',\n    'Amount Due: ' + data.amountFormatted,\n    '',\n    'If payment has already been submitted, please reply with your remittance confirmation.'\n  ].join('\\n');\n}\n\nfunction stripTime_(dateObj) {\n  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());\n}\n\nfunction parseDate_(value) {\n  if (value instanceof Date && !isNaN(value.getTime())) {\n    return value;\n  }\n  if (typeof value === 'string' && value.trim()) {\n    var parsed = new Date(value.trim());\n    if (!isNaN(parsed.getTime())) {\n      return parsed;\n    }\n  }\n  return null;\n}\n\nfunction isValidEmail_(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction formatCurrency_(amount) {\n  return FLOW_CONFIG.CURRENCY_SYMBOL + amount.toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');\n}\n\nfunction escapeHtml_(value) {\n  return String(value)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.send_mail",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "8b8583154cee110806c3b230b7fb0eddca983f61c1076d988662e3a7b8a776b5",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      }
+    },
+    {
+      "id": "field-service-work-order",
+      "title": "Field Service & Inspection Work Order PDF",
+      "shortDescription": "Generate field technician service and inspection work order PDFs from scheduled Google Sheets rows, store them in Drive, and update status and PDF links.",
+      "category": "Document & PDF",
+      "tags": [
+        "Field Service",
+        "Work Order",
+        "PDF Export",
+        "Operations"
+      ],
+      "trigger": "Sheet Menu / Status Change",
+      "difficulty": "Beginner",
+      "timeSavedPerWeek": "5 hrs/wk",
+      "featured": false,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Docs",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Run SheetAutomate > Initialize Work_Orders Sheet to create the tab with standard columns.",
+        "Add placeholders {{Work_Order_ID}}, {{Site_Name}}, {{Technician_Name}}, {{Scheduled_Date}}, {{Scope_Of_Work}}, and {{Generated_At}} to your Google Docs work order template, then save Template & Folder IDs.",
+        "Set ready dispatch rows to Scheduled in the Status column and run SheetAutomate > Generate Scheduled Work Order PDFs."
+      ],
+      "sheetSchema": {
+        "tabName": "Work_Orders",
+        "headers": [
+          "Work_Order_ID",
+          "Site_Name",
+          "Technician_Name",
+          "Scheduled_Date",
+          "Scope_Of_Work",
+          "Status",
+          "PDF_Link",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "WO-2026-412",
+            "Pier 7 Cold Storage",
+            "Marcus Vance",
+            "2026-11-18",
+            "Inspect HVAC chiller compressor seals and calibrate glycol sensors",
+            "Scheduled",
+            "",
+            ""
+          ],
+          [
+            "WO-2026-411",
+            "Metro Transit Substation B",
+            "Priya Nair",
+            "2026-11-15",
+            "Replace backup UPS battery bank and run load transfer test",
+            "Dispatched",
+            "https://drive.google.com/file/d/example-wo-411/view",
+            "COMPLETED"
+          ],
+          [
+            "WO-2026-413",
+            "Harborview Clinic",
+            "Devon Brooks",
+            "2026-11-20",
+            "Annual fire suppression valve pressure inspection",
+            "Pending",
+            "",
+            ""
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "WO-2026-412",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Site Name",
+            "defaultValue": "Pier 7 Cold Storage",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Assigned Technician",
+            "defaultValue": "Marcus Vance"
+          },
+          {
+            "key": "field3",
+            "label": "Scheduled Date",
+            "defaultValue": "2026-11-18"
+          },
+          {
+            "key": "field4",
+            "label": "Scope of Work",
+            "defaultValue": "Inspect HVAC chiller compressor seals and calibrate glycol sensors",
+            "multiline": true
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "WO-2026-412_Pier_7_Cold_Storage.pdf",
+        "outputSubtitle": "Work order PDF saved to Drive; Status updated to Dispatched",
+        "auditColumn": "Col F (Status), Col G (PDF_Link) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * @OnlyCurrentDoc\n *\n * SheetAutomate Flow: Field Service & Inspection Work Order PDF\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst WORK_ORDER_CONFIG = {\n  TAB_NAME: 'Work_Orders',\n  PROP_TEMPLATE_ID: 'SA_WO_TEMPLATE_DOC_ID',\n  PROP_FOLDER_ID: 'SA_WO_OUTPUT_FOLDER_ID',\n  LOCK_TIMEOUT_MS: 10000,\n  REQUIRED_HEADERS: [\n    'Work_Order_ID',\n    'Site_Name',\n    'Technician_Name',\n    'Scheduled_Date',\n    'Scope_Of_Work',\n    'Status',\n    'PDF_Link',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Generate Scheduled Work Order PDFs', 'generateScheduledWorkOrderPdfs')\n    .addItem('Configure Template & Output Folder', 'configureWorkOrderSettings')\n    .addItem('Initialize Work_Orders Sheet', 'initializeWorkOrdersSheet')\n    .addToUi();\n}\n\n/**\n * Prompts the user for the Google Docs work order template ID and Drive folder ID.\n */\nfunction configureWorkOrderSettings() {\n  const ui = SpreadsheetApp.getUi();\n  const props = PropertiesService.getScriptProperties();\n\n  const currentDocId = props.getProperty(WORK_ORDER_CONFIG.PROP_TEMPLATE_ID) || '';\n  const docResp = ui.prompt(\n    'Step 1 of 2: Work Order Docs Template ID',\n    'Paste the Google Docs Template ID:' + (currentDocId ? '\\nCurrent: ' + currentDocId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (docResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const docId = docResp.getResponseText().trim();\n  if (!docId) {\n    ui.alert('Template Doc ID cannot be empty.');\n    return;\n  }\n\n  const currentFolderId = props.getProperty(WORK_ORDER_CONFIG.PROP_FOLDER_ID) || '';\n  const folderResp = ui.prompt(\n    'Step 2 of 2: Output Drive Folder ID',\n    'Paste the Drive Folder ID where work order PDFs should be stored:' +\n      (currentFolderId ? '\\nCurrent: ' + currentFolderId : ''),\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (folderResp.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  const folderId = folderResp.getResponseText().trim();\n  if (!folderId) {\n    ui.alert('Output Folder ID cannot be empty.');\n    return;\n  }\n\n  props.setProperty(WORK_ORDER_CONFIG.PROP_TEMPLATE_ID, docId);\n  props.setProperty(WORK_ORDER_CONFIG.PROP_FOLDER_ID, folderId);\n  ui.alert('Work Order configuration saved.');\n}\n\n/**\n * Creates or verifies the Work_Orders sheet tab and header row.\n */\nfunction initializeWorkOrdersSheet() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  let sheet = ss.getSheetByName(WORK_ORDER_CONFIG.TAB_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(WORK_ORDER_CONFIG.TAB_NAME);\n  }\n  const headerRange = sheet.getRange(1, 1, 1, WORK_ORDER_CONFIG.REQUIRED_HEADERS.length);\n  const existingHeaders = headerRange.getValues()[0];\n  const hasHeaders = existingHeaders.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n  if (!hasHeaders) {\n    headerRange.setValues([WORK_ORDER_CONFIG.REQUIRED_HEADERS]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Work_Orders sheet is ready.');\n}\n\n/**\n * Generates PDF work orders for all rows marked Scheduled that have not yet been completed.\n */\nfunction generateScheduledWorkOrderPdfs() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(WORK_ORDER_CONFIG.LOCK_TIMEOUT_MS)) {\n    SpreadsheetApp.getUi().alert('Another work order run is already in progress. Please try again shortly.');\n    return;\n  }\n\n  try {\n    const props = PropertiesService.getScriptProperties();\n    const templateDocId = (props.getProperty(WORK_ORDER_CONFIG.PROP_TEMPLATE_ID) || '').trim();\n    const folderId = (props.getProperty(WORK_ORDER_CONFIG.PROP_FOLDER_ID) || '').trim();\n\n    if (!templateDocId || !folderId) {\n      SpreadsheetApp.getUi().alert('Please run SheetAutomate > Configure Template & Output Folder first.');\n      return;\n    }\n\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const sheet = ss.getSheetByName(WORK_ORDER_CONFIG.TAB_NAME);\n    if (!sheet) {\n      SpreadsheetApp.getUi().alert('Sheet tab \"' + WORK_ORDER_CONFIG.TAB_NAME + '\" was not found.');\n      return;\n    }\n\n    const data = sheet.getDataRange().getValues();\n    if (data.length < 2) {\n      SpreadsheetApp.getUi().alert('No work order rows found to process.');\n      return;\n    }\n\n    const headers = data[0].map(function (h) {\n      return String(h).trim();\n    });\n    const colIndex = mapHeaderIndices_(headers, WORK_ORDER_CONFIG.REQUIRED_HEADERS);\n\n    const templateFile = DriveApp.getFileById(templateDocId);\n    const outputFolder = DriveApp.getFolderById(folderId);\n    const timeZone = Session.getScriptTimeZone();\n    const generatedAt = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd HH:mm');\n\n    let generatedCount = 0;\n    let skippedCount = 0;\n    let errorCount = 0;\n\n    for (let r = 1; r < data.length; r++) {\n      const row = data[r];\n      const rowNum = r + 1;\n\n      const workOrderId = String(row[colIndex.Work_Order_ID] || '').trim();\n      const siteName = String(row[colIndex.Site_Name] || '').trim();\n      const techName = String(row[colIndex.Technician_Name] || '').trim();\n      const scheduledDate = formatSheetDate_(row[colIndex.Scheduled_Date], timeZone);\n      const scopeOfWork = String(row[colIndex.Scope_Of_Work] || '').trim();\n      const status = String(row[colIndex.Status] || '').trim();\n      const existingPdfLink = String(row[colIndex.PDF_Link] || '').trim();\n      const auditStatus = String(row[colIndex.Audit_Status] || '').trim();\n\n      // Idempotency guard: skip rows already processed.\n      if (auditStatus === 'COMPLETED' || existingPdfLink !== '') {\n        skippedCount++;\n        continue;\n      }\n\n      if (status !== 'Scheduled') {\n        continue;\n      }\n\n      if (!workOrderId || !siteName || !techName || !scheduledDate || !scopeOfWork) {\n        sheet\n          .getRange(rowNum, colIndex.Audit_Status + 1)\n          .setValue('NEEDS_CORRECTION: Missing Work_Order_ID, Site_Name, Technician_Name, Scheduled_Date, or Scope_Of_Work');\n        errorCount++;\n        continue;\n      }\n\n      const safeName = sanitizeFilename_(workOrderId + '_' + siteName);\n      const tempDocFile = templateFile.makeCopy(safeName + '_TMP', outputFolder);\n\n      try {\n        const doc = DocumentApp.openById(tempDocFile.getId());\n        const body = doc.getBody();\n        body.replaceText('\\\\{\\\\{Work_Order_ID\\\\}\\\\}', escapeReplacement_(workOrderId));\n        body.replaceText('\\\\{\\\\{Site_Name\\\\}\\\\}', escapeReplacement_(siteName));\n        body.replaceText('\\\\{\\\\{Technician_Name\\\\}\\\\}', escapeReplacement_(techName));\n        body.replaceText('\\\\{\\\\{Scheduled_Date\\\\}\\\\}', escapeReplacement_(scheduledDate));\n        body.replaceText('\\\\{\\\\{Scope_Of_Work\\\\}\\\\}', escapeReplacement_(scopeOfWork));\n        body.replaceText('\\\\{\\\\{Generated_At\\\\}\\\\}', escapeReplacement_(generatedAt));\n        doc.saveAndClose();\n\n        const pdfBlob = tempDocFile.getAs(MimeType.PDF);\n        pdfBlob.setName(safeName + '.pdf');\n        const pdfFile = outputFolder.createFile(pdfBlob);\n\n        sheet.getRange(rowNum, colIndex.Status + 1).setValue('Dispatched');\n        sheet.getRange(rowNum, colIndex.PDF_Link + 1).setValue(pdfFile.getUrl());\n        sheet.getRange(rowNum, colIndex.Audit_Status + 1).setValue('COMPLETED');\n        generatedCount++;\n      } finally {\n        tempDocFile.setTrashed(true);\n      }\n    }\n\n    SpreadsheetApp.getUi().alert(\n      'Work Order PDF Run Complete\\n\\nGenerated: ' +\n        generatedCount +\n        '\\nSkipped (Already Completed): ' +\n        skippedCount +\n        '\\nNeeds Correction: ' +\n        errorCount\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Formats a Google Sheets cell value that may be a Date object or string.\n *\n * @param {Date|string} value\n * @param {string} timeZone\n * @return {string}\n */\nfunction formatSheetDate_(value, timeZone) {\n  if (value instanceof Date) {\n    return Utilities.formatDate(value, timeZone, 'yyyy-MM-dd');\n  }\n  return String(value || '').trim();\n}\n\n/**\n * Maps required header names to zero-based column indices.\n *\n * @param {string[]} headers\n * @param {string[]} required\n * @return {Object.<string, number>}\n */\nfunction mapHeaderIndices_(headers, required) {\n  const map = {};\n  for (let i = 0; i < required.length; i++) {\n    const idx = headers.indexOf(required[i]);\n    if (idx === -1) {\n      throw new Error('Missing required column header: ' + required[i]);\n    }\n    map[required[i]] = idx;\n  }\n  return map;\n}\n\n/**\n * Escapes '$' in replacement strings for DocumentApp Body.replaceText().\n *\n * @param {*} val\n * @return {string}\n */\nfunction escapeReplacement_(val) {\n  return String(val == null ? '' : val).replace(/\\$/g, '\\\\$');\n}\n\n/**\n * Replaces unsafe filename characters with underscores.\n *\n * @param {string} name\n * @return {string}\n */\nfunction sanitizeFilename_(name) {\n  return name.replace(/[^a-zA-Z0-9._-]+/g, '_').replace(/^_+|_+$/g, '');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/documents",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "79e8e78aa9331a6f67bae68638273d53f8c9ef2dc9f30ae63b6c4e9123c6359b",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "form-approval-workflow",
+      "title": "Google Form Expense & Leave Approval Pipeline",
+      "shortDescription": "Process Google Form expense and leave requests in Sheets, enforce required approver notes, email decisions via MailApp, and lock timestamps.",
+      "category": "Alerts & Sync",
+      "tags": [
+        "Approval Workflow",
+        "Google Forms",
+        "Expense & Leave",
+        "MailApp"
+      ],
+      "trigger": "On Form Submit / On Edit & Menu",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "5 hrs/wk",
+      "featured": false,
+      "copySheetUrl": "",
+      "services": [
+        "Forms",
+        "Sheets",
+        "Gmail"
+      ],
+      "setupSteps": [
+        "Link your Google Form to a Sheet tab named Requests (or initialize headers matching the 8-column schema).",
+        "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+        "Reload the Sheet, run SheetAutomate -> Install Form & Approval Triggers, then approve or reject requests via status or menu."
+      ],
+      "sheetSchema": {
+        "tabName": "Requests",
+        "headers": [
+          "Request_ID",
+          "Requester_Email",
+          "Request_Type",
+          "Amount_Or_Days",
+          "Approval_Status",
+          "Approver_Notes",
+          "Decision_Timestamp",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "REQ-2026-501",
+            "alex.rivera@example.com",
+            "Travel Expense",
+            "$420.00",
+            "Approved",
+            "Approved under Q4 client travel budget.",
+            "",
+            ""
+          ],
+          [
+            "REQ-2026-502",
+            "jordan.lee@example.com",
+            "Annual Leave",
+            "3 Days (Dec 14-16)",
+            "PENDING",
+            "",
+            "",
+            ""
+          ],
+          [
+            "REQ-2026-503",
+            "samira.patel@example.com",
+            "Software Subscription",
+            "$189.00",
+            "Rejected",
+            "Duplicate license; use team workspace seat.",
+            "2026-11-12T15:30:00Z",
+            "COMPLETED"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "REQ-2026-501",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Requester Email",
+            "defaultValue": "alex.rivera@example.com",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Request Type & Amount",
+            "defaultValue": "Travel Expense - $420.00"
+          },
+          {
+            "key": "field3",
+            "label": "Approval Decision",
+            "defaultValue": "Approved",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Required Approver Notes",
+            "defaultValue": "Approved under Q4 client travel budget.",
+            "multiline": true
+          }
+        ],
+        "outputType": "email-dispatch",
+        "outputTitle": "Approval Decision Dispatched",
+        "outputSubtitle": "Requester notified & decision timestamp locked",
+        "auditColumn": "Col G (Decision_Timestamp) & Col H (Audit_Status)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Google Form Expense & Leave Approval Pipeline\n * License: MIT\n * Telemetry: Zero telemetry, zero external tracking, 100% local execution in your Google account.\n *\n * @OnlyCurrentDoc\n */\n\nvar APPROVAL_CONFIG = {\n  SHEET_NAME: 'Requests'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Approve Selected Row', 'approveSelectedRow')\n    .addItem('Reject Selected Row', 'rejectSelectedRow')\n    .addItem('Process Pending Decisions', 'processApprovalDecisions')\n    .addItem('Install Form & Approval Triggers', 'installApprovalTriggers')\n    .addItem('Initialize Requests Sheet', 'initializeRequestsSheet')\n    .addToUi();\n}\n\n/**\n * Creates the Requests tab with standard headers if missing.\n */\nfunction initializeRequestsSheet() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getSheetByName(APPROVAL_CONFIG.SHEET_NAME);\n  if (!sheet) {\n    sheet = ss.insertSheet(APPROVAL_CONFIG.SHEET_NAME);\n  }\n  if (sheet.getLastRow() === 0) {\n    sheet.appendRow([\n      'Request_ID',\n      'Requester_Email',\n      'Request_Type',\n      'Amount_Or_Days',\n      'Approval_Status',\n      'Approver_Notes',\n      'Decision_Timestamp',\n      'Audit_Status'\n    ]);\n    sheet.setFrozenRows(1);\n  }\n  SpreadsheetApp.getUi().alert('Sheet \"' + APPROVAL_CONFIG.SHEET_NAME + '\" is ready.');\n}\n\n/**\n * Installs spreadsheet-bound Form Submit and installable Edit triggers without duplicates.\n */\nfunction installApprovalTriggers() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var triggers = ScriptApp.getProjectTriggers();\n  for (var i = 0; i < triggers.length; i++) {\n    var fn = triggers[i].getHandlerFunction();\n    if (fn === 'handleFormSubmit' || fn === 'handleApprovalEdit') {\n      ScriptApp.deleteTrigger(triggers[i]);\n    }\n  }\n\n  ScriptApp.newTrigger('handleFormSubmit')\n    .forSpreadsheet(ss)\n    .onFormSubmit()\n    .create();\n\n  ScriptApp.newTrigger('handleApprovalEdit')\n    .forSpreadsheet(ss)\n    .onEdit()\n    .create();\n\n  SpreadsheetApp.getUi().alert('Form Submit and Approval Edit triggers installed.');\n}\n\n/**\n * Normalizes newly submitted Form rows with a Request_ID and PENDING status.\n */\nfunction handleFormSubmit(e) {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    return;\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = (e && e.range) ? e.range.getSheet() : ss.getSheetByName(APPROVAL_CONFIG.SHEET_NAME);\n    if (!sheet || sheet.getName() !== APPROVAL_CONFIG.SHEET_NAME) {\n      return;\n    }\n\n    var row = (e && e.range) ? e.range.getRow() : sheet.getLastRow();\n    if (row < 2) {\n      return;\n    }\n\n    var currentId = String(sheet.getRange(row, 1).getValue() || '').trim();\n    if (!currentId) {\n      sheet.getRange(row, 1).setValue('REQ-' + new Date().getFullYear() + '-' + row);\n    }\n\n    var currentStatus = String(sheet.getRange(row, 5).getValue() || '').trim();\n    if (!currentStatus) {\n      sheet.getRange(row, 5).setValue('PENDING');\n    }\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Installable onEdit handler triggered when Approval_Status or Approver_Notes changes.\n */\nfunction handleApprovalEdit(e) {\n  if (!e || !e.range) {\n    return;\n  }\n  var sheet = e.range.getSheet();\n  if (sheet.getName() !== APPROVAL_CONFIG.SHEET_NAME) {\n    return;\n  }\n  var col = e.range.getColumn();\n  var row = e.range.getRow();\n  if (row < 2 || (col !== 5 && col !== 6)) {\n    return;\n  }\n  processApprovalDecisions();\n}\n\n/**\n * Menu helper to approve the active row with prompted required notes.\n */\nfunction approveSelectedRow() {\n  updateSelectedRowDecision_('Approved');\n}\n\n/**\n * Menu helper to reject the active row with prompted required notes.\n */\nfunction rejectSelectedRow() {\n  updateSelectedRowDecision_('Rejected');\n}\n\nfunction updateSelectedRowDecision_(decision) {\n  var ui = SpreadsheetApp.getUi();\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var sheet = ss.getActiveSheet();\n  if (sheet.getName() !== APPROVAL_CONFIG.SHEET_NAME) {\n    ui.alert('Please select a row inside the \"' + APPROVAL_CONFIG.SHEET_NAME + '\" tab.');\n    return;\n  }\n\n  var row = sheet.getActiveRange().getRow();\n  if (row < 2) {\n    ui.alert('Select a data row (row 2 or below).');\n    return;\n  }\n\n  var existingTimestamp = String(sheet.getRange(row, 7).getValue() || '').trim();\n  var existingAudit = String(sheet.getRange(row, 8).getValue() || '').trim().toUpperCase();\n  if (existingAudit === 'COMPLETED' || existingTimestamp) {\n    ui.alert('Row ' + row + ' is already locked (' + existingTimestamp + ').');\n    return;\n  }\n\n  var prompt = ui.prompt(\n    decision + ' Request (Row ' + row + ')',\n    'Enter required approver notes for the requester:',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (prompt.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  var notes = prompt.getResponseText().trim();\n  if (!notes) {\n    ui.alert('Approver notes are required before setting ' + decision + '.');\n    return;\n  }\n\n  sheet.getRange(row, 5).setValue(decision);\n  sheet.getRange(row, 6).setValue(notes);\n  processApprovalDecisions();\n}\n\n/**\n * Validates all Approved/Rejected rows, dispatches decision emails, and locks Decision_Timestamp.\n */\nfunction processApprovalDecisions() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another approval run is active.');\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = ss.getSheetByName(APPROVAL_CONFIG.SHEET_NAME);\n    if (!sheet) {\n      throw new Error('Missing required tab: ' + APPROVAL_CONFIG.SHEET_NAME);\n    }\n\n    var lastRow = sheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var requestId = String(row[0] || '').trim();\n      var requesterEmail = String(row[1] || '').trim();\n      var requestType = String(row[2] || '').trim();\n      var amountOrDays = String(row[3] || '').trim();\n      var decisionRaw = String(row[4] || '').trim();\n      var decisionNormalized = decisionRaw.toUpperCase();\n      var approverNotes = String(row[5] || '').trim();\n      var decisionTimestamp = String(row[6] || '').trim();\n      var auditStatus = String(row[7] || '').trim().toUpperCase();\n\n      if (!requestId && !requesterEmail) {\n        continue;\n      }\n\n      // Idempotency lock: never re-send or overwrite completed decisions.\n      if (auditStatus === 'COMPLETED' || decisionTimestamp) {\n        continue;\n      }\n\n      if (decisionNormalized !== 'APPROVED' && decisionNormalized !== 'REJECTED') {\n        continue;\n      }\n\n      if (!requestId || !isValidEmail_(requesterEmail) || !requestType || !amountOrDays || !approverNotes) {\n        sheet.getRange(rowNumber, 8).setValue('NEEDS_CORRECTION');\n        continue;\n      }\n\n      var canonicalDecision = decisionNormalized === 'APPROVED' ? 'Approved' : 'Rejected';\n      var timestamp = new Date().toISOString();\n      var subject = '[' + canonicalDecision + '] Request ' + requestId + ' - ' + requestType;\n\n      MailApp.sendEmail({\n        to: requesterEmail,\n        subject: subject,\n        body: buildDecisionText_({\n          requestId: requestId,\n          requestType: requestType,\n          amountOrDays: amountOrDays,\n          decision: canonicalDecision,\n          approverNotes: approverNotes,\n          timestamp: timestamp\n        }),\n        htmlBody: buildDecisionHtml_({\n          requestId: requestId,\n          requestType: requestType,\n          amountOrDays: amountOrDays,\n          decision: canonicalDecision,\n          approverNotes: approverNotes,\n          timestamp: timestamp\n        })\n      });\n\n      sheet.getRange(rowNumber, 5).setValue(canonicalDecision);\n      sheet.getRange(rowNumber, 7).setValue(timestamp);\n      sheet.getRange(rowNumber, 8).setValue('COMPLETED');\n    }\n\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction buildDecisionHtml_(data) {\n  var badgeColor = data.decision === 'Approved' ? '#047857' : '#b91c1c';\n  var badgeBg = data.decision === 'Approved' ? '#ecfdf5' : '#fef2f2';\n\n  return [\n    '<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#0f172a;line-height:1.5;\">',\n    '<h2 style=\"margin:0 0 12px;font-size:18px;\">Request Decision Notification</h2>',\n    '<div style=\"display:inline-block;padding:4px 10px;border-radius:6px;background:' + badgeBg + ';color:' + badgeColor + ';font-weight:bold;margin-bottom:14px;\">' + escapeHtml_(data.decision) + '</div>',\n    '<table style=\"width:100%;border-collapse:collapse;border:1px solid #e2e8f0;background:#f8fafc;\">',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Request ID</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.requestId) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Request Type</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.requestType) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Amount / Duration</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.amountOrDays) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;font-weight:bold;\">Approver Notes</td><td style=\"padding:8px 12px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(data.approverNotes) + '</td></tr>',\n    '<tr><td style=\"padding:8px 12px;font-weight:bold;\">Decision Timestamp</td><td style=\"padding:8px 12px;\">' + escapeHtml_(data.timestamp) + '</td></tr>',\n    '</table>',\n    '</div>'\n  ].join('');\n}\n\nfunction buildDecisionText_(data) {\n  return [\n    'Request Decision: ' + data.decision,\n    'Request ID: ' + data.requestId,\n    'Request Type: ' + data.requestType,\n    'Amount / Duration: ' + data.amountOrDays,\n    'Approver Notes: ' + data.approverNotes,\n    'Decision Timestamp: ' + data.timestamp\n  ].join('\\n');\n}\n\nfunction isValidEmail_(email) {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);\n}\n\nfunction escapeHtml_(value) {\n  return String(value)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.send_mail",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "d72264908e91ebf607e4e22e1d4c66de6587f460729f9c707b68f77232237a3e",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      }
+    },
+    {
+      "id": "monthly-ot-sheet-locker",
+      "title": "Monthly Attendance & OT Sheet Provisioner + Auto-Lock",
+      "shortDescription": "On the 1st of each month, clone _Template for the new month's OT tab with editable hour cells, lock the closing month's tab, and log to Audit_Log.",
+      "category": "HR & Team",
+      "tags": [
+        "Overtime",
+        "Sheet Protection",
+        "HR Ops",
+        "Monthly Schedule"
+      ],
+      "trigger": "Monthly Schedule",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "3 hrs/wk",
+      "featured": false,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets"
+      ],
+      "setupSteps": [
+        "Run SheetAutomate > Initialize _Template & Audit_Log Tabs to scaffold the template sheet and audit log.",
+        "Customize employee rows and formulas in _Template (columns D and E remain editable for staff hours).",
+        "Run SheetAutomate > Provision Next Month & Lock Previous or click Install Monthly Trigger for the 1st of each month."
+      ],
+      "sheetSchema": {
+        "tabName": "_Template",
+        "headers": [
+          "Employee_ID",
+          "Employee_Name",
+          "Department",
+          "Regular_Hours",
+          "OT_Hours",
+          "Manager_Approval",
+          "Audit_Status"
+        ],
+        "sampleRows": [
+          [
+            "EMP-101",
+            "Maya Chen",
+            "Field Engineering",
+            "160",
+            "12.5",
+            "Approved",
+            "READY"
+          ],
+          [
+            "EMP-102",
+            "Liam Patel",
+            "Warehouse Ops",
+            "160",
+            "8.0",
+            "Approved",
+            "READY"
+          ],
+          [
+            "EMP-103",
+            "Elena Rostova",
+            "Support Desk",
+            "152",
+            "4.5",
+            "Pending",
+            "READY"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "OT_2026_12",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Source Template Tab",
+            "defaultValue": "_Template",
+            "required": true,
+            "highlight": true
+          },
+          {
+            "key": "field2",
+            "label": "Next Month Tab",
+            "defaultValue": "OT_2026_12"
+          },
+          {
+            "key": "field3",
+            "label": "Editable Staff Range",
+            "defaultValue": "D2:E100 (Regular & OT Hours)"
+          },
+          {
+            "key": "field4",
+            "label": "Previous Tab to Lock",
+            "defaultValue": "OT_2026_11"
+          }
+        ],
+        "outputType": "sheet-ops",
+        "outputTitle": "Created OT_2026_12 & Locked OT_2026_11",
+        "outputSubtitle": "Preserved D2:E100 editable range and appended entry to Audit_Log",
+        "auditColumn": "Audit_Log Tab Col F (Audit_Status)"
+      },
+      "code": "/**\n * @OnlyCurrentDoc\n *\n * SheetAutomate Flow: Monthly Attendance & OT Sheet Provisioner + Auto-Lock\n * License: MIT\n * Privacy: Zero external telemetry or third-party endpoints. Runs strictly within your Google Workspace account.\n */\n\nconst OT_LOCKER_CONFIG = {\n  TEMPLATE_TAB: '_Template',\n  AUDIT_TAB: 'Audit_Log',\n  TAB_PREFIX: 'OT_',\n  EDITABLE_RANGE_A1: 'D2:E100',\n  LOCK_DESCRIPTION_PREFIX: 'SheetAutomate Monthly Lock',\n  LOCK_TIMEOUT_MS: 10000,\n  TEMPLATE_HEADERS: [\n    'Employee_ID',\n    'Employee_Name',\n    'Department',\n    'Regular_Hours',\n    'OT_Hours',\n    'Manager_Approval',\n    'Audit_Status'\n  ],\n  AUDIT_HEADERS: [\n    'Timestamp_UTC',\n    'Action',\n    'Target_Tab',\n    'Previous_Tab_Locked',\n    'Editable_Range_Preserved',\n    'Audit_Status'\n  ]\n};\n\n/**\n * Adds the custom SheetAutomate menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Provision Next Month & Lock Previous', 'provisionNextMonthInteractive')\n    .addItem('Initialize _Template & Audit_Log Tabs', 'initializeOtTabs')\n    .addItem('Install Monthly 1st-of-Month Trigger', 'installMonthlyOtTrigger')\n    .addToUi();\n}\n\n/**\n * Creates _Template and Audit_Log tabs if they do not exist.\n */\nfunction initializeOtTabs() {\n  const ss = SpreadsheetApp.getActiveSpreadsheet();\n  ensureTabWithHeaders_(ss, OT_LOCKER_CONFIG.TEMPLATE_TAB, OT_LOCKER_CONFIG.TEMPLATE_HEADERS);\n  ensureTabWithHeaders_(ss, OT_LOCKER_CONFIG.AUDIT_TAB, OT_LOCKER_CONFIG.AUDIT_HEADERS);\n  SpreadsheetApp.getUi().alert('Tabs \"_Template\" and \"Audit_Log\" are ready.');\n}\n\n/**\n * Installs a monthly time-driven trigger running on the 1st of each month at 01:00.\n */\nfunction installMonthlyOtTrigger() {\n  const triggers = ScriptApp.getProjectTriggers();\n  const exists = triggers.some(function (t) {\n    return t.getHandlerFunction() === 'provisionNextMonthAndLockPrevious';\n  });\n\n  if (exists) {\n    SpreadsheetApp.getUi().alert('A monthly trigger for provisionNextMonthAndLockPrevious is already installed.');\n    return;\n  }\n\n  ScriptApp.newTrigger('provisionNextMonthAndLockPrevious')\n    .timeBased()\n    .onMonthDay(1)\n    .atHour(1)\n    .create();\n\n  SpreadsheetApp.getUi().alert('Monthly 1st-of-Month trigger installed.');\n}\n\n/**\n * Interactive menu entry point.\n */\nfunction provisionNextMonthInteractive() {\n  const summary = runMonthlyProvisionAndLock_();\n  SpreadsheetApp.getUi().alert(summary);\n}\n\n/**\n * Scheduled trigger entry point (no UI calls).\n */\nfunction provisionNextMonthAndLockPrevious() {\n  const summary = runMonthlyProvisionAndLock_();\n  Logger.log(summary);\n}\n\n/**\n * Clones _Template into the active month's OT_YYYY_MM tab (month M when run on the 1st)\n * with D2:E100 left editable, locks the closing month's tab (M - 1), and logs to Audit_Log.\n *\n * @return {string}\n */\nfunction runMonthlyProvisionAndLock_() {\n  const lock = LockService.getScriptLock();\n  if (!lock.tryLock(OT_LOCKER_CONFIG.LOCK_TIMEOUT_MS)) {\n    return 'Skipped: Another monthly OT provisioning run is already in progress.';\n  }\n\n  try {\n    const ss = SpreadsheetApp.getActiveSpreadsheet();\n    const auditSheet = ensureTabWithHeaders_(ss, OT_LOCKER_CONFIG.AUDIT_TAB, OT_LOCKER_CONFIG.AUDIT_HEADERS);\n    const templateSheet = ss.getSheetByName(OT_LOCKER_CONFIG.TEMPLATE_TAB);\n\n    if (!templateSheet) {\n      auditSheet.appendRow([\n        new Date().toISOString(),\n        'PROVISION_MONTH',\n        '',\n        '',\n        OT_LOCKER_CONFIG.EDITABLE_RANGE_A1,\n        'NEEDS_CORRECTION: Missing _Template tab'\n      ]);\n      return 'Missing \"_Template\" tab. Run SheetAutomate > Initialize _Template & Audit_Log Tabs first.';\n    }\n\n    const now = new Date();\n    const targetMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);\n    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);\n\n    const nextTabName = formatMonthTabName_(targetMonthDate);\n    const prevTabName = formatMonthTabName_(prevMonthDate);\n\n    let provisionOutcome = 'CREATED';\n    let nextSheet = ss.getSheetByName(nextTabName);\n\n    // Idempotency guard: do not duplicate or overwrite if next month's tab already exists.\n    if (nextSheet) {\n      provisionOutcome = 'SKIPPED_ALREADY_EXISTS';\n    } else {\n      nextSheet = templateSheet.copyTo(ss);\n      nextSheet.setName(nextTabName);\n      nextSheet.showSheet();\n\n      // Clear previous sample/hours input in editable range while preserving employee rows & headers.\n      const lastRow = nextSheet.getLastRow();\n      if (lastRow >= 2) {\n        const editableRows = Math.max(1, lastRow - 1);\n        nextSheet.getRange(2, 4, editableRows, 2).clearContent();\n      }\n\n      // Protect the cloned sheet except the staff input range (D2:E100).\n      const sheetProtection = nextSheet\n        .protect()\n        .setDescription('SheetAutomate Template Guard - ' + nextTabName);\n      sheetProtection.setUnprotectedRanges([nextSheet.getRange(OT_LOCKER_CONFIG.EDITABLE_RANGE_A1)]);\n      restrictProtectionToOwner_(sheetProtection);\n    }\n\n    let prevLockStatus = 'NO_PREVIOUS_TAB';\n    const prevSheet = ss.getSheetByName(prevTabName);\n    if (prevSheet) {\n      const existingProtections = prevSheet.getProtections(SpreadsheetApp.ProtectionType.SHEET);\n      const alreadyLocked = existingProtections.some(function (p) {\n        return String(p.getDescription() || '').indexOf(OT_LOCKER_CONFIG.LOCK_DESCRIPTION_PREFIX) === 0;\n      });\n\n      if (alreadyLocked) {\n        prevLockStatus = prevTabName + ' (ALREADY_LOCKED)';\n      } else {\n        const lockProtection = prevSheet\n          .protect()\n          .setDescription(OT_LOCKER_CONFIG.LOCK_DESCRIPTION_PREFIX + ' - ' + prevTabName);\n        lockProtection.setUnprotectedRanges([]);\n        restrictProtectionToOwner_(lockProtection);\n        prevLockStatus = prevTabName + ' (LOCKED)';\n      }\n    }\n\n    auditSheet.appendRow([\n      new Date().toISOString(),\n      'PROVISION_AND_LOCK (' + provisionOutcome + ')',\n      nextTabName,\n      prevLockStatus,\n      OT_LOCKER_CONFIG.EDITABLE_RANGE_A1,\n      'COMPLETED'\n    ]);\n\n    return (\n      'Monthly OT Provisioning Complete\\n\\nTarget Tab: ' +\n      nextTabName +\n      ' (' +\n      provisionOutcome +\n      ')\\nPrevious Tab: ' +\n      prevLockStatus\n    );\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * Ensures a tab exists with its expected header row.\n *\n * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} ss\n * @param {string} tabName\n * @param {string[]} headers\n * @return {GoogleAppsScript.Spreadsheet.Sheet}\n */\nfunction ensureTabWithHeaders_(ss, tabName, headers) {\n  let sheet = ss.getSheetByName(tabName);\n  if (!sheet) {\n    sheet = ss.insertSheet(tabName);\n  }\n  const headerRange = sheet.getRange(1, 1, 1, headers.length);\n  const existing = headerRange.getValues()[0];\n  const hasHeaders = existing.some(function (cell) {\n    return String(cell).trim() !== '';\n  });\n  if (!hasHeaders) {\n    headerRange.setValues([headers]);\n    headerRange.setFontWeight('bold');\n    sheet.setFrozenRows(1);\n  }\n  return sheet;\n}\n\n/**\n * Formats a Date into OT_YYYY_MM.\n *\n * @param {Date} dateObj\n * @return {string}\n */\nfunction formatMonthTabName_(dateObj) {\n  const year = dateObj.getFullYear();\n  const month = String(dateObj.getMonth() + 1).padStart(2, '0');\n  return OT_LOCKER_CONFIG.TAB_PREFIX + year + '_' + month;\n}\n\n/**\n * Removes non-owner editors from a Protection object when permitted by the domain.\n *\n * @param {GoogleAppsScript.Spreadsheet.Protection} protection\n */\nfunction restrictProtectionToOwner_(protection) {\n  protection.setWarningOnly(false);\n  try {\n    if (protection.canDomainEdit()) {\n      protection.setDomainEdit(false);\n    }\n    const me = Session.getEffectiveUser();\n    protection.addEditor(me);\n    const editors = protection.getEditors();\n    const toRemove = editors.filter(function (user) {\n      return user.getEmail() !== me.getEmail();\n    });\n    if (toRemove.length > 0) {\n      protection.removeEditors(toRemove);\n    }\n  } catch (err) {\n    Logger.log('Editor restriction notice: ' + err.message);\n  }\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "188b5f5e033ed229dc20f45ede50d6186ef84edc11845fedadeff7289d76fe08",
+        "scopesCount": 2,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 2 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      }
+    },
+    {
+      "id": "packing-slip-dispatch",
+      "title": "Warehouse Packing Slip & Dispatch Manifest PDF",
+      "shortDescription": "Batch-generate packing slip PDFs and a consolidated dispatch manifest for ready-to-ship orders in Drive without duplicating shipped rows.",
+      "category": "Finance & Ops",
+      "tags": [
+        "Warehouse Ops",
+        "Packing Slip",
+        "Dispatch Manifest",
+        "PDF Batch"
+      ],
+      "trigger": "Sheet Menu / Dispatch Batch Run",
+      "difficulty": "Beginner",
+      "timeSavedPerWeek": "7 hrs/wk",
+      "featured": false,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Drive"
+      ],
+      "setupSteps": [
+        "Create a Dispatch_Orders tab matching the 8-column schema and enter orders marked READY_TO_SHIP.",
+        "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+        "Reload the Sheet and run SheetAutomate -> Generate Packing Slips & Manifest to save PDFs in Drive and mark SHIPPED."
+      ],
+      "sheetSchema": {
+        "tabName": "Dispatch_Orders",
+        "headers": [
+          "Order_ID",
+          "Recipient_Name",
+          "Shipping_Address",
+          "Items_Summary",
+          "Carrier_Tracking",
+          "Status",
+          "PDF_Link",
+          "Manifest_ID"
+        ],
+        "sampleRows": [
+          [
+            "ORD-2026-881",
+            "Cascade Hardware Co.",
+            "410 Industrial Way, Portland, OR 97209",
+            "4x Barcode Scanner Pro; 10x Thermal Roll",
+            "1Z999AA10123456784",
+            "READY_TO_SHIP",
+            "",
+            ""
+          ],
+          [
+            "ORD-2026-882",
+            "Summit Fulfillment West",
+            "1820 Harbor Blvd, Tacoma, WA 98421",
+            "2x Label Printer ZT230; 6x Ribbon Pack",
+            "1Z999AA10123456999",
+            "READY_TO_SHIP",
+            "",
+            ""
+          ],
+          [
+            "ORD-2026-880",
+            "Beacon Supply Hub",
+            "95 Commerce Dr, Boise, ID 83702",
+            "12x Corrugated Carton Bundle",
+            "1Z999AA10123456111",
+            "SHIPPED",
+            "https://drive.google.com/file/d/example-slip/view",
+            "MAN-20261113-1600"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "ORD-2026-881",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Recipient Name",
+            "defaultValue": "Cascade Hardware Co.",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Shipping Address",
+            "defaultValue": "410 Industrial Way, Portland, OR 97209"
+          },
+          {
+            "key": "field3",
+            "label": "Carrier Tracking",
+            "defaultValue": "1Z999AA10123456784",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Items Summary",
+            "defaultValue": "4x Barcode Scanner Pro; 10x Thermal Roll",
+            "multiline": true
+          }
+        ],
+        "outputType": "pdf-document",
+        "outputTitle": "Packing Slip & Manifest PDFs Ready",
+        "outputSubtitle": "Order PDFs archived in Drive; status locked to SHIPPED",
+        "auditColumn": "Col F (Status), Col G (PDF_Link) & Col H (Manifest_ID)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Warehouse Packing Slip & Dispatch Manifest PDF\n * License: MIT\n * Telemetry: Zero telemetry, zero external tracking, 100% local execution in your Google account.\n *\n * @OnlyCurrentDoc\n */\n\nvar DISPATCH_CONFIG = {\n  ORDERS_SHEET: 'Dispatch_Orders',\n  MANIFEST_LOG_SHEET: 'Dispatch_Manifests',\n  PROP_FOLDER_ID: 'DISPATCH_FOLDER_ID',\n  DEFAULT_FOLDER_NAME: 'SheetAutomate Packing Slips & Manifests'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Generate Packing Slips & Manifest', 'generatePackingSlipsAndManifest')\n    .addItem('Configure Drive Output Folder ID', 'configureDispatchFolder')\n    .addItem('Initialize Dispatch_Orders Sheet', 'initializeDispatchSheets')\n    .addToUi();\n}\n\n/**\n * Creates Dispatch_Orders and Dispatch_Manifests tabs with headers if missing.\n */\nfunction initializeDispatchSheets() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var ordersSheet = ss.getSheetByName(DISPATCH_CONFIG.ORDERS_SHEET);\n  if (!ordersSheet) {\n    ordersSheet = ss.insertSheet(DISPATCH_CONFIG.ORDERS_SHEET);\n  }\n  if (ordersSheet.getLastRow() === 0) {\n    ordersSheet.appendRow([\n      'Order_ID',\n      'Recipient_Name',\n      'Shipping_Address',\n      'Items_Summary',\n      'Carrier_Tracking',\n      'Status',\n      'PDF_Link',\n      'Manifest_ID'\n    ]);\n    ordersSheet.setFrozenRows(1);\n  }\n\n  ensureManifestLogSheet_(ss);\n  SpreadsheetApp.getUi().alert('Sheets \"' + DISPATCH_CONFIG.ORDERS_SHEET + '\" and \"' + DISPATCH_CONFIG.MANIFEST_LOG_SHEET + '\" are ready.');\n}\n\n/**\n * Allows the user to bind a specific Google Drive folder ID for dispatch PDFs.\n */\nfunction configureDispatchFolder() {\n  var ui = SpreadsheetApp.getUi();\n  var props = PropertiesService.getScriptProperties();\n  var current = props.getProperty(DISPATCH_CONFIG.PROP_FOLDER_ID) || '';\n  var prompt = ui.prompt(\n    'Dispatch Drive Folder ID',\n    'Paste a Drive Folder ID or leave blank to auto-create \"' + DISPATCH_CONFIG.DEFAULT_FOLDER_NAME + '\" (current: ' + (current || 'auto') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n  if (prompt.getSelectedButton() === ui.Button.OK) {\n    props.setProperty(DISPATCH_CONFIG.PROP_FOLDER_ID, prompt.getResponseText().trim());\n    ui.alert('Dispatch Drive folder setting saved.');\n  }\n}\n\n/**\n * Batch-generates Packing Slip PDFs and one consolidated Dispatch Manifest PDF for READY_TO_SHIP rows.\n */\nfunction generatePackingSlipsAndManifest() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another dispatch batch is running.');\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var sheet = ss.getSheetByName(DISPATCH_CONFIG.ORDERS_SHEET);\n    if (!sheet) {\n      throw new Error('Missing required tab: ' + DISPATCH_CONFIG.ORDERS_SHEET);\n    }\n\n    var lastRow = sheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var tz = ss.getSpreadsheetTimeZone();\n    var now = new Date();\n    var manifestId = 'MAN-' + Utilities.formatDate(now, tz, 'yyyyMMdd-HHmm');\n    var dispatchedAtIso = now.toISOString();\n    var outputFolder = resolveDispatchFolder_();\n    var values = sheet.getRange(2, 1, lastRow - 1, 8).getValues();\n    var processedBatch = [];\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var orderId = String(row[0] || '').trim();\n      var recipientName = String(row[1] || '').trim();\n      var shippingAddress = String(row[2] || '').trim();\n      var itemsSummary = String(row[3] || '').trim();\n      var trackingNumber = String(row[4] || '').trim();\n      var status = String(row[5] || '').trim().toUpperCase();\n      var existingPdfLink = String(row[6] || '').trim();\n\n      if (!orderId && !recipientName) {\n        continue;\n      }\n\n      // Idempotency guard: skip already-shipped orders or rows with an existing PDF.\n      if (status === 'SHIPPED' || status === 'COMPLETED' || existingPdfLink) {\n        continue;\n      }\n\n      if (status !== 'READY_TO_SHIP') {\n        continue;\n      }\n\n      if (!orderId || !recipientName || !shippingAddress || !itemsSummary || !trackingNumber) {\n        sheet.getRange(rowNumber, 6).setValue('NEEDS_CORRECTION');\n        continue;\n      }\n\n      var slipHtml = buildPackingSlipHtml_({\n        orderId: orderId,\n        recipientName: recipientName,\n        shippingAddress: shippingAddress,\n        itemsSummary: itemsSummary,\n        trackingNumber: trackingNumber,\n        manifestId: manifestId,\n        dispatchedAt: dispatchedAtIso\n      });\n\n      var slipPdfName = sanitizeFileName_('PackingSlip_' + orderId) + '.pdf';\n      var slipBlob = Utilities.newBlob(slipHtml, MimeType.HTML).getAs(MimeType.PDF).setName(slipPdfName);\n      var slipFile = outputFolder.createFile(slipBlob);\n\n      sheet.getRange(rowNumber, 6).setValue('SHIPPED');\n      sheet.getRange(rowNumber, 7).setValue(slipFile.getUrl());\n      sheet.getRange(rowNumber, 8).setValue(manifestId);\n\n      processedBatch.push({\n        orderId: orderId,\n        recipientName: recipientName,\n        shippingAddress: shippingAddress,\n        itemsSummary: itemsSummary,\n        trackingNumber: trackingNumber,\n        slipUrl: slipFile.getUrl()\n      });\n    }\n\n    if (processedBatch.length > 0) {\n      var manifestHtml = buildManifestHtml_(manifestId, dispatchedAtIso, processedBatch);\n      var manifestBlob = Utilities.newBlob(manifestHtml, MimeType.HTML)\n        .getAs(MimeType.PDF)\n        .setName(sanitizeFileName_('DispatchManifest_' + manifestId) + '.pdf');\n      var manifestFile = outputFolder.createFile(manifestBlob);\n\n      var logSheet = ensureManifestLogSheet_(ss);\n      logSheet.appendRow([\n        manifestId,\n        dispatchedAtIso,\n        processedBatch.length,\n        manifestFile.getUrl()\n      ]);\n    }\n\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction ensureManifestLogSheet_(ss) {\n  var logSheet = ss.getSheetByName(DISPATCH_CONFIG.MANIFEST_LOG_SHEET);\n  if (!logSheet) {\n    logSheet = ss.insertSheet(DISPATCH_CONFIG.MANIFEST_LOG_SHEET);\n  }\n  if (logSheet.getLastRow() === 0) {\n    logSheet.appendRow(['Manifest_ID', 'Dispatched_At', 'Order_Count', 'Manifest_PDF_Link']);\n    logSheet.setFrozenRows(1);\n  }\n  return logSheet;\n}\n\nfunction resolveDispatchFolder_() {\n  var props = PropertiesService.getScriptProperties();\n  var folderId = String(props.getProperty(DISPATCH_CONFIG.PROP_FOLDER_ID) || '').trim();\n  if (folderId) {\n    return DriveApp.getFolderById(folderId);\n  }\n  var existing = DriveApp.getFoldersByName(DISPATCH_CONFIG.DEFAULT_FOLDER_NAME);\n  if (existing.hasNext()) {\n    var folder = existing.next();\n    props.setProperty(DISPATCH_CONFIG.PROP_FOLDER_ID, folder.getId());\n    return folder;\n  }\n  var created = DriveApp.createFolder(DISPATCH_CONFIG.DEFAULT_FOLDER_NAME);\n  props.setProperty(DISPATCH_CONFIG.PROP_FOLDER_ID, created.getId());\n  return created;\n}\n\nfunction buildPackingSlipHtml_(order) {\n  return [\n    '<!DOCTYPE html><html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:32px;\">',\n    '<div style=\"border-bottom:2px solid #0f172a;padding-bottom:12px;margin-bottom:20px;\">',\n    '<h1 style=\"margin:0;font-size:22px;\">WAREHOUSE PACKING SLIP</h1>',\n    '<p style=\"margin:4px 0 0;color:#475569;font-size:12px;\">Order ID: ' + escapeHtml_(order.orderId) + ' | Manifest: ' + escapeHtml_(order.manifestId) + '</p>',\n    '</div>',\n    '<table style=\"width:100%;border-collapse:collapse;margin-bottom:20px;\">',\n    '<tr><td style=\"padding:6px 0;width:160px;font-weight:bold;\">Ship To</td><td style=\"padding:6px 0;\">' + escapeHtml_(order.recipientName) + '</td></tr>',\n    '<tr><td style=\"padding:6px 0;font-weight:bold;\">Destination</td><td style=\"padding:6px 0;\">' + escapeHtml_(order.shippingAddress) + '</td></tr>',\n    '<tr><td style=\"padding:6px 0;font-weight:bold;\">Carrier Tracking</td><td style=\"padding:6px 0;font-family:monospace;\">' + escapeHtml_(order.trackingNumber) + '</td></tr>',\n    '<tr><td style=\"padding:6px 0;font-weight:bold;\">Dispatched At</td><td style=\"padding:6px 0;\">' + escapeHtml_(order.dispatchedAt) + '</td></tr>',\n    '</table>',\n    '<div style=\"border:1px solid #cbd5e1;background:#f8fafc;padding:14px;border-radius:6px;\">',\n    '<div style=\"font-weight:bold;margin-bottom:6px;\">Packed Contents</div>',\n    '<div style=\"white-space:pre-wrap;\">' + escapeHtml_(order.itemsSummary) + '</div>',\n    '</div>',\n    '</body></html>'\n  ].join('');\n}\n\nfunction buildManifestHtml_(manifestId, dispatchedAt, orders) {\n  var rowsHtml = '';\n  for (var i = 0; i < orders.length; i++) {\n    var o = orders[i];\n    rowsHtml += [\n      '<tr>',\n      '<td style=\"padding:8px;border-bottom:1px solid #cbd5e1;font-family:monospace;\">' + escapeHtml_(o.orderId) + '</td>',\n      '<td style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">' + escapeHtml_(o.recipientName) + '</td>',\n      '<td style=\"padding:8px;border-bottom:1px solid #cbd5e1;font-family:monospace;\">' + escapeHtml_(o.trackingNumber) + '</td>',\n      '<td style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">' + escapeHtml_(o.itemsSummary) + '</td>',\n      '</tr>'\n    ].join('');\n  }\n\n  return [\n    '<!DOCTYPE html><html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#0f172a;margin:28px;\">',\n    '<h1 style=\"margin:0 0 6px;font-size:20px;\">CARRIER DISPATCH MANIFEST</h1>',\n    '<p style=\"margin:0 0 16px;color:#475569;font-size:12px;\">Manifest ID: ' + escapeHtml_(manifestId) + ' | Generated: ' + escapeHtml_(dispatchedAt) + ' | Total Orders: ' + orders.length + '</p>',\n    '<table style=\"width:100%;border-collapse:collapse;border:1px solid #cbd5e1;font-size:12px;\">',\n    '<thead><tr style=\"background:#f1f5f9;text-align:left;\">',\n    '<th style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">Order ID</th>',\n    '<th style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">Recipient</th>',\n    '<th style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">Tracking</th>',\n    '<th style=\"padding:8px;border-bottom:1px solid #cbd5e1;\">Items</th>',\n    '</tr></thead>',\n    '<tbody>' + rowsHtml + '</tbody>',\n    '</table>',\n    '</body></html>'\n  ].join('');\n}\n\nfunction sanitizeFileName_(name) {\n  return String(name).replace(/[\\\\/:*?\"<>|]/g, '_').trim();\n}\n\nfunction escapeHtml_(value) {\n  return String(value)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/drive.file"
+      ],
+      "audit": {
+        "sha256": "355df7f023887c80cd5079c8d6a4420f23f15d62b790ed19afabe6a31ad069e3",
+        "scopesCount": 2,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 2 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      }
+    },
+    {
+      "id": "weekly-kpi-digest-mailer",
+      "title": "Automated Weekly Executive KPI Digest Mailer",
+      "shortDescription": "Aggregate weekly revenue, cost, margin, and task completion KPIs across Sheets tabs, email a responsive HTML digest, and log run hashes.",
+      "category": "Finance & Ops",
+      "tags": [
+        "Executive KPI",
+        "Weekly Digest",
+        "Finance & Ops",
+        "MailApp"
+      ],
+      "trigger": "Weekly Monday Schedule / Menu",
+      "difficulty": "Intermediate",
+      "timeSavedPerWeek": "4 hrs/wk",
+      "featured": false,
+      "copySheetUrl": "",
+      "services": [
+        "Sheets",
+        "Gmail"
+      ],
+      "setupSteps": [
+        "Create a Weekly_KPI_Data tab matching the 7-column schema (plus optional Tasks_Log tab) and add weekly department metrics.",
+        "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+        "Configure STAKEHOLDER_EMAILS via SheetAutomate -> Configure Stakeholder Recipients, then run Send Weekly KPI Digest."
+      ],
+      "sheetSchema": {
+        "tabName": "Weekly_KPI_Data",
+        "headers": [
+          "Week_Label",
+          "Department",
+          "Revenue",
+          "Cost",
+          "Tasks_Completed",
+          "Tasks_Planned",
+          "Row_Status"
+        ],
+        "sampleRows": [
+          [
+            "2026-W46",
+            "Enterprise Sales",
+            "84500.00",
+            "29100.00",
+            "18",
+            "20",
+            "READY"
+          ],
+          [
+            "2026-W46",
+            "Managed Services",
+            "42300.00",
+            "19800.00",
+            "24",
+            "25",
+            "READY"
+          ],
+          [
+            "2026-W46",
+            "Customer Success",
+            "18200.00",
+            "7400.00",
+            "14",
+            "15",
+            "READY"
+          ]
+        ]
+      },
+      "demo": {
+        "recordId": "2026-W46",
+        "fields": [
+          {
+            "key": "field1",
+            "label": "Reporting Week",
+            "defaultValue": "2026-W46",
+            "required": true
+          },
+          {
+            "key": "field2",
+            "label": "Aggregated Revenue & Cost",
+            "defaultValue": "$145,000.00 rev / $56,300.00 cost"
+          },
+          {
+            "key": "field3",
+            "label": "Gross Margin & Task Rate",
+            "defaultValue": "61.2% Margin ($88,700) | 93.3% Tasks (56/60)",
+            "highlight": true
+          },
+          {
+            "key": "field4",
+            "label": "Stakeholder Distribution",
+            "defaultValue": "Configured STAKEHOLDER_EMAILS Property"
+          }
+        ],
+        "outputType": "email-dispatch",
+        "outputTitle": "Weekly KPI Digest Dispatched",
+        "outputSubtitle": "Responsive HTML summary emailed; SHA-256 run hash logged",
+        "auditColumn": "Digest_Audit tab (Run_Hash & Sent_Timestamp)"
+      },
+      "code": "/**\n * SheetAutomate Flow: Automated Weekly Executive KPI Digest Mailer\n * License: MIT\n * Telemetry: Zero telemetry, zero hardcoded recipient lists, 100% local execution in your Google account.\n *\n * @OnlyCurrentDoc\n */\n\nvar KPI_CONFIG = {\n  KPI_SHEET: 'Weekly_KPI_Data',\n  TASKS_SHEET: 'Tasks_Log',\n  AUDIT_SHEET: 'Digest_Audit',\n  PROP_STAKEHOLDERS: 'STAKEHOLDER_EMAILS',\n  TRIGGER_HANDLER: 'sendWeeklyKpiDigest'\n};\n\n/**\n * Adds the SheetAutomate custom menu when the spreadsheet opens.\n */\nfunction onOpen() {\n  SpreadsheetApp.getUi()\n    .createMenu('SheetAutomate')\n    .addItem('Send Weekly KPI Digest Now', 'sendWeeklyKpiDigest')\n    .addItem('Configure Stakeholder Recipients', 'configureStakeholderEmails')\n    .addItem('Install Weekly Monday 8 AM Trigger', 'installWeeklyKpiTrigger')\n    .addItem('Initialize KPI & Audit Tabs', 'initializeKpiSheets')\n    .addToUi();\n}\n\n/**\n * Creates Weekly_KPI_Data and Digest_Audit tabs with standard headers if missing.\n */\nfunction initializeKpiSheets() {\n  var ss = SpreadsheetApp.getActiveSpreadsheet();\n  var kpiSheet = ss.getSheetByName(KPI_CONFIG.KPI_SHEET);\n  if (!kpiSheet) {\n    kpiSheet = ss.insertSheet(KPI_CONFIG.KPI_SHEET);\n  }\n  if (kpiSheet.getLastRow() === 0) {\n    kpiSheet.appendRow([\n      'Week_Label',\n      'Department',\n      'Revenue',\n      'Cost',\n      'Tasks_Completed',\n      'Tasks_Planned',\n      'Row_Status'\n    ]);\n    kpiSheet.setFrozenRows(1);\n  }\n\n  ensureAuditSheet_(ss);\n  SpreadsheetApp.getUi().alert('Sheets \"' + KPI_CONFIG.KPI_SHEET + '\" and \"' + KPI_CONFIG.AUDIT_SHEET + '\" are ready.');\n}\n\n/**\n * Stores comma-separated stakeholder email addresses in Script Properties.\n */\nfunction configureStakeholderEmails() {\n  var ui = SpreadsheetApp.getUi();\n  var props = PropertiesService.getScriptProperties();\n  var current = props.getProperty(KPI_CONFIG.PROP_STAKEHOLDERS) || '';\n  var prompt = ui.prompt(\n    'Stakeholder Recipient Emails',\n    'Enter comma-separated recipient emails (current: ' + (current || 'none') + '):',\n    ui.ButtonSet.OK_CANCEL\n  );\n\n  if (prompt.getSelectedButton() !== ui.Button.OK) {\n    return;\n  }\n\n  var raw = prompt.getResponseText().trim();\n  var validated = parseEmailList_(raw);\n  if (validated.invalid.length > 0) {\n    ui.alert('Invalid email(s): ' + validated.invalid.join(', ') + '. Settings were not saved.');\n    return;\n  }\n  if (validated.valid.length === 0) {\n    ui.alert('At least one valid recipient email is required.');\n    return;\n  }\n\n  props.setProperty(KPI_CONFIG.PROP_STAKEHOLDERS, validated.valid.join(','));\n  ui.alert('Saved ' + validated.valid.length + ' stakeholder recipient(s).');\n}\n\n/**\n * Installs a weekly Monday 8 AM trigger without duplicates.\n */\nfunction installWeeklyKpiTrigger() {\n  var triggers = ScriptApp.getProjectTriggers();\n  for (var i = 0; i < triggers.length; i++) {\n    if (triggers[i].getHandlerFunction() === KPI_CONFIG.TRIGGER_HANDLER) {\n      ScriptApp.deleteTrigger(triggers[i]);\n    }\n  }\n\n  ScriptApp.newTrigger(KPI_CONFIG.TRIGGER_HANDLER)\n    .timeBased()\n    .onWeekDay(ScriptApp.WeekDay.MONDAY)\n    .atHour(8)\n    .create();\n\n  SpreadsheetApp.getUi().alert('Weekly KPI digest trigger installed (Mondays at 8:00 AM).');\n}\n\n/**\n * Aggregates the active week's KPIs across tabs, verifies run-hash idempotency, and sends the HTML digest.\n */\nfunction sendWeeklyKpiDigest() {\n  var lock = LockService.getScriptLock();\n  if (!lock.tryLock(10000)) {\n    throw new Error('Could not acquire script lock. Another digest run is active.');\n  }\n\n  try {\n    var ss = SpreadsheetApp.getActiveSpreadsheet();\n    var kpiSheet = ss.getSheetByName(KPI_CONFIG.KPI_SHEET);\n    if (!kpiSheet) {\n      throw new Error('Missing required tab: ' + KPI_CONFIG.KPI_SHEET);\n    }\n\n    var lastRow = kpiSheet.getLastRow();\n    if (lastRow < 2) {\n      return;\n    }\n\n    var props = PropertiesService.getScriptProperties();\n    var rawRecipients = String(props.getProperty(KPI_CONFIG.PROP_STAKEHOLDERS) || '').trim();\n    if (!rawRecipients) {\n      rawRecipients = String(Session.getActiveUser().getEmail() || '').trim();\n    }\n    var parsedEmails = parseEmailList_(rawRecipients);\n    if (parsedEmails.valid.length === 0) {\n      throw new Error('No valid stakeholder emails configured. Run \"Configure Stakeholder Recipients\" first.');\n    }\n\n    var values = kpiSheet.getRange(2, 1, lastRow - 1, 7).getValues();\n    var targetWeek = resolveLatestWeekLabel_(values);\n    if (!targetWeek) {\n      return;\n    }\n\n    var totalRevenue = 0;\n    var totalCost = 0;\n    var tasksCompleted = 0;\n    var tasksPlanned = 0;\n    var deptRows = [];\n\n    for (var i = 0; i < values.length; i++) {\n      var rowNumber = i + 2;\n      var row = values[i];\n      var weekLabel = String(row[0] || '').trim();\n      var dept = String(row[1] || '').trim();\n      var revenue = Number(row[2]);\n      var cost = Number(row[3]);\n      var done = Number(row[4]);\n      var planned = Number(row[5]);\n\n      if (!weekLabel && !dept) {\n        continue;\n      }\n      if (weekLabel !== targetWeek) {\n        continue;\n      }\n\n      if (!dept || isNaN(revenue) || isNaN(cost) || isNaN(done) || isNaN(planned) || revenue < 0 || cost < 0 || done < 0 || planned < 0) {\n        kpiSheet.getRange(rowNumber, 7).setValue('NEEDS_CORRECTION');\n        continue;\n      }\n\n      var margin = revenue - cost;\n      var marginPct = revenue > 0 ? (margin / revenue) * 100 : 0;\n\n      totalRevenue += revenue;\n      totalCost += cost;\n      tasksCompleted += done;\n      tasksPlanned += planned;\n\n      deptRows.push({\n        department: dept,\n        revenue: revenue,\n        cost: cost,\n        margin: margin,\n        marginPct: marginPct,\n        done: done,\n        planned: planned\n      });\n    }\n\n    // Also incorporate optional Tasks_Log tab entries for the same Week_Label if present.\n    var tasksSheet = ss.getSheetByName(KPI_CONFIG.TASKS_SHEET);\n    if (tasksSheet && tasksSheet.getLastRow() >= 2) {\n      var taskValues = tasksSheet.getRange(2, 1, tasksSheet.getLastRow() - 1, 3).getValues();\n      for (var t = 0; t < taskValues.length; t++) {\n        var tWeek = String(taskValues[t][0] || '').trim();\n        var tStatus = String(taskValues[t][2] || '').trim().toUpperCase();\n        if (tWeek === targetWeek && tStatus) {\n          tasksPlanned += 1;\n          if (tStatus === 'DONE' || tStatus === 'COMPLETED') {\n            tasksCompleted += 1;\n          }\n        }\n      }\n    }\n\n    if (deptRows.length === 0) {\n      SpreadsheetApp.flush();\n      return;\n    }\n\n    var grossMargin = totalRevenue - totalCost;\n    var grossMarginPct = totalRevenue > 0 ? (grossMargin / totalRevenue) * 100 : 0;\n    var completionPct = tasksPlanned > 0 ? (tasksCompleted / tasksPlanned) * 100 : 0;\n\n    var summary = {\n      weekLabel: targetWeek,\n      spreadsheetName: ss.getName(),\n      totalRevenue: totalRevenue,\n      totalCost: totalCost,\n      grossMargin: grossMargin,\n      grossMarginPct: grossMarginPct,\n      tasksCompleted: tasksCompleted,\n      tasksPlanned: tasksPlanned,\n      completionPct: completionPct,\n      departments: deptRows\n    };\n\n    var runHash = computeSha256_(JSON.stringify({\n      weekLabel: summary.weekLabel,\n      totalRevenue: summary.totalRevenue,\n      totalCost: summary.totalCost,\n      tasksCompleted: summary.tasksCompleted,\n      tasksPlanned: summary.tasksPlanned,\n      recipients: parsedEmails.valid\n    }));\n\n    var auditSheet = ensureAuditSheet_(ss);\n    if (hasCompletedRunHash_(auditSheet, targetWeek, runHash)) {\n      Logger.log('Skipping duplicate KPI digest for ' + targetWeek + ' (' + runHash + ')');\n      return;\n    }\n\n    var subject = '[Weekly KPI Digest] ' + targetWeek + ' | Margin ' + grossMarginPct.toFixed(1) + '%';\n    MailApp.sendEmail({\n      to: parsedEmails.valid.join(','),\n      subject: subject,\n      body: buildKpiText_(summary),\n      htmlBody: buildKpiHtml_(summary)\n    });\n\n    var sentAt = new Date().toISOString();\n    auditSheet.appendRow([\n      targetWeek,\n      runHash,\n      parsedEmails.valid.join(', '),\n      totalRevenue.toFixed(2),\n      grossMarginPct.toFixed(1) + '%',\n      sentAt,\n      'COMPLETED'\n    ]);\n\n    SpreadsheetApp.flush();\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction resolveLatestWeekLabel_(values) {\n  var latest = '';\n  for (var i = 0; i < values.length; i++) {\n    var w = String(values[i][0] || '').trim();\n    if (w && w > latest) {\n      latest = w;\n    }\n  }\n  return latest;\n}\n\nfunction ensureAuditSheet_(ss) {\n  var auditSheet = ss.getSheetByName(KPI_CONFIG.AUDIT_SHEET);\n  if (!auditSheet) {\n    auditSheet = ss.insertSheet(KPI_CONFIG.AUDIT_SHEET);\n  }\n  if (auditSheet.getLastRow() === 0) {\n    auditSheet.appendRow([\n      'Week_Label',\n      'Run_Hash',\n      'Recipients',\n      'Revenue_Total',\n      'Margin_Pct',\n      'Sent_Timestamp',\n      'Audit_Status'\n    ]);\n    auditSheet.setFrozenRows(1);\n  }\n  return auditSheet;\n}\n\nfunction hasCompletedRunHash_(auditSheet, weekLabel, runHash) {\n  var lastRow = auditSheet.getLastRow();\n  if (lastRow < 2) {\n    return false;\n  }\n  var rows = auditSheet.getRange(2, 1, lastRow - 1, 7).getValues();\n  for (var i = 0; i < rows.length; i++) {\n    var w = String(rows[i][0] || '').trim();\n    var h = String(rows[i][1] || '').trim();\n    var status = String(rows[i][6] || '').trim().toUpperCase();\n    if (w === weekLabel && h === runHash && status === 'COMPLETED') {\n      return true;\n    }\n  }\n  return false;\n}\n\nfunction computeSha256_(input) {\n  var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, input, Utilities.Charset.UTF_8);\n  var hex = '';\n  for (var i = 0; i < bytes.length; i++) {\n    var b = (bytes[i] < 0) ? bytes[i] + 256 : bytes[i];\n    var s = b.toString(16);\n    hex += (s.length === 1 ? '0' + s : s);\n  }\n  return hex.substring(0, 16);\n}\n\nfunction parseEmailList_(raw) {\n  var parts = String(raw || '').split(',');\n  var valid = [];\n  var invalid = [];\n  var seen = {};\n  for (var i = 0; i < parts.length; i++) {\n    var email = parts[i].trim();\n    if (!email) continue;\n    if (/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) {\n      if (!seen[email.toLowerCase()]) {\n        seen[email.toLowerCase()] = true;\n        valid.push(email);\n      }\n    } else {\n      invalid.push(email);\n    }\n  }\n  return { valid: valid, invalid: invalid };\n}\n\nfunction buildKpiHtml_(s) {\n  var deptHtml = '';\n  for (var i = 0; i < s.departments.length; i++) {\n    var d = s.departments[i];\n    deptHtml += [\n      '<tr>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(d.department) + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(formatCurrency_(d.revenue)) + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + escapeHtml_(formatCurrency_(d.cost)) + '</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;color:#047857;font-weight:bold;\">' + d.marginPct.toFixed(1) + '%</td>',\n      '<td style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">' + d.done + ' / ' + d.planned + '</td>',\n      '</tr>'\n    ].join('');\n  }\n\n  return [\n    '<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#0f172a;line-height:1.5;\">',\n    '<h2 style=\"margin:0 0 6px;font-size:20px;\">Weekly Executive KPI Digest (' + escapeHtml_(s.weekLabel) + ')</h2>',\n    '<p style=\"margin:0 0 16px;color:#475569;font-size:13px;\">Source: ' + escapeHtml_(s.spreadsheetName) + '</p>',\n    '<table style=\"width:100%;border-collapse:collapse;margin-bottom:18px;background:#f8fafc;border:1px solid #e2e8f0;\">',\n    '<tr>',\n    '<td style=\"padding:12px;border-right:1px solid #e2e8f0;\"><div style=\"font-size:11px;color:#64748b;\">REVENUE</div><div style=\"font-size:16px;font-weight:bold;\">' + escapeHtml_(formatCurrency_(s.totalRevenue)) + '</div></td>',\n    '<td style=\"padding:12px;border-right:1px solid #e2e8f0;\"><div style=\"font-size:11px;color:#64748b;\">COST</div><div style=\"font-size:16px;font-weight:bold;\">' + escapeHtml_(formatCurrency_(s.totalCost)) + '</div></td>',\n    '<td style=\"padding:12px;border-right:1px solid #e2e8f0;\"><div style=\"font-size:11px;color:#64748b;\">GROSS MARGIN</div><div style=\"font-size:16px;font-weight:bold;color:#047857;\">' + s.grossMarginPct.toFixed(1) + '%</div></td>',\n    '<td style=\"padding:12px;\"><div style=\"font-size:11px;color:#64748b;\">TASKS DONE</div><div style=\"font-size:16px;font-weight:bold;\">' + s.completionPct.toFixed(1) + '% (' + s.tasksCompleted + '/' + s.tasksPlanned + ')</div></td>',\n    '</tr>',\n    '</table>',\n    '<table style=\"width:100%;border-collapse:collapse;border:1px solid #e2e8f0;font-size:13px;\">',\n    '<thead><tr style=\"background:#f1f5f9;text-align:left;\">',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Department</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Revenue</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Cost</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Margin</th>',\n    '<th style=\"padding:8px 10px;border-bottom:1px solid #e2e8f0;\">Tasks</th>',\n    '</tr></thead>',\n    '<tbody>' + deptHtml + '</tbody>',\n    '</table>',\n    '</div>'\n  ].join('');\n}\n\nfunction buildKpiText_(s) {\n  var lines = [\n    'Weekly Executive KPI Digest (' + s.weekLabel + ')',\n    'Revenue: ' + formatCurrency_(s.totalRevenue),\n    'Cost: ' + formatCurrency_(s.totalCost),\n    'Gross Margin: ' + formatCurrency_(s.grossMargin) + ' (' + s.grossMarginPct.toFixed(1) + '%)',\n    'Tasks Completed: ' + s.tasksCompleted + '/' + s.tasksPlanned + ' (' + s.completionPct.toFixed(1) + '%)',\n    '',\n    'Department Breakdown:'\n  ];\n  for (var i = 0; i < s.departments.length; i++) {\n    var d = s.departments[i];\n    lines.push('- ' + d.department + ': Rev ' + formatCurrency_(d.revenue) + ', Cost ' + formatCurrency_(d.cost) + ', Margin ' + d.marginPct.toFixed(1) + '%');\n  }\n  return lines.join('\\n');\n}\n\nfunction formatCurrency_(amount) {\n  return '$' + Number(amount).toFixed(2).replace(/\\B(?=(\\d{3})+(?!\\d))/g, ',');\n}\n\nfunction escapeHtml_(value) {\n  return String(value)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;')\n    .replace(/\"/g, '&quot;')\n    .replace(/'/g, '&#39;');\n}\n",
+      "oauthScopes": [
+        "https://www.googleapis.com/auth/spreadsheets.currentonly",
+        "https://www.googleapis.com/auth/script.send_mail",
+        "https://www.googleapis.com/auth/script.scriptapp"
+      ],
+      "audit": {
+        "sha256": "f9adf790577627907f7793ac9c33ee50817d01fab763637bfef3a26ff68ab559",
+        "scopesCount": 3,
+        "vtClean": false,
+        "aiStatus": "PASS",
+        "aiScore": 100,
+        "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      }
+    }
+  ]
+}

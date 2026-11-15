@@ -1,0 +1,95 @@
+{
+  "id": "field-service-work-order",
+  "title": "Field Service & Inspection Work Order PDF",
+  "shortDescription": "Generate field technician service and inspection work order PDFs from scheduled Google Sheets rows, store them in Drive, and update status and PDF links.",
+  "category": "Document & PDF",
+  "tags": ["Field Service", "Work Order", "PDF Export", "Operations"],
+  "trigger": "Sheet Menu / Status Change",
+  "difficulty": "Beginner",
+  "timeSavedPerWeek": "5 hrs/wk",
+  "featured": false,
+  "copySheetUrl": "",
+  "services": ["Sheets", "Docs", "Drive"],
+  "setupSteps": [
+    "Run SheetAutomate > Initialize Work_Orders Sheet to create the tab with standard columns.",
+    "Add placeholders {{Work_Order_ID}}, {{Site_Name}}, {{Technician_Name}}, {{Scheduled_Date}}, {{Scope_Of_Work}}, and {{Generated_At}} to your Google Docs work order template, then save Template & Folder IDs.",
+    "Set ready dispatch rows to Scheduled in the Status column and run SheetAutomate > Generate Scheduled Work Order PDFs."
+  ],
+  "sheetSchema": {
+    "tabName": "Work_Orders",
+    "headers": [
+      "Work_Order_ID",
+      "Site_Name",
+      "Technician_Name",
+      "Scheduled_Date",
+      "Scope_Of_Work",
+      "Status",
+      "PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "WO-2026-412",
+        "Pier 7 Cold Storage",
+        "Marcus Vance",
+        "2026-11-18",
+        "Inspect HVAC chiller compressor seals and calibrate glycol sensors",
+        "Scheduled",
+        "",
+        ""
+      ],
+      [
+        "WO-2026-411",
+        "Metro Transit Substation B",
+        "Priya Nair",
+        "2026-11-15",
+        "Replace backup UPS battery bank and run load transfer test",
+        "Dispatched",
+        "https://drive.google.com/file/d/example-wo-411/view",
+        "COMPLETED"
+      ],
+      [
+        "WO-2026-413",
+        "Harborview Clinic",
+        "Devon Brooks",
+        "2026-11-20",
+        "Annual fire suppression valve pressure inspection",
+        "Pending",
+        "",
+        ""
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "WO-2026-412",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Site Name",
+        "defaultValue": "Pier 7 Cold Storage",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Assigned Technician",
+        "defaultValue": "Marcus Vance"
+      },
+      {
+        "key": "field3",
+        "label": "Scheduled Date",
+        "defaultValue": "2026-11-18"
+      },
+      {
+        "key": "field4",
+        "label": "Scope of Work",
+        "defaultValue": "Inspect HVAC chiller compressor seals and calibrate glycol sensors",
+        "multiline": true
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "WO-2026-412_Pier_7_Cold_Storage.pdf",
+    "outputSubtitle": "Work order PDF saved to Drive; Status updated to Dispatched",
+    "auditColumn": "Col F (Status), Col G (PDF_Link) & Col H (Audit_Status)"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "SheetAutomate — Free Google Sheets Apps Script Flows",
+  "short_name": "SheetAutomate",
+  "version": "1.0.0",
+  "description": "Browse, copy, and deploy 100% free, VirusTotal & AI-audited Google Apps Script automations right inside Google Sheets.",
+  "permissions": [
+    "storage",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://sheetautomate.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SheetAutomate — Free Google Sheets Apps Script Flows",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://docs.google.com/spreadsheets/*"
+      ],
+      "js": [
+        "content-sheets.js"
+      ],
+      "css": [
+        "content-sheets.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "flows-bundle.json"
+      ],
+      "matches": [
+        "https://docs.google.com/spreadsheets/*"
+      ]
+    }
+  ]
+}

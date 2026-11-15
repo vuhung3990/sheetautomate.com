@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+node scripts/run-all-checks.mjs --fast

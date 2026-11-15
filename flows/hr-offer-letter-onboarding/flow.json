@@ -1,0 +1,103 @@
+{
+  "id": "hr-offer-letter-onboarding",
+  "title": "Candidate Offer Letter & Onboarding Folder Pack",
+  "shortDescription": "Merge candidate details into a Google Docs offer template, create a dedicated Drive onboarding folder, export PDF, and log links idempotently.",
+  "category": "HR & Team",
+  "tags": [
+    "HR Onboarding",
+    "Offer Letter",
+    "Drive Folders",
+    "PDF Merge"
+  ],
+  "trigger": "Sheet Menu / HR Batch Run",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "6 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": [
+    "Sheets",
+    "Docs",
+    "Drive"
+  ],
+  "setupSteps": [
+    "Create an Offers tab matching the 8-column schema and enter candidate offer rows.",
+    "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+    "Reload the Sheet, run SheetAutomate -> Create Starter Offer Template (or link your Doc ID), then run Generate Offer Packs."
+  ],
+  "sheetSchema": {
+    "tabName": "Offers",
+    "headers": [
+      "Candidate_ID",
+      "Candidate_Name",
+      "Role_Title",
+      "Start_Date",
+      "Base_Salary",
+      "Folder_Link",
+      "PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "CAND-2026-041",
+        "Elena Vance",
+        "Senior Product Engineer",
+        "2026-12-01",
+        "$145,000 / yr",
+        "",
+        "",
+        ""
+      ],
+      [
+        "CAND-2026-042",
+        "Marcus Chen",
+        "Operations Analyst",
+        "2026-12-08",
+        "$92,000 / yr",
+        "",
+        "",
+        ""
+      ],
+      [
+        "CAND-2026-043",
+        "Priya Nair",
+        "Customer Success Lead",
+        "2026-11-18",
+        "$108,000 / yr",
+        "https://drive.google.com/drive/folders/example-id",
+        "https://drive.google.com/file/d/example-id/view",
+        "COMPLETED"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "CAND-2026-041",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Candidate Name",
+        "defaultValue": "Elena Vance",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Role Title",
+        "defaultValue": "Senior Product Engineer"
+      },
+      {
+        "key": "field3",
+        "label": "Annual Base Salary",
+        "defaultValue": "$145,000 / yr",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Target Start Date",
+        "defaultValue": "2026-12-01"
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "Offer Letter PDF & Onboarding Folder",
+    "outputSubtitle": "Docs template merged & filed in candidate Drive folder",
+    "auditColumn": "Col F (Folder_Link), Col G (PDF_Link) & Col H (Audit_Status)"
+  }
+}

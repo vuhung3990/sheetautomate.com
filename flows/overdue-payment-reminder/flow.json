@@ -1,0 +1,102 @@
+{
+  "id": "overdue-payment-reminder",
+  "title": "Automated Overdue Invoice Follow-Up Mailer",
+  "shortDescription": "Daily scan of unpaid invoices comparing Due_Date to today and dispatching polite 3, 7, and 14+ day payment reminders once per stage.",
+  "category": "Email & Gmail",
+  "tags": [
+    "Accounts Receivable",
+    "Payment Reminders",
+    "Staged Follow-Up",
+    "MailApp"
+  ],
+  "trigger": "Daily Schedule / Sheet Menu",
+  "difficulty": "Beginner",
+  "timeSavedPerWeek": "4 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": [
+    "Sheets",
+    "Gmail"
+  ],
+  "setupSteps": [
+    "Create or open a Google Sheet with an Invoices tab matching the 8-column schema and paste the sample data.",
+    "Open Extensions -> Apps Script, replace Code.gs and appsscript.json, and save the project.",
+    "Reload the Sheet, open the SheetAutomate menu, and run Install Daily Trigger or Send Overdue Reminders."
+  ],
+  "sheetSchema": {
+    "tabName": "Invoices",
+    "headers": [
+      "Invoice_ID",
+      "Client_Name",
+      "Client_Email",
+      "Amount_Due",
+      "Due_Date",
+      "Payment_Status",
+      "Last_Reminder_Stage",
+      "Sent_Timestamp"
+    ],
+    "sampleRows": [
+      [
+        "INV-2026-201",
+        "Northstar Logistics Inc.",
+        "ap@northstar-example.com",
+        "4850.00",
+        "2026-11-07",
+        "UNPAID",
+        "",
+        ""
+      ],
+      [
+        "INV-2026-202",
+        "Harborview Retail Group",
+        "billing@harborview-example.com",
+        "1920.50",
+        "2026-10-29",
+        "UNPAID",
+        "STAGE_7",
+        "2026-11-05T09:00:00Z"
+      ],
+      [
+        "INV-2026-203",
+        "Crestline Manufacturing",
+        "finance@crestline-example.com",
+        "6400.00",
+        "2026-11-01",
+        "PAID",
+        "STAGE_3",
+        "2026-11-04T09:00:00Z"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "INV-2026-201",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Client Name",
+        "defaultValue": "Northstar Logistics Inc.",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Client Email",
+        "defaultValue": "ap@northstar-example.com"
+      },
+      {
+        "key": "field3",
+        "label": "Amount Due (USD)",
+        "defaultValue": "$4,850.00",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Reminder Stage & Due Date",
+        "defaultValue": "Stage 2 (7+ Days Overdue) - Due 2026-11-07"
+      }
+    ],
+    "outputType": "email-dispatch",
+    "outputTitle": "Payment Reminder Dispatched",
+    "outputSubtitle": "Staged follow-up sent once per tier via MailApp",
+    "auditColumn": "Col G (Last_Reminder_Stage) & Col H (Sent_Timestamp)"
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "id": "packing-slip-dispatch",
+  "title": "Warehouse Packing Slip & Dispatch Manifest PDF",
+  "shortDescription": "Batch-generate packing slip PDFs and a consolidated dispatch manifest for ready-to-ship orders in Drive without duplicating shipped rows.",
+  "category": "Finance & Ops",
+  "tags": [
+    "Warehouse Ops",
+    "Packing Slip",
+    "Dispatch Manifest",
+    "PDF Batch"
+  ],
+  "trigger": "Sheet Menu / Dispatch Batch Run",
+  "difficulty": "Beginner",
+  "timeSavedPerWeek": "7 hrs/wk",
+  "featured": false,
+  "copySheetUrl": "",
+  "services": [
+    "Sheets",
+    "Drive"
+  ],
+  "setupSteps": [
+    "Create a Dispatch_Orders tab matching the 8-column schema and enter orders marked READY_TO_SHIP.",
+    "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+    "Reload the Sheet and run SheetAutomate -> Generate Packing Slips & Manifest to save PDFs in Drive and mark SHIPPED."
+  ],
+  "sheetSchema": {
+    "tabName": "Dispatch_Orders",
+    "headers": [
+      "Order_ID",
+      "Recipient_Name",
+      "Shipping_Address",
+      "Items_Summary",
+      "Carrier_Tracking",
+      "Status",
+      "PDF_Link",
+      "Manifest_ID"
+    ],
+    "sampleRows": [
+      [
+        "ORD-2026-881",
+        "Cascade Hardware Co.",
+        "410 Industrial Way, Portland, OR 97209",
+        "4x Barcode Scanner Pro; 10x Thermal Roll",
+        "1Z999AA10123456784",
+        "READY_TO_SHIP",
+        "",
+        ""
+      ],
+      [
+        "ORD-2026-882",
+        "Summit Fulfillment West",
+        "1820 Harbor Blvd, Tacoma, WA 98421",
+        "2x Label Printer ZT230; 6x Ribbon Pack",
+        "1Z999AA10123456999",
+        "READY_TO_SHIP",
+        "",
+        ""
+      ],
+      [
+        "ORD-2026-880",
+        "Beacon Supply Hub",
+        "95 Commerce Dr, Boise, ID 83702",
+        "12x Corrugated Carton Bundle",
+        "1Z999AA10123456111",
+        "SHIPPED",
+        "https://drive.google.com/file/d/example-slip/view",
+        "MAN-20261113-1600"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "ORD-2026-881",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Recipient Name",
+        "defaultValue": "Cascade Hardware Co.",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Shipping Address",
+        "defaultValue": "410 Industrial Way, Portland, OR 97209"
+      },
+      {
+        "key": "field3",
+        "label": "Carrier Tracking",
+        "defaultValue": "1Z999AA10123456784",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Items Summary",
+        "defaultValue": "4x Barcode Scanner Pro; 10x Thermal Roll",
+        "multiline": true
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "Packing Slip & Manifest PDFs Ready",
+    "outputSubtitle": "Order PDFs archived in Drive; status locked to SHIPPED",
+    "auditColumn": "Col F (Status), Col G (PDF_Link) & Col H (Manifest_ID)"
+  }
+}

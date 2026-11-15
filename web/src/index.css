@@ -4,9 +4,27 @@
 
 @layer base {
   :root {
+    color-scheme: light dark;
     --color-primary: #10b981;
     --color-primary-hover: #059669;
     --color-accent: #0ea5e9;
+    --scrollbar-thumb: #64748b;
+    --scrollbar-track: #f1f5f9;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  :root:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+
+  :root:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
+  html.dark {
+    --scrollbar-thumb: #64748b;
+    --scrollbar-track: #0f172a;
   }
 
   html {
@@ -16,10 +34,17 @@
 
   body {
     @apply bg-slate-50 text-slate-900 font-sans antialiased transition-colors duration-200;
+    line-height: 1.5;
+    overflow-wrap: break-word;
     background-image: 
       radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
       radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
     background-attachment: fixed;
+  }
+
+  h1,
+  h2 {
+    text-wrap: balance;
   }
 
   html.dark body {
@@ -31,7 +56,7 @@
   }
 
   /* Accessible focus indicators meeting WCAG 2.2 AA non-text contrast (>=3:1) */
-  html.light :focus-visible {
+  :root:not(.dark) :focus-visible {
     outline: 2px solid #047857 !important;
     outline-offset: 2px !important;
   }
@@ -42,25 +67,38 @@
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Visually hidden utility for screen-reader-only text and skip links */
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-html.dark ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+
+/* Legacy fallback for browsers without standard scrollbar-color support */
+@supports not (scrollbar-color: auto) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 }
 
 /* Glassmorphism helpers placed inside components layer to allow Tailwind utility overrides */

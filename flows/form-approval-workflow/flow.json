@@ -1,0 +1,104 @@
+{
+  "id": "form-approval-workflow",
+  "title": "Google Form Expense & Leave Approval Pipeline",
+  "shortDescription": "Process Google Form expense and leave requests in Sheets, enforce required approver notes, email decisions via MailApp, and lock timestamps.",
+  "category": "Alerts & Sync",
+  "tags": [
+    "Approval Workflow",
+    "Google Forms",
+    "Expense & Leave",
+    "MailApp"
+  ],
+  "trigger": "On Form Submit / On Edit & Menu",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "5 hrs/wk",
+  "featured": false,
+  "copySheetUrl": "",
+  "services": [
+    "Forms",
+    "Sheets",
+    "Gmail"
+  ],
+  "setupSteps": [
+    "Link your Google Form to a Sheet tab named Requests (or initialize headers matching the 8-column schema).",
+    "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save.",
+    "Reload the Sheet, run SheetAutomate -> Install Form & Approval Triggers, then approve or reject requests via status or menu."
+  ],
+  "sheetSchema": {
+    "tabName": "Requests",
+    "headers": [
+      "Request_ID",
+      "Requester_Email",
+      "Request_Type",
+      "Amount_Or_Days",
+      "Approval_Status",
+      "Approver_Notes",
+      "Decision_Timestamp",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "REQ-2026-501",
+        "alex.rivera@example.com",
+        "Travel Expense",
+        "$420.00",
+        "Approved",
+        "Approved under Q4 client travel budget.",
+        "",
+        ""
+      ],
+      [
+        "REQ-2026-502",
+        "jordan.lee@example.com",
+        "Annual Leave",
+        "3 Days (Dec 14-16)",
+        "PENDING",
+        "",
+        "",
+        ""
+      ],
+      [
+        "REQ-2026-503",
+        "samira.patel@example.com",
+        "Software Subscription",
+        "$189.00",
+        "Rejected",
+        "Duplicate license; use team workspace seat.",
+        "2026-11-12T15:30:00Z",
+        "COMPLETED"
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "REQ-2026-501",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Requester Email",
+        "defaultValue": "alex.rivera@example.com",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Request Type & Amount",
+        "defaultValue": "Travel Expense - $420.00"
+      },
+      {
+        "key": "field3",
+        "label": "Approval Decision",
+        "defaultValue": "Approved",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Required Approver Notes",
+        "defaultValue": "Approved under Q4 client travel budget.",
+        "multiline": true
+      }
+    ],
+    "outputType": "email-dispatch",
+    "outputTitle": "Approval Decision Dispatched",
+    "outputSubtitle": "Requester notified & decision timestamp locked",
+    "auditColumn": "Col G (Decision_Timestamp) & Col H (Audit_Status)"
+  }
+}

@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 .vite
+.wrangler
+web/test-results/
+web/playwright-report/
+coverage/
 
 # Environment & Secrets
 .env

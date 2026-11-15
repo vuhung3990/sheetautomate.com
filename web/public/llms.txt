@@ -1,0 +1,30 @@
+# SheetAutomate
+
+> 100% Free, Open-Source (MIT) Google Sheets Automation Catalog (12 flows) and Manifest V3 Chrome Extension. Every workflow runs natively inside the user's own Google Workspace via Google Apps Script with zero external servers, zero telemetry, and triple-audit verification (Community, AI Static Security Gate, and VirusTotal).
+
+## Security & Architecture
+- **Execution Model**: In-tenant Google Apps Script (V8 runtime) bound directly to the user's Google Sheet.
+- **Zero Server Proxy**: No external backend, database, or third-party SaaS middleware ever accesses spreadsheet data.
+- **Least-Privilege OAuth**: Every flow declares minimal scopes in `appsscript.json` (for example `spreadsheets.currentonly` and `drive.file`).
+- **Concurrency Safety**: All flows use `LockService.getDocumentLock()` and idempotent audit status columns to prevent duplicate runs.
+- **Triple Audit**: Public unminified `Code.gs` on GitHub, AI Verified (100%), and VirusTotal (Pending VT_API_KEY (SHA-256 Verified)).
+
+## Key Resources
+- [Live Flow Catalog & Interactive Workbench](https://sheetautomate.com/)
+- [Full Technical Specification for LLMs](https://sheetautomate.com/llms-full.txt)
+- [XML Sitemap](https://sheetautomate.com/sitemap.xml)
+- [GitHub Repository](https://github.com/hungvvinfinity/sheetautomate.com)
+
+## Automation Flows (12)
+- [B2B Client Invoice PDF Generator](https://sheetautomate.com/?flow=b2b-client-invoice): Merge approved Google Sheets invoice rows into a branded Google Docs template, export PDFs to Drive, and log links back with LockService idempotency. (Category: Document & PDF, Trigger: Sheet Menu / Status Change, Time Saved: 6 hrs/wk, Scopes: 3)
+- [Training & Course Certificate Batch Issuer](https://sheetautomate.com/?flow=completion-certificate-batch): Batch-generate completion certificate PDFs for Approved trainees meeting the passing score, with LockService and existing-link duplicate prevention. (Category: HR & Team, Trigger: Sheet Menu / Batch Run, Time Saved: 4 hrs/wk, Scopes: 3)
+- [Gmail Billing & Receipt Scanner to Sheets](https://sheetautomate.com/?flow=gmail-invoice-extractor): Scan Gmail threads matching a configurable billing query, archive PDF attachments to Drive, and log metadata to Sheets without duplicate message IDs. (Category: Email & Gmail, Trigger: Hourly Gmail Trigger, Time Saved: 4 hrs/wk, Scopes: 4)
+- [Candidate Offer Letter & Onboarding Folder Pack](https://sheetautomate.com/?flow=hr-offer-letter-onboarding): Merge candidate details into a Google Docs offer template, create a dedicated Drive onboarding folder, export PDF, and log links idempotently. (Category: HR & Team, Trigger: Sheet Menu / HR Batch Run, Time Saved: 6 hrs/wk, Scopes: 3)
+- [Low-Stock Threshold & Reorder Alert Dispatcher](https://sheetautomate.com/?flow=inventory-low-stock-alert): Monitor Stock_Qty against Reorder_Point, calculate suggested reorder quantities, and dispatch email digests plus optional webhook alerts. (Category: Alerts & Sync, Trigger: Hourly / Daily Check & Sheet Menu, Time Saved: 5 hrs/wk, Scopes: 4)
+- [Dynamic Multi-Row Sales Quote & Proposal PDF](https://sheetautomate.com/?flow=multi-item-sales-quote): Group multiple line-item rows sharing a Quote_ID in Google Sheets into a formatted multi-row table inside a Google Docs quote template and export as PDF. (Category: Finance & Ops, Trigger: Sheet Menu / Batch Run, Time Saved: 6 hrs/wk, Scopes: 3)
+- [Automated Overdue Invoice Follow-Up Mailer](https://sheetautomate.com/?flow=overdue-payment-reminder): Daily scan of unpaid invoices comparing Due_Date to today and dispatching polite 3, 7, and 14+ day payment reminders once per stage. (Category: Email & Gmail, Trigger: Daily Schedule / Sheet Menu, Time Saved: 4 hrs/wk, Scopes: 3)
+- [Field Service & Inspection Work Order PDF](https://sheetautomate.com/?flow=field-service-work-order): Generate field technician service and inspection work order PDFs from scheduled Google Sheets rows, store them in Drive, and update status and PDF links. (Category: Document & PDF, Trigger: Sheet Menu / Status Change, Time Saved: 5 hrs/wk, Scopes: 3)
+- [Google Form Expense & Leave Approval Pipeline](https://sheetautomate.com/?flow=form-approval-workflow): Process Google Form expense and leave requests in Sheets, enforce required approver notes, email decisions via MailApp, and lock timestamps. (Category: Alerts & Sync, Trigger: On Form Submit / On Edit & Menu, Time Saved: 5 hrs/wk, Scopes: 3)
+- [Monthly Attendance & OT Sheet Provisioner + Auto-Lock](https://sheetautomate.com/?flow=monthly-ot-sheet-locker): On the 1st of each month, clone _Template for the new month's OT tab with editable hour cells, lock the closing month's tab, and log to Audit_Log. (Category: HR & Team, Trigger: Monthly Schedule, Time Saved: 3 hrs/wk, Scopes: 2)
+- [Warehouse Packing Slip & Dispatch Manifest PDF](https://sheetautomate.com/?flow=packing-slip-dispatch): Batch-generate packing slip PDFs and a consolidated dispatch manifest for ready-to-ship orders in Drive without duplicating shipped rows. (Category: Finance & Ops, Trigger: Sheet Menu / Dispatch Batch Run, Time Saved: 7 hrs/wk, Scopes: 2)
+- [Automated Weekly Executive KPI Digest Mailer](https://sheetautomate.com/?flow=weekly-kpi-digest-mailer): Aggregate weekly revenue, cost, margin, and task completion KPIs across Sheets tabs, email a responsive HTML digest, and log run hashes. (Category: Finance & Ops, Trigger: Weekly Monday Schedule / Menu, Time Saved: 4 hrs/wk, Scopes: 3)

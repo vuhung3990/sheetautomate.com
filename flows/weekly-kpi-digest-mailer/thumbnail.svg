@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" fill="none">
+  <rect width="400" height="220" rx="14" fill="#0F172A"/>
+  <rect x="8" y="8" width="384" height="204" rx="10" stroke="#1E293B" stroke-width="1.5"/>
+  <line x1="20" y1="54" x2="380" y2="54" stroke="#1E293B" stroke-width="1"/>
+  <circle cx="28" cy="31" r="6" fill="#38BDF8"/>
+  <text x="42" y="35" fill="#F8FAFC" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="700">Weekly KPI Digest Mailer</text>
+  <rect x="296" y="21" width="84" height="20" rx="10" fill="#1E293B"/>
+  <text x="338" y="34" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="10" font-weight="600">KPI DIGEST</text>
+
+  <rect x="22" y="76" width="102" height="84" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="1.4"/>
+  <text x="73" y="96" text-anchor="middle" fill="#38BDF8" font-family="monospace" font-size="10" font-weight="700">MULTI-TAB</text>
+  <text x="73" y="114" text-anchor="middle" fill="#E2E8F0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600">Rev, Cost &amp; Task</text>
+  <text x="73" y="131" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Weekly_KPI_Data</text>
+  <text x="73" y="146" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">+ Tasks_Log</text>
+
+  <path d="M128 118 H146" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="145,113 153,118 145,123" fill="#38BDF8"/>
+
+  <rect x="155" y="76" width="92" height="84" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.4"/>
+  <text x="201" y="96" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="10" font-weight="700">APPS SCRIPT</text>
+  <text x="201" y="114" text-anchor="middle" fill="#E2E8F0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600">Rollup + Hash</text>
+  <text x="201" y="131" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Margin % Calc</text>
+  <text x="201" y="146" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">SHA-256 Dedup</text>
+
+  <path d="M251 118 H269" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="268,113 276,118 268,123" fill="#10B981"/>
+
+  <rect x="278" y="76" width="100" height="84" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.4"/>
+  <text x="328" y="96" text-anchor="middle" fill="#10B981" font-family="monospace" font-size="10" font-weight="700">MAILAPP</text>
+  <text x="328" y="114" text-anchor="middle" fill="#E2E8F0" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600">HTML Summary</text>
+  <text x="328" y="131" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">Logs Digest_Audit</text>
+  <text x="328" y="146" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="9">&amp; Timestamp</text>
+
+  <rect x="22" y="176" width="356" height="22" rx="6" fill="#0B1220" stroke="#1E293B" stroke-width="1"/>
+  <text x="200" y="191" text-anchor="middle" fill="#94A3B8" font-family="monospace" font-size="10">spreadsheets.currentonly + script.send_mail | MIT</text>
+</svg>

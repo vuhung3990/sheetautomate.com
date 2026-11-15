@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SheetAutomate — Free Google Sheets Apps Script Flows</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="sa-popup">
+    <header class="sa-header">
+      <div class="sa-header-top">
+        <a
+          class="sa-brand"
+          href="https://sheetautomate.com/?utm_source=chrome_extension&utm_medium=popup_header"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Visit SheetAutomate.com"
+        >
+          <span class="sa-logo-mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="2" width="20" height="20" rx="5" fill="#0F172A" stroke="#10B981" stroke-width="1.5"/>
+              <path d="M5 7.5H19V10H5V7.5Z" fill="#10B981"/>
+              <path d="M5 10H19V18C19 18.5523 18.5523 19 18 19H6C5.44772 19 5 18.5523 5 18V10Z" stroke="#34D399" stroke-width="1.2"/>
+              <line x1="10.5" y1="10" x2="10.5" y2="19" stroke="#34D399" stroke-width="1.1"/>
+              <line x1="5" y1="14.5" x2="19" y2="14.5" stroke="#34D399" stroke-width="1.1"/>
+              <path d="M16.2 10.2L12.8 14.8H15.3L14.1 19.6L18.8 13.7H16.1L16.2 10.2Z" fill="#ECFDF5" stroke="#0F172A" stroke-width="0.9" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="sa-brand-text">
+            <span class="sa-brand-name">SheetAutomate</span>
+            <span class="sa-brand-sub">Apps Script Flows</span>
+          </span>
+        </a>
+
+        <a
+          class="sa-site-link"
+          href="https://sheetautomate.com/?utm_source=chrome_extension&utm_medium=popup_header"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>sheetautomate.com</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M7 17L17 7M17 7H9M17 7V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="sa-trust-bar">
+        <span class="sa-pill sa-pill-count" id="flowCountBadge">0 Flows</span>
+        <span class="sa-pill sa-pill-vt" id="vtBadge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2L4 5.5V11.5C4 16.8 7.4 21.6 12 23C16.6 21.6 20 16.8 20 11.5V5.5L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M9 12L11 14L15.5 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="vtBadgeText">SHA-256 Verified</span>
+        </span>
+        <span class="sa-pill sa-pill-sync" id="syncStatusBadge" title="Offline-first bundle with background manifest sync">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 12A9 9 0 0 0 6.4 5.6L3 8.5M3 4V8.5H7.5M3 12A9 9 0 0 0 17.6 18.4L21 15.5M21 20V15.5H16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="syncStatusText">Ready</span>
+        </span>
+      </div>
+    </header>
+
+    <section class="sa-controls" aria-label="Search and filter flows">
+      <div class="sa-search-wrap">
+        <svg class="sa-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+          <path d="M20 20L16.2 16.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="search"
+          id="searchInput"
+          class="sa-search-input"
+          placeholder="Search invoice, Gmail, OT, inventory, PDF..."
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button
+          type="button"
+          id="clearSearchBtn"
+          class="sa-clear-btn"
+          title="Clear search"
+          aria-label="Clear search"
+          hidden
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="sa-categories" id="categoryPills" role="tablist" aria-label="Categories"></div>
+    </section>
+
+    <main class="sa-flow-list" id="flowList" aria-live="polite"></main>
+
+    <footer class="sa-footer">
+      <button
+        type="button"
+        class="sa-guide-toggle"
+        id="guideToggleBtn"
+        aria-expanded="false"
+        aria-controls="guidePanel"
+      >
+        <span class="sa-guide-toggle-left">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>How to paste into Google Sheets (Extensions &gt; Apps Script)</span>
+        </span>
+        <svg class="sa-chevron" id="guideChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 15L12 9L18 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="sa-guide-panel" id="guidePanel" hidden>
+        <ol class="sa-guide-steps">
+          <li>Click <strong>Copy Headers</strong> and paste into cell <code>A1</code> of a blank Google Sheet.</li>
+          <li>Open <strong>Extensions &gt; Apps Script</strong> from the Sheets menu bar.</li>
+          <li>Replace <code>Code.gs</code> with <strong>Copy Script</strong>, then press Save (<code>Ctrl+S</code>).</li>
+          <li>Reload your Sheet and launch from the new <strong>SheetAutomate</strong> menu.</li>
+        </ol>
+        <div class="sa-guide-bottom">
+          <button type="button" class="sa-pill-toggle-btn" id="toggleSheetsPillBtn">
+            Sheets Floating Pill: On
+          </button>
+          <a
+            class="sa-footer-link"
+            href="https://sheetautomate.com/?utm_source=chrome_extension&utm_medium=popup_footer"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Full Docs &amp; Demos
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

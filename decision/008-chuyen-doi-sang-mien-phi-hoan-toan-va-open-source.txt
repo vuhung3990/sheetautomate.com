@@ -1,0 +1,15 @@
+QUYẾT ĐỊNH 008: CHUYỂN ĐỔI SANG MIỄN PHÍ HOÀN TOÀN & OPEN SOURCE (TRIPLE-AUDITED)
+- Ngày quyết định: 28/10/2026 | Trạng thái: ĐÃ PHÊ DUYỆT (ACCEPTED)
+- Bối cảnh:
+  + Thay đổi quyết định từ mô hình bán dịch vụ đóng gói (Productized Service $5, $35, $95) sang mô hình miễn phí 100% (Free Forever) kết hợp mã nguồn mở (Open Source).
+  + Tối đa hóa mức độ tin cậy của người dùng doanh nghiệp và cộng đồng thông qua tính minh bạch tuyệt đối, xóa bỏ rào cản thanh toán và cam kết bảo vệ dữ liệu nội bộ.
+- Nội dung cốt lõi:
+  1. 100% Free Forever: Không phí đăng ký, không subscription hàng tháng ($0/tháng), không giới hạn số lượng tài liệu ngoài hạn mức mặc định của Google Workspace.
+  2. Open Source (Giấy phép MIT): Toàn bộ mã nguồn Google Apps Script và mẫu Google Docs được công khai trên GitHub để cộng đồng có thể tự kiểm tra, fork, tùy biến hoặc tự host (self-host).
+  3. Bảo mật được kiểm định 3 lớp (Triple-Audited Security):
+     - Community Audited: Đánh giá mã nguồn công khai bởi cộng đồng lập trình viên, cam kết 0 telemetry, 0 tracking ngầm.
+     - AI Multi-Model Audited: Quét tĩnh tự động bằng nhiều mô hình AI nhằm tối ưu hóa quyền OAuth tối thiểu (least-privilege scopes), chống race condition/idempotency và bảo vệ an toàn bộ nhớ.
+     - VirusTotal Verified: Quét trên 70+ engine bảo mật của VirusTotal đạt chuẩn 0/72 cảnh báo (100% Clean).
+  4. In-Tenant Privacy: Toàn bộ quá trình merge và tạo PDF diễn ra 100% trong Google Drive của khách hàng, không đi qua server trung gian.
+- Tác động:
+  + Cập nhật toàn bộ giao diện website SheetAutomate.com (Hero, Navbar, Templates, WhenFit, SecurityArchitecture, ROI, FAQ, Footer, Modal, Design System MASTER.md).

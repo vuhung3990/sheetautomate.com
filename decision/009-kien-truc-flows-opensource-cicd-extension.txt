@@ -1,0 +1,13 @@
+QUYẾT ĐỊNH 009: KIẾN TRÚC FLOWS OPEN-SOURCE, CATALOG UI, EXTENSION MV3 & CI/CD TRIPLE-AUDIT
+- Ngày ban hành: 14/11/2026 | Trạng thái: ĐÃ PHÊ DUYỆT
+- Bối cảnh:
+  + Mở rộng SheetAutomate.com từ landing page tĩnh thành nền tảng automation open-source cộng đồng có thể đóng góp qua PR.
+  + Cần tự động đồng bộ mã nguồn Apps Script từ một nguồn duy nhất (Single Source of Truth) ra website, Chrome Extension và pipeline kiểm định bảo mật.
+- Nội dung:
+  1. Thư mục `flows/<slug>/` làm nguồn chuẩn duy nhất: mỗi flow gồm `flow.json`, `Code.gs`, `appsscript.json`, `thumbnail.svg`, `README.md`.
+  2. Website Catalog Grid UI (`web/src/`): tự động nạp toàn bộ `flows/*/` qua Vite `import.meta.glob` kèm Workbench modal chạy Demo trực tiếp và copy Script/TSV.
+  3. Chrome Extension Manifest V3 (`extension/`): nhúng `flows-bundle.json` (sync với `flows-manifest.json`), popup tra cứu nhanh và nút nổi ngay trên Google Sheets.
+  4. CI/CD Triple-Audit (`.github/workflows/flows-audit-and-deploy.yml`): chạy `validate-flows.mjs`, `virustotal-audit.mjs`, `ai-security-audit.mjs`, sinh badge SVG, đóng gói `.zip` và deploy Cloudflare Pages.
+- Mục tiêu:
+  + Đảm bảo mọi flow mới đạt chuẩn least-privilege OAuth, `LockService`, 0 telemetry và được kiểm định tự động trước khi lên production.
+- Tham chiếu: `flows/schema.json`, `flows/audit-status.json`, `scripts/validate-flows.mjs`, `decision/008-chuyen-doi-sang-mien-phi-hoan-toan-va-open-source.txt`.

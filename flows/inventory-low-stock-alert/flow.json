@@ -1,0 +1,103 @@
+{
+  "id": "inventory-low-stock-alert",
+  "title": "Low-Stock Threshold & Reorder Alert Dispatcher",
+  "shortDescription": "Monitor Stock_Qty against Reorder_Point, calculate suggested reorder quantities, and dispatch email digests plus optional webhook alerts.",
+  "category": "Alerts & Sync",
+  "tags": [
+    "Inventory",
+    "Low Stock",
+    "Reorder Alert",
+    "Webhook"
+  ],
+  "trigger": "Hourly / Daily Check & Sheet Menu",
+  "difficulty": "Intermediate",
+  "timeSavedPerWeek": "5 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": [
+    "Sheets",
+    "Gmail",
+    "Chat/Webhook"
+  ],
+  "setupSteps": [
+    "Create an Inventory tab matching the 8-column schema and paste your SKU stock thresholds.",
+    "Open Extensions -> Apps Script, paste Code.gs and appsscript.json, and save the project.",
+    "Configure ALERT_RECIPIENT_EMAIL (and optional ALERT_WEBHOOK_URL) via the SheetAutomate menu, then run Check Stock Levels."
+  ],
+  "sheetSchema": {
+    "tabName": "Inventory",
+    "headers": [
+      "SKU",
+      "Item_Name",
+      "Stock_Qty",
+      "Reorder_Point",
+      "Target_Stock",
+      "Suggested_Reorder",
+      "Alert_Status",
+      "Last_Alert_Date"
+    ],
+    "sampleRows": [
+      [
+        "SKU-1042",
+        "Thermal Shipping Labels (Roll 1000)",
+        "14",
+        "25",
+        "100",
+        "",
+        "",
+        ""
+      ],
+      [
+        "SKU-2088",
+        "Corrugated Mailer Box 12x9x4",
+        "32",
+        "40",
+        "150",
+        "",
+        "",
+        ""
+      ],
+      [
+        "SKU-3015",
+        "Heavy-Duty Packing Tape 48mm",
+        "120",
+        "30",
+        "150",
+        "0",
+        "OK",
+        ""
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "SKU-1042",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "SKU & Item Name",
+        "defaultValue": "SKU-1042 - Thermal Shipping Labels (Roll 1000)",
+        "required": true
+      },
+      {
+        "key": "field2",
+        "label": "Current Stock / Reorder Point",
+        "defaultValue": "14 units (Reorder Point: 25)"
+      },
+      {
+        "key": "field3",
+        "label": "Suggested Reorder Qty",
+        "defaultValue": "86 units (Target: 100)",
+        "highlight": true
+      },
+      {
+        "key": "field4",
+        "label": "Dispatch Channels",
+        "defaultValue": "Digest Email + Optional Script Property Webhook"
+      }
+    ],
+    "outputType": "alert-webhook",
+    "outputTitle": "LOW_STOCK Alert Dispatched",
+    "outputSubtitle": "Digest email & optional JSON webhook triggered",
+    "auditColumn": "Col F (Suggested_Reorder), Col G (Alert_Status) & Col H (Last_Alert_Date)"
+  }
+}

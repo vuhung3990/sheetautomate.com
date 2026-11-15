@@ -1,0 +1,94 @@
+{
+  "id": "completion-certificate-batch",
+  "title": "Training & Course Certificate Batch Issuer",
+  "shortDescription": "Batch-generate completion certificate PDFs for Approved trainees meeting the passing score, with LockService and existing-link duplicate prevention.",
+  "category": "HR & Team",
+  "tags": ["Certificates", "Training", "PDF Export", "HR Ops"],
+  "trigger": "Sheet Menu / Batch Run",
+  "difficulty": "Beginner",
+  "timeSavedPerWeek": "4 hrs/wk",
+  "featured": true,
+  "copySheetUrl": "",
+  "services": ["Sheets", "Docs", "Drive"],
+  "setupSteps": [
+    "Run SheetAutomate > Initialize Certificates Sheet to create the Certificates tab with required columns.",
+    "Add {{Certificate_ID}}, {{Trainee_Name}}, {{Course_Title}}, {{Score_Pct}}, and {{Completion_Date}} placeholders to your Google Docs certificate template and save IDs + passing score via Configure.",
+    "Ensure eligible rows have Status set to Approved and Score_Pct at or above the passing threshold, then run SheetAutomate > Issue Approved Certificate PDFs."
+  ],
+  "sheetSchema": {
+    "tabName": "Certificates",
+    "headers": [
+      "Certificate_ID",
+      "Trainee_Name",
+      "Course_Title",
+      "Score_Pct",
+      "Completion_Date",
+      "Status",
+      "PDF_Link",
+      "Audit_Status"
+    ],
+    "sampleRows": [
+      [
+        "CERT-2026-881",
+        "Jordan Alvarez",
+        "Workspace Security & Governance",
+        "94",
+        "2026-11-10",
+        "Approved",
+        "",
+        ""
+      ],
+      [
+        "CERT-2026-880",
+        "Nadia Okafor",
+        "Workspace Security & Governance",
+        "98",
+        "2026-11-09",
+        "Approved",
+        "https://drive.google.com/file/d/example-cert-880/view",
+        "COMPLETED"
+      ],
+      [
+        "CERT-2026-882",
+        "Evan Takahashi",
+        "Workspace Security & Governance",
+        "72",
+        "2026-11-11",
+        "Approved",
+        "",
+        ""
+      ]
+    ]
+  },
+  "demo": {
+    "recordId": "CERT-2026-881",
+    "fields": [
+      {
+        "key": "field1",
+        "label": "Trainee Name",
+        "defaultValue": "Jordan Alvarez",
+        "required": true,
+        "highlight": true
+      },
+      {
+        "key": "field2",
+        "label": "Course Title",
+        "defaultValue": "Workspace Security & Governance"
+      },
+      {
+        "key": "field3",
+        "label": "Score (%)",
+        "defaultValue": "94"
+      },
+      {
+        "key": "field4",
+        "label": "Approval Status",
+        "defaultValue": "Approved"
+      }
+    ],
+    "outputType": "pdf-document",
+    "outputTitle": "CERT-2026-881_Jordan_Alvarez.pdf",
+    "outputSubtitle": "Verified score >= 80% & Approved; PDF exported to Drive",
+    "auditColumn": "Col G (PDF_Link) & Col H (Audit_Status)"
+  }
+}

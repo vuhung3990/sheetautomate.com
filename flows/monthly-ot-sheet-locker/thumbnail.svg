@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" fill="none">
+  <rect width="400" height="220" rx="12" fill="#0F172A"/>
+  <rect x="0.5" y="0.5" width="399" height="219" rx="11.5" stroke="#1E293B"/>
+  <path d="M0 44H400M0 88H400M0 132H400M0 176H400" stroke="#1E293B" stroke-width="0.6"/>
+  <path d="M80 0V220M160 0V220M240 0V220M320 0V220" stroke="#1E293B" stroke-width="0.6"/>
+
+  <rect x="20" y="18" width="186" height="22" rx="11" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
+  <text x="32" y="33" fill="#6EE7B7" font-family="monospace" font-size="10" font-weight="bold">MONTHLY OT SHEET LOCKER</text>
+
+  <!-- Step 1: _Template -->
+  <rect x="20" y="64" width="102" height="92" rx="8" fill="#1E293B" stroke="#38BDF8" stroke-width="1.5"/>
+  <rect x="30" y="76" width="82" height="14" rx="3" fill="#0C4A6E"/>
+  <text x="41" y="86" fill="#7DD3FC" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="bold">_TEMPLATE</text>
+  <text x="30" y="108" fill="#F8FAFC" font-family="monospace" font-size="9">Clone Tab</text>
+  <text x="30" y="123" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="9">Keep D2:E100</text>
+  <rect x="30" y="134" width="76" height="12" rx="3" fill="#0F172A"/>
+  <text x="35" y="143" fill="#38BDF8" font-family="monospace" font-size="8">OT_2026_12</text>
+
+  <!-- Arrow 1 -->
+  <path d="M126 110H145" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M141 105L147 110L141 115" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Step 2: Protection -->
+  <rect x="150" y="64" width="100" height="92" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+  <rect x="160" y="76" width="80" height="14" rx="3" fill="#064E3B"/>
+  <text x="167" y="86" fill="#6EE7B7" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="bold">PROTECTION</text>
+  <text x="160" y="108" fill="#F8FAFC" font-family="monospace" font-size="9">Lock Prev Tab</text>
+  <text x="160" y="123" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="9">OT_2026_11</text>
+  <text x="160" y="138" fill="#10B981" font-family="monospace" font-size="8">No Backdating</text>
+
+  <!-- Arrow 2 -->
+  <path d="M254 110H273" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+  <path d="M269 105L275 110L269 115" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Step 3: Audit_Log -->
+  <rect x="278" y="64" width="102" height="92" rx="8" fill="#1E293B" stroke="#10B981" stroke-width="1.5"/>
+  <rect x="288" y="76" width="82" height="14" rx="3" fill="#064E3B"/>
+  <text x="299" y="86" fill="#6EE7B7" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="bold">AUDIT_LOG</text>
+  <text x="288" y="108" fill="#F8FAFC" font-family="monospace" font-size="9">Log Action</text>
+  <text x="288" y="123" fill="#94A3B8" font-family="system-ui, -apple-system, sans-serif" font-size="9">Timestamp UTC</text>
+  <rect x="288" y="134" width="64" height="12" rx="3" fill="#064E3B"/>
+  <text x="294" y="143" fill="#10B981" font-family="monospace" font-size="8">COMPLETED</text>
+
+  <!-- Footer -->
+  <text x="20" y="196" fill="#64748B" font-family="monospace" font-size="9">HR &amp; Team  |  spreadsheets.currentonly</text>
+</svg>
