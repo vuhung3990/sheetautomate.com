@@ -160,7 +160,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onExploreFlows}
-              className="px-3 py-2 rounded-lg bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs cursor-pointer min-h-[40px] flex items-center gap-1"
+              className="hidden min-[380px]:flex px-3 py-2 rounded-lg bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold text-xs cursor-pointer min-h-[40px] items-center gap-1"
             >
               <span>Explore Flows</span>
             </button>

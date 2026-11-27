@@ -231,6 +231,11 @@ async function main() {
   const existing = readExistingAuditStatus();
   const prevFlows = existing.flows || {};
   const nextFlows = {};
+  const preserveVerifiedVt =
+    (isDryRun || !vtApiKey) &&
+    existing?.virustotal?.bundleSha256 === bundleSha256 &&
+    Boolean(existing?.virustotal?.status) &&
+    existing.virustotal.status !== 'pending';
 
   for (const slug of slugs) {
     const codePath = path.join(FLOWS_DIR, slug, 'Code.gs');
@@ -244,7 +249,7 @@ async function main() {
     nextFlows[slug] = {
       sha256,
       scopesCount,
-      vtClean: false,
+      vtClean: preserveVerifiedVt ? Boolean(prev.vtClean) : false,
       aiStatus: prev.aiStatus || 'PENDING',
       aiScore: typeof prev.aiScore === 'number' ? prev.aiScore : 0,
       notes: prev.notes || '',
@@ -288,6 +293,9 @@ async function main() {
       console.error(`VirusTotal API error: ${err.message}`);
       process.exit(1);
     }
+  } else if (preserveVerifiedVt) {
+    // Preserve an already-verified live VirusTotal verdict for the exact same bundle hash
+    vtResult = existing.virustotal;
   } else {
     vtResult = {
       status: 'pending',

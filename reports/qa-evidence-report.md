@@ -1,9 +1,9 @@
 # SheetAutomate QA & Verification Evidence Report
 
-- **Generated At:** 2026-11-27T02:10:19.610Z
+- **Generated At:** 2026-11-27T03:37:41.313Z
 - **Mode:** `ci`
 - **Overall Status:** **PASS**
-- **Total Duration:** 39.52s
+- **Total Duration:** 41.47s
 
 ## Evaluation Scorecard
 
@@ -19,14 +19,14 @@
 
 | # | Check | Status | Duration | Summary |
 | --- | --- | --- | --- | --- |
-| 1 | Validate Flows, Badges, Manifest, Extension & SEO/GEO Sync | **PASS** | 3.29s | 12 flows validated & bundled; extension zip 58.5 KB; SEO/GEO assets generated |
-| 2 | Node Test Suites (tests/*.test.mjs) | **PASS** | 3.11s | 84/84 tests passed across 3 file(s) |
-| 3 | Production Build & Code-Split Size Audit | **PASS** | 8.04s | Built 6 JS chunk(s), total 495.72 KB, largest 193.26 KB (0 over 380 KB) |
-| 4 | Vitest Unit & Accessibility (axe-core) Suite | **PASS** | 6.98s | 9 Vitest test(s) passed across 1 file(s) |
-| 5 | Modern Web Guidance Legacy Scan | **PASS** | 2.53s | modern-web-guidance legacy-scan passed cleanly |
-| 6 | Playwright Headless E2E + SEO/GEO/Stability/Reflow/CLS | **PASS** | 7.97s | 11 Playwright E2E test(s) passed (0 skipped) |
-| 7 | Preflight Accident Guard (--mode=deploy) | **PASS** | 0.13s | 4 preflight guard group(s) passed in deploy mode |
-| 8 | GitHub Actions YAML & Deploy Dry-Run Check | **PASS** | 7.46s | GitHub Actions YAML validated & deploy-pages.mjs --dry-run READY |
+| 1 | Validate Flows, Badges, Manifest, Extension & SEO/GEO Sync | **PASS** | 0.93s | 12 flows validated & bundled; extension zip 58.5 KB; SEO/GEO assets generated |
+| 2 | Node Test Suites (tests/*.test.mjs) | **PASS** | 0.87s | 84/84 tests passed across 3 file(s) |
+| 3 | Production Build & Code-Split Size Audit | **PASS** | 8.36s | Built 6 JS chunk(s), total 495.76 KB, largest 193.26 KB (0 over 380 KB) |
+| 4 | Vitest Unit & Accessibility (axe-core) Suite | **PASS** | 11.35s | 9 Vitest test(s) passed across 1 file(s) |
+| 5 | Modern Web Guidance Legacy Scan | **PASS** | 0.94s | modern-web-guidance legacy-scan passed cleanly |
+| 6 | Playwright Headless E2E + SEO/GEO/Stability/Reflow/CLS | **PASS** | 10.32s | 11 Playwright E2E test(s) passed (0 skipped) |
+| 7 | Preflight Accident Guard (--mode=deploy) | **PASS** | 0.12s | 4 preflight guard group(s) passed in deploy mode |
+| 8 | GitHub Actions YAML & Deploy Dry-Run Check | **PASS** | 8.55s | GitHub Actions YAML validated & deploy-pages.mjs --dry-run READY |
 
 ## Production JS Bundle Chunks (`web/dist/assets/*.js`)
 
@@ -34,7 +34,7 @@
 | --- | --- | --- |
 | `flows-data-DvYfkVQb.js` | 193.26 KB | OK |
 | `vendor-react-CfDz6BDZ.js` | 139.58 KB | OK |
-| `index-DCAaUzed.js` | 96.98 KB | OK |
-| `FlowWorkbenchModal-2WuQ2CsB.js` | 37.89 KB | OK |
+| `index-BNN6EmAp.js` | 97.02 KB | OK |
+| `FlowWorkbenchModal-Dwp-4WyU.js` | 37.89 KB | OK |
 | `vendor-icons-BW4Nmgnx.js` | 21.88 KB | OK |
 | `LegalModals-DN0_XPyE.js` | 6.14 KB | OK |
