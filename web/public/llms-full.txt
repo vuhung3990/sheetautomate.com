@@ -1,6 +1,6 @@
 # SheetAutomate — Complete Technical & GEO Reference
 
-> Open-source MIT Google Sheets automation catalog (12 production workflows) and Manifest V3 Chrome Extension. Last audit sync: 2026-11-14.
+> Open-source MIT Google Sheets automation catalog (12 production workflows) and Manifest V3 Chrome Extension. Last audit sync: 2026-11-27.
 
 ## Overview
 - **Website**: https://sheetautomate.com/
@@ -13,7 +13,7 @@
 1. **In-Tenant Execution**: Workflows run exclusively inside Google's Apps Script sandbox attached to your own Google Spreadsheet. No external APIs or SaaS servers receive your sheet rows, client names, or invoices unless you explicitly configure a webhook URL in `PropertiesService`.
 2. **Community Open Source**: Every flow folder under `flows/<slug>/` contains unminified `Code.gs`, `appsscript.json`, `flow.json`, `thumbnail.svg`, and `README.md`.
 3. **AI & AST Static Security Gate**: AI Verified (100%) (Local Deep Static Security Analyzer). Blocks `eval`, `new Function`, obfuscated strings, and broad Drive/Gmail scopes while enforcing `LockService` idempotency.
-4. **VirusTotal Multi-Engine Scan**: Pending VT_API_KEY (SHA-256 Verified) across 72 engines.
+4. **VirusTotal Multi-Engine Scan**: 0/64 Clean across 64 engines.
 5. **Chrome Extension (Manifest V3)**: Lightweight in-Sheets assistant drawer with offline `flows-bundle.json`, zero cell-data access, and zero analytics cookies.
 
 ## Complete Flow Catalog (12 Flows)

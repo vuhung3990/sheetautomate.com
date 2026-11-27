@@ -1,15 +1,15 @@
 {
   "version": "2.0.0",
-  "updatedAt": "2026-11-14T00:39:16.608Z",
+  "updatedAt": "2026-11-27T03:38:32.832Z",
   "repository": "https://github.com/hungvvinfinity/sheetautomate.com",
   "totalFlows": 12,
   "virustotal": {
-    "status": "pending",
+    "status": "clean",
     "detections": 0,
-    "engines": 72,
-    "label": "Pending VT_API_KEY (SHA-256 Verified)",
+    "engines": 64,
+    "label": "0/64 Clean",
     "bundleSha256": "6d50f202c3e1d6b997e2efdf16e939d1166b9e4a74c193c23018b6943ab63715",
-    "reportUrl": "https://www.virustotal.com/gui/home/search"
+    "reportUrl": "https://www.virustotal.com/gui/file/6d50f202c3e1d6b997e2efdf16e939d1166b9e4a74c193c23018b6943ab63715"
   },
   "aiSecurity": {
     "status": "passed",
@@ -22,7 +22,7 @@
     "b2b-client-invoice": {
       "sha256": "f21e76b5fe2942ab261400cebfac37da84b2309d2bf37519d9274d35a5cbe44a",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -30,7 +30,7 @@
     "completion-certificate-batch": {
       "sha256": "0aa3d1063a00897e177080cce4080a58efd05244d1e5a1859b3affa52c3e9195",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -38,7 +38,7 @@
     "field-service-work-order": {
       "sha256": "79e8e78aa9331a6f67bae68638273d53f8c9ef2dc9f30ae63b6c4e9123c6359b",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -46,7 +46,7 @@
     "form-approval-workflow": {
       "sha256": "d72264908e91ebf607e4e22e1d4c66de6587f460729f9c707b68f77232237a3e",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
@@ -54,7 +54,7 @@
     "gmail-invoice-extractor": {
       "sha256": "8b6c76060fde1fa8b47256eafcad396d2cab05d64db6c82b4f8f009001040bb6",
       "scopesCount": 4,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
@@ -62,7 +62,7 @@
     "hr-offer-letter-onboarding": {
       "sha256": "7d72cf74ac508ad6909187c6a1da3d651371196683f546d6115e6c26e8b86d91",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -70,7 +70,7 @@
     "inventory-low-stock-alert": {
       "sha256": "c32620ea4cc823ae436e2a88abaa1d971b5d360d66077b851214d938b74955b4",
       "scopesCount": 4,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, Webhook URL guarded via PropertiesService."
@@ -78,7 +78,7 @@
     "monthly-ot-sheet-locker": {
       "sha256": "188b5f5e033ed229dc20f45ede50d6186ef84edc11845fedadeff7289d76fe08",
       "scopesCount": 2,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 2 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
@@ -86,7 +86,7 @@
     "multi-item-sales-quote": {
       "sha256": "632e2c29ab9e2aa37838813a57770283b95af2ad91619b92cf37696f867a2035",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -94,7 +94,7 @@
     "overdue-payment-reminder": {
       "sha256": "8b8583154cee110806c3b230b7fb0eddca983f61c1076d988662e3a7b8a776b5",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
@@ -102,7 +102,7 @@
     "packing-slip-dispatch": {
       "sha256": "355df7f023887c80cd5079c8d6a4420f23f15d62b790ed19afabe6a31ad069e3",
       "scopesCount": 2,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 2 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
@@ -110,7 +110,7 @@
     "weekly-kpi-digest-mailer": {
       "sha256": "f9adf790577627907f7793ac9c33ee50817d01fab763637bfef3a26ff68ab559",
       "scopesCount": 3,
-      "vtClean": false,
+      "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
       "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
