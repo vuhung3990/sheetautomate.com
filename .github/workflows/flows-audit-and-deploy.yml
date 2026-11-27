@@ -38,10 +38,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: 'web/package-lock.json'
 
@@ -59,10 +59,7 @@ jobs:
 
       - name: Ensure Playwright Chromium browser
         working-directory: web
-        run: |
-          if ! command -v google-chrome >/dev/null 2>&1; then
-            npx playwright install --with-deps chromium
-          fi
+        run: npx playwright install --with-deps chromium
 
       - name: Run VirusTotal & SHA-256 integrity audit
         env:
@@ -200,7 +197,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy web/dist --project-name=sheetautomate
+          command: pages deploy web/dist --project-name=sheetautomate --branch=main --commit-dirty=true
 
       - name: Cloudflare Pages setup notice (when secrets are unset)
         env:
