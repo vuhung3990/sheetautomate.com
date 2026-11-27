@@ -25,6 +25,7 @@ function parseArgs(argv) {
   let forceTimestamp = false;
   let forceLlm = false;
   let outputMd = null;
+  let provider = process.env.AI_AUDIT_PROVIDER?.trim().toLowerCase() || null;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--dry-run') {
@@ -37,9 +38,13 @@ function parseArgs(argv) {
       outputMd = argv[++i];
     } else if (arg.startsWith('--output-md=')) {
       outputMd = arg.slice('--output-md='.length);
+    } else if (arg === '--provider' && i + 1 < argv.length) {
+      provider = argv[++i].trim().toLowerCase();
+    } else if (arg.startsWith('--provider=')) {
+      provider = arg.slice('--provider='.length).trim().toLowerCase();
     }
   }
-  return { dryRun, forceTimestamp, forceLlm, outputMd };
+  return { dryRun, forceTimestamp, forceLlm, outputMd, provider };
 }
 
 function deepEqual(a, b) {
@@ -295,8 +300,8 @@ function parseLlmJson(rawText) {
 
 const FREE_TIER_PACING_MS = 1200;
 const GEMINI_DEFAULT_MODELS = [
-  'gemini-flash-latest',
   'gemini-3.6-flash',
+  'gemini-flash-latest',
   'gemini-3.5-flash-lite',
   'gemini-2.5-flash',
 ];
@@ -519,20 +524,23 @@ async function auditWithOpenAICompatible({ endpoint, apiKey, model, label, extra
   return { ...parseLlmJson(content), providerLabel: `${label} (${model}) + Static AST Gate` };
 }
 
-function getAvailableProviders(dryRun) {
+function getAvailableProviders(dryRun, providerFilter = null) {
   if (dryRun) return [];
+  const matches = (id) => !providerFilter || providerFilter === id;
   const list = [];
-  if (process.env.GEMINI_API_KEY?.trim()) {
+  if (matches('gemini') && process.env.GEMINI_API_KEY?.trim()) {
     const apiKey = process.env.GEMINI_API_KEY.trim();
     list.push({
+      id: 'gemini',
       name: 'Google Gemini + Static AST Gate',
       fn: (prompt) => auditWithGemini(prompt, apiKey),
     });
   }
-  if (process.env.GROQ_API_KEY?.trim()) {
+  if (matches('groq') && process.env.GROQ_API_KEY?.trim()) {
     const apiKey = process.env.GROQ_API_KEY.trim();
     const model = process.env.GROQ_MODEL?.trim() || 'openai/gpt-oss-120b';
     list.push({
+      id: 'groq',
       name: `Groq (${model}) + Static AST Gate`,
       fn: (prompt) =>
         auditWithOpenAICompatible({
@@ -544,17 +552,19 @@ function getAvailableProviders(dryRun) {
         }),
     });
   }
-  if (process.env.OPENROUTER_API_KEY?.trim()) {
+  if (matches('openrouter') && process.env.OPENROUTER_API_KEY?.trim()) {
     const apiKey = process.env.OPENROUTER_API_KEY.trim();
     list.push({
+      id: 'openrouter',
       name: 'OpenRouter (auto :free) + Static AST Gate',
       fn: (prompt) => auditWithOpenRouter(prompt, apiKey),
     });
   }
-  if (process.env.OPENAI_API_KEY?.trim()) {
+  if (matches('openai') && process.env.OPENAI_API_KEY?.trim()) {
     const apiKey = process.env.OPENAI_API_KEY.trim();
     const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini';
     list.push({
+      id: 'openai',
       name: `OpenAI (${model}) + Static AST Gate`,
       fn: (prompt) =>
         auditWithOpenAICompatible({
@@ -603,7 +613,7 @@ function readExistingAuditStatus() {
 }
 
 async function main() {
-  const { dryRun, forceTimestamp, forceLlm, outputMd } = parseArgs(process.argv.slice(2));
+  const { dryRun, forceTimestamp, forceLlm, outputMd, provider: providerFilter } = parseArgs(process.argv.slice(2));
 
   if (!fs.existsSync(FLOWS_DIR)) {
     console.error(`ERROR: flows directory not found at ${FLOWS_DIR}`);
@@ -621,7 +631,7 @@ async function main() {
     process.exit(1);
   }
 
-  const providers = getAvailableProviders(dryRun);
+  const providers = getAvailableProviders(dryRun, providerFilter);
   let activeProviderLabel = 'Local Deep Static Security Analyzer';
 
   const existing = readExistingAuditStatus();
@@ -663,48 +673,43 @@ async function main() {
       typeof prev.notes === 'string' &&
       prev.notes.length > 0;
 
-    let flowAiInputSha256 =
-      typeof prev.aiInputSha256 === 'string' && prev.aiInputSha256.length > 0
-        ? prev.aiInputSha256
-        : undefined;
+    let flowAiInputSha256 = canReuseCachedLlm ? prev.aiInputSha256 : undefined;
 
-    // If static gate did not fail and LLM providers are available, reuse cached LLM verdict on unchanged SHA-256 or call LLM
-    if (staticRes.aiStatus !== 'FAIL' && providers.length > 0) {
-      if (canReuseCachedLlm) {
-        const worseStatus =
-          rank[staticRes.aiStatus] > rank[prev.aiStatus] ? staticRes.aiStatus : prev.aiStatus;
-        finalRes = {
-          aiStatus: worseStatus,
-          aiScore: Math.min(staticRes.aiScore, Number(prev.aiScore ?? staticRes.aiScore)),
-          notes: prev.notes,
-        };
-        if (llmCallsMade === 0) {
-          activeProviderLabel = prevProvider;
-        }
-      } else {
-        if (llmCallsMade > 0) {
-          await sleep(FREE_TIER_PACING_MS);
-        }
-        const prompt = buildAuditPrompt(slug, code, manifest);
-        for (const provider of providers) {
-          try {
-            const llmRes = await provider.fn(prompt);
-            llmCallsMade++;
-            activeProviderLabel = llmRes.providerLabel || provider.name;
-            flowAiInputSha256 = aiInputSha256;
-            // Static gate warnings/failures cannot be overridden upward by LLM
-            const worseStatus =
-              rank[staticRes.aiStatus] > rank[llmRes.aiStatus] ? staticRes.aiStatus : llmRes.aiStatus;
-            const combinedScore = Math.min(staticRes.aiScore, llmRes.aiScore);
-            finalRes = {
-              aiStatus: worseStatus,
-              aiScore: combinedScore,
-              notes: llmRes.notes,
-            };
-            break;
-          } catch (err) {
-            console.warn(`[WARN] ${provider.name} failed for ${slug}: ${err.message}`);
-          }
+    // Preserve verified LLM verdict on unchanged aiInputSha256 (even in --dry-run) unless static gate fails
+    if (staticRes.aiStatus !== 'FAIL' && canReuseCachedLlm) {
+      const worseStatus =
+        rank[staticRes.aiStatus] > rank[prev.aiStatus] ? staticRes.aiStatus : prev.aiStatus;
+      finalRes = {
+        aiStatus: worseStatus,
+        aiScore: Math.min(staticRes.aiScore, Number(prev.aiScore ?? staticRes.aiScore)),
+        notes: prev.notes,
+      };
+      if (llmCallsMade === 0) {
+        activeProviderLabel = prevProvider;
+      }
+    } else if (staticRes.aiStatus !== 'FAIL' && providers.length > 0) {
+      if (llmCallsMade > 0) {
+        await sleep(FREE_TIER_PACING_MS);
+      }
+      const prompt = buildAuditPrompt(slug, code, manifest);
+      for (const provider of providers) {
+        try {
+          const llmRes = await provider.fn(prompt);
+          llmCallsMade++;
+          activeProviderLabel = llmRes.providerLabel || provider.name;
+          flowAiInputSha256 = aiInputSha256;
+          // Static gate warnings/failures cannot be overridden upward by LLM
+          const worseStatus =
+            rank[staticRes.aiStatus] > rank[llmRes.aiStatus] ? staticRes.aiStatus : llmRes.aiStatus;
+          const combinedScore = Math.min(staticRes.aiScore, llmRes.aiScore);
+          finalRes = {
+            aiStatus: worseStatus,
+            aiScore: combinedScore,
+            notes: llmRes.notes,
+          };
+          break;
+        } catch (err) {
+          console.warn(`[WARN] ${provider.name} failed for ${slug}: ${err.message}`);
         }
       }
     }
