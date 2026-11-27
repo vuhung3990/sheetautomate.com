@@ -7,8 +7,8 @@
 ## 1. Cấu hình & Vận hành còn lại (Tùy chọn / Ngoài code)
 
 - [ ] **Kích hoạt AI Multi-Model Security Audit trên CI (tùy chọn):**
-  - Hiện `.github/workflows/flows-audit-and-deploy.yml` đang chạy fallback `Local Deep Static Security Analyzer` (khi không có LLM key/GitHub Models).
-  - Bổ sung `GEMINI_API_KEY` hoặc `OPENAI_API_KEY` vào GitHub Repository Secrets (hoặc kiểm tra quyền GitHub Models qua `GITHUB_TOKEN`) nếu muốn CI quét bằng LLM thực tế ngoài bộ AST tĩnh.
+  - Hiện `.github/workflows/flows-audit-and-deploy.yml` đang chạy fallback `Local Deep Static Security Analyzer` (khi chưa cấu hình LLM key).
+  - Bổ sung `GEMINI_API_KEY` (khuyên dùng — miễn phí trên Google AI Studio, không cần thẻ tín dụng) hoặc `GROQ_API_KEY` / `OPENROUTER_API_KEY` / `OPENAI_API_KEY` vào GitHub Repository Secrets để CI quét bằng LLM thực tế ngoài bộ AST tĩnh (lưu ý: GitHub Models đã ngừng hoạt động từ 30/07/2026).
 - [ ] **Xác minh email nhận liên hệ `contact@sheetautomate.com`:**
   - Đảm bảo MX / Cloudflare Email Routing hoặc hộp thư đích hoạt động ổn định để không bỏ sót phản hồi hoặc yêu cầu từ cộng đồng.
 

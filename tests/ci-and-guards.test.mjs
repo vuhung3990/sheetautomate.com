@@ -141,7 +141,7 @@ assert 'group' in concurrency and 'cancel-in-progress' in concurrency, 'Missing 
 
 perms = data.get('permissions', {})
 assert perms.get('contents') == 'write'
-assert perms.get('models') == 'read'
+assert 'models' not in perms, 'GitHub Models was retired on July 30, 2026'
 assert perms.get('pull-requests') == 'write'
 
 if_conditions = []

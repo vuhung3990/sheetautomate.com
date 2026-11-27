@@ -165,7 +165,7 @@ export const AUDIT_STATUS: AuditStatusManifest = {
   },
   aiSecurity: {
     status: rawAudit?.aiSecurity?.status ?? 'passed',
-    provider: rawAudit?.aiSecurity?.provider ?? 'GitHub Models + Static AST Gate',
+    provider: rawAudit?.aiSecurity?.provider ?? 'Local Deep Static Security Analyzer',
     score: rawAudit?.aiSecurity?.score ?? 100,
     label: rawAudit?.aiSecurity?.label ?? 'AI Verified (100%)',
     summary:

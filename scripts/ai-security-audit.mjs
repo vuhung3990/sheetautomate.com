@@ -2,9 +2,10 @@
 /**
  * ai-security-audit.mjs
  * Evaluates every flow's Code.gs + appsscript.json using LLM security providers
- * (GitHub Models -> Google Gemini -> OpenAI) with a deterministic Local Deep Static
- * Security Analyzer gate and fallback. Updates flows/audit-status.json and writes
- * a Markdown report to GITHUB_STEP_SUMMARY and --output-md if provided.
+ * (Google Gemini -> Groq -> OpenRouter -> OpenAI) with a deterministic Local Deep
+ * Static Security Analyzer gate, SHA-256 incremental caching, and fallback.
+ * Updates flows/audit-status.json and writes a Markdown report to
+ * GITHUB_STEP_SUMMARY and --output-md if provided.
  * Zero external npm dependencies (Node 20+ ESM).
  */
 
@@ -22,6 +23,7 @@ const AUDIT_STATUS_PATH = path.join(FLOWS_DIR, 'audit-status.json');
 function parseArgs(argv) {
   let dryRun = false;
   let forceTimestamp = false;
+  let forceLlm = false;
   let outputMd = null;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -29,13 +31,15 @@ function parseArgs(argv) {
       dryRun = true;
     } else if (arg === '--force-timestamp') {
       forceTimestamp = true;
+    } else if (arg === '--force-llm') {
+      forceLlm = true;
     } else if (arg === '--output-md' && i + 1 < argv.length) {
       outputMd = argv[++i];
     } else if (arg.startsWith('--output-md=')) {
       outputMd = arg.slice('--output-md='.length);
     }
   }
-  return { dryRun, forceTimestamp, outputMd };
+  return { dryRun, forceTimestamp, forceLlm, outputMd };
 }
 
 function deepEqual(a, b) {
@@ -289,102 +293,285 @@ function parseLlmJson(rawText) {
   return { aiStatus: status, aiScore: score, notes };
 }
 
-async function auditWithGitHubModels(prompt, token) {
-  const res = await fetch('https://models.github.ai/inference/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-4o-mini',
-      temperature: 0,
-      messages: [
-        { role: 'system', content: 'You are a strict Google Apps Script security auditor. Output JSON only.' },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`GitHub Models HTTP ${res.status}`);
+const FREE_TIER_PACING_MS = 1200;
+const GEMINI_DEFAULT_MODELS = [
+  'gemini-flash-latest',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash-lite',
+  'gemini-2.5-flash',
+];
+
+let cachedGeminiModels = null;
+let preferredGeminiModel = null;
+let cachedOpenRouterModels = null;
+let preferredOpenRouterModel = null;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchJsonWithRetry(url, options, label) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch(url, options);
+    if (res.ok) {
+      return res.json();
+    }
+    if ((res.status === 429 || res.status === 503) && attempt < maxAttempts) {
+      const retryAfterSec = Number(res.headers.get('retry-after'));
+      const waitMs =
+        Number.isFinite(retryAfterSec) && retryAfterSec > 0
+          ? Math.min(retryAfterSec * 1000, 15000)
+          : attempt * 2500;
+      await sleep(waitMs);
+      continue;
+    }
+    const errText = await res.text().catch(() => '');
+    throw new Error(`${label} HTTP ${res.status}${errText ? `: ${errText.slice(0, 160)}` : ''}`);
   }
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-  return parseLlmJson(content);
+  throw new Error(`${label} exhausted retry attempts`);
+}
+
+async function discoverGeminiFlashModels(apiKey) {
+  if (cachedGeminiModels) return cachedGeminiModels;
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) {
+      cachedGeminiModels = [];
+      return cachedGeminiModels;
+    }
+    const data = await res.json();
+    const models = (data?.models || [])
+      .filter(
+        (m) =>
+          typeof m.name === 'string' &&
+          Array.isArray(m.supportedGenerationMethods) &&
+          m.supportedGenerationMethods.includes('generateContent') &&
+          /flash/i.test(m.name) &&
+          !/image|audio|tts|robotics|computer-use|live/i.test(m.name)
+      )
+      .map((m) => m.name.replace(/^models\//, ''))
+      .sort((a, b) => b.localeCompare(a));
+    cachedGeminiModels = models;
+    return models;
+  } catch {
+    cachedGeminiModels = [];
+    return cachedGeminiModels;
+  }
 }
 
 async function auditWithGemini(prompt, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0,
-        responseMimeType: 'application/json',
-      },
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`Gemini HTTP ${res.status}`);
+  const override = process.env.GEMINI_MODEL?.trim();
+  const baseCandidates = override
+    ? [override]
+    : [...new Set([preferredGeminiModel, ...GEMINI_DEFAULT_MODELS].filter(Boolean))];
+
+  let lastError;
+  const tryModels = async (models) => {
+    for (const model of models) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      try {
+        const data = await fetchJsonWithRetry(
+          url,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ role: 'user', parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0,
+                responseMimeType: 'application/json',
+              },
+            }),
+          },
+          `Gemini (${model})`
+        );
+        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const parsed = parseLlmJson(content);
+        preferredGeminiModel = model;
+        return { ...parsed, providerLabel: `Google Gemini (${model}) + Static AST Gate` };
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    return null;
+  };
+
+  const firstPass = await tryModels(baseCandidates);
+  if (firstPass) return firstPass;
+
+  if (!override) {
+    const discovered = (await discoverGeminiFlashModels(apiKey)).filter(
+      (m) => !baseCandidates.includes(m)
+    );
+    if (discovered.length > 0) {
+      const secondPass = await tryModels(discovered.slice(0, 4));
+      if (secondPass) return secondPass;
+    }
   }
-  const data = await res.json();
-  const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  return parseLlmJson(content);
+
+  throw lastError || new Error('Gemini audit failed');
 }
 
-async function auditWithOpenAI(prompt, apiKey) {
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'You are a strict Google Apps Script security auditor. Output JSON only.' },
-        { role: 'user', content: prompt },
-      ],
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`OpenAI HTTP ${res.status}`);
+function rankOpenRouterFreeModel(model) {
+  const id = String(model.id || '').toLowerCase();
+  let score = 0;
+  if (id === 'openrouter/free') return 1000;
+  if (/(gemma-4|nemotron-3-ultra|nemotron-3\.5|qwen|deepseek|llama|mistral|gpt-oss)/.test(id)) score += 50;
+  if (/(flash|ultra|31b|26b|70b|120b|550b)/.test(id)) score += 20;
+  if (/(1b|1\.7b|2b|3b)/.test(id)) score -= 40;
+  if ((model.context_length ?? 0) >= 128000) score += 10;
+  return score;
+}
+
+async function discoverOpenRouterFreeModels() {
+  if (cachedOpenRouterModels) return cachedOpenRouterModels;
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/models', {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) {
+      cachedOpenRouterModels = ['openrouter/free'];
+      return cachedOpenRouterModels;
+    }
+    const data = await res.json();
+    const candidates = (data?.data || [])
+      .filter((m) => {
+        if (typeof m?.id !== 'string') return false;
+        const isFreeId = m.id === 'openrouter/free' || m.id.endsWith(':free');
+        if (!isFreeId) return false;
+        const promptCost = Number(m.pricing?.prompt ?? 0);
+        const completionCost = Number(m.pricing?.completion ?? 0);
+        if (promptCost !== 0 || completionCost !== 0) return false;
+        if ((m.context_length ?? 0) < 16000) return false;
+        const outMods = m.architecture?.output_modalities;
+        if (Array.isArray(outMods)) {
+          if (!outMods.includes('text')) return false;
+          if (outMods.includes('audio') || outMods.includes('image')) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => rankOpenRouterFreeModel(b) - rankOpenRouterFreeModel(a))
+      .map((m) => m.id);
+
+    cachedOpenRouterModels = [...new Set(['openrouter/free', ...candidates])];
+    return cachedOpenRouterModels;
+  } catch {
+    cachedOpenRouterModels = ['openrouter/free'];
+    return cachedOpenRouterModels;
   }
-  const data = await res.json();
+}
+
+async function auditWithOpenRouter(prompt, apiKey) {
+  const override = process.env.OPENROUTER_MODEL?.trim();
+  const discovered = await discoverOpenRouterFreeModels();
+  const candidates = [...new Set([override, preferredOpenRouterModel, ...discovered].filter(Boolean))].slice(0, 6);
+
+  let lastError;
+  for (const model of candidates) {
+    try {
+      const res = await auditWithOpenAICompatible({
+        endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+        apiKey,
+        model,
+        label: 'OpenRouter',
+        extraHeaders: {
+          'HTTP-Referer': 'https://sheetautomate.com',
+          'X-Title': 'SheetAutomate Security Audit',
+        },
+        prompt,
+      });
+      preferredOpenRouterModel = model;
+      return res;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('OpenRouter audit failed');
+}
+
+async function auditWithOpenAICompatible({ endpoint, apiKey, model, label, extraHeaders = {}, extraBody = {}, prompt }) {
+  const data = await fetchJsonWithRetry(
+    endpoint,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        ...extraHeaders,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0,
+        ...extraBody,
+        messages: [
+          { role: 'system', content: 'You are a strict Google Apps Script security auditor. Output JSON only.' },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    },
+    `${label} (${model})`
+  );
   const content = data?.choices?.[0]?.message?.content;
-  return parseLlmJson(content);
+  return { ...parseLlmJson(content), providerLabel: `${label} (${model}) + Static AST Gate` };
 }
 
 function getAvailableProviders(dryRun) {
   if (dryRun) return [];
   const list = [];
-  if (process.env.GITHUB_TOKEN?.trim()) {
+  if (process.env.GEMINI_API_KEY?.trim()) {
+    const apiKey = process.env.GEMINI_API_KEY.trim();
     list.push({
-      name: 'GitHub Models (gpt-4o-mini) + Static AST Gate',
-      fn: (prompt) => auditWithGitHubModels(prompt, process.env.GITHUB_TOKEN.trim()),
+      name: 'Google Gemini + Static AST Gate',
+      fn: (prompt) => auditWithGemini(prompt, apiKey),
     });
   }
-  if (process.env.GEMINI_API_KEY?.trim()) {
+  if (process.env.GROQ_API_KEY?.trim()) {
+    const apiKey = process.env.GROQ_API_KEY.trim();
+    const model = process.env.GROQ_MODEL?.trim() || 'openai/gpt-oss-120b';
     list.push({
-      name: 'Google Gemini (2.5-flash) + Static AST Gate',
-      fn: (prompt) => auditWithGemini(prompt, process.env.GEMINI_API_KEY.trim()),
+      name: `Groq (${model}) + Static AST Gate`,
+      fn: (prompt) =>
+        auditWithOpenAICompatible({
+          endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+          apiKey,
+          model,
+          label: 'Groq',
+          prompt,
+        }),
+    });
+  }
+  if (process.env.OPENROUTER_API_KEY?.trim()) {
+    const apiKey = process.env.OPENROUTER_API_KEY.trim();
+    list.push({
+      name: 'OpenRouter (auto :free) + Static AST Gate',
+      fn: (prompt) => auditWithOpenRouter(prompt, apiKey),
     });
   }
   if (process.env.OPENAI_API_KEY?.trim()) {
+    const apiKey = process.env.OPENAI_API_KEY.trim();
+    const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini';
     list.push({
-      name: 'OpenAI (gpt-4o-mini) + Static AST Gate',
-      fn: (prompt) => auditWithOpenAI(prompt, process.env.OPENAI_API_KEY.trim()),
+      name: `OpenAI (${model}) + Static AST Gate`,
+      fn: (prompt) =>
+        auditWithOpenAICompatible({
+          endpoint: 'https://api.openai.com/v1/chat/completions',
+          apiKey,
+          model,
+          label: 'OpenAI',
+          extraBody: { response_format: { type: 'json_object' } },
+          prompt,
+        }),
     });
   }
   return list;
 }
 
-function sha256File(filePath) {
-  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+function sha256Text(text) {
+  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
 }
 
 function readExistingAuditStatus() {
@@ -416,7 +603,7 @@ function readExistingAuditStatus() {
 }
 
 async function main() {
-  const { dryRun, forceTimestamp, outputMd } = parseArgs(process.argv.slice(2));
+  const { dryRun, forceTimestamp, forceLlm, outputMd } = parseArgs(process.argv.slice(2));
 
   if (!fs.existsSync(FLOWS_DIR)) {
     console.error(`ERROR: flows directory not found at ${FLOWS_DIR}`);
@@ -438,18 +625,24 @@ async function main() {
   let activeProviderLabel = 'Local Deep Static Security Analyzer';
 
   const existing = readExistingAuditStatus();
+  const prevProvider = String(existing.aiSecurity?.provider || '');
+  const prevWasLlm = prevProvider.length > 0 && prevProvider !== 'Local Deep Static Security Analyzer';
   const prevFlows = existing.flows || {};
   const nextFlows = {};
   const reportRows = [];
   let hasFail = false;
+  let llmCallsMade = 0;
 
   for (const slug of slugs) {
     const codePath = path.join(FLOWS_DIR, slug, 'Code.gs');
     const manifestPath = path.join(FLOWS_DIR, slug, 'appsscript.json');
-    const code = fs.readFileSync(codePath, 'utf8');
-    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const codeRaw = fs.readFileSync(codePath);
+    const manifestRaw = fs.readFileSync(manifestPath);
+    const code = codeRaw.toString('utf8');
+    const manifest = JSON.parse(manifestRaw.toString('utf8'));
     const scopesCount = Array.isArray(manifest.oauthScopes) ? manifest.oauthScopes.length : 0;
-    const sha256 = sha256File(codePath);
+    const sha256 = crypto.createHash('sha256').update(codeRaw).digest('hex');
+    const aiInputSha256 = sha256Text(`${code}\n---appsscript.json---\n${manifestRaw.toString('utf8')}`);
 
     // Always run deterministic static security gate
     const staticRes = runStaticSecurityAudit(slug, code, manifest);
@@ -459,26 +652,59 @@ async function main() {
       notes: staticRes.notes,
     };
 
-    // If static gate did not fail and LLM providers are available, run LLM audit
+    const prev = prevFlows[slug] || {};
+    const rank = { PASS: 0, WARN: 1, FAIL: 2 };
+    const canReuseCachedLlm =
+      !forceLlm &&
+      prevWasLlm &&
+      prev.aiInputSha256 === aiInputSha256 &&
+      prev.scopesCount === scopesCount &&
+      ['PASS', 'WARN', 'FAIL'].includes(prev.aiStatus) &&
+      typeof prev.notes === 'string' &&
+      prev.notes.length > 0;
+
+    let flowAiInputSha256 =
+      typeof prev.aiInputSha256 === 'string' && prev.aiInputSha256.length > 0
+        ? prev.aiInputSha256
+        : undefined;
+
+    // If static gate did not fail and LLM providers are available, reuse cached LLM verdict on unchanged SHA-256 or call LLM
     if (staticRes.aiStatus !== 'FAIL' && providers.length > 0) {
-      const prompt = buildAuditPrompt(slug, code, manifest);
-      for (const provider of providers) {
-        try {
-          const llmRes = await provider.fn(prompt);
-          activeProviderLabel = provider.name;
-          // Static gate warnings/failures cannot be overridden upward by LLM
-          const rank = { PASS: 0, WARN: 1, FAIL: 2 };
-          const worseStatus =
-            rank[staticRes.aiStatus] > rank[llmRes.aiStatus] ? staticRes.aiStatus : llmRes.aiStatus;
-          const combinedScore = Math.min(staticRes.aiScore, llmRes.aiScore);
-          finalRes = {
-            aiStatus: worseStatus,
-            aiScore: combinedScore,
-            notes: llmRes.notes,
-          };
-          break;
-        } catch (err) {
-          console.warn(`[WARN] ${provider.name} failed for ${slug}: ${err.message}`);
+      if (canReuseCachedLlm) {
+        const worseStatus =
+          rank[staticRes.aiStatus] > rank[prev.aiStatus] ? staticRes.aiStatus : prev.aiStatus;
+        finalRes = {
+          aiStatus: worseStatus,
+          aiScore: Math.min(staticRes.aiScore, Number(prev.aiScore ?? staticRes.aiScore)),
+          notes: prev.notes,
+        };
+        if (llmCallsMade === 0) {
+          activeProviderLabel = prevProvider;
+        }
+      } else {
+        if (llmCallsMade > 0) {
+          await sleep(FREE_TIER_PACING_MS);
+        }
+        const prompt = buildAuditPrompt(slug, code, manifest);
+        for (const provider of providers) {
+          try {
+            const llmRes = await provider.fn(prompt);
+            llmCallsMade++;
+            activeProviderLabel = llmRes.providerLabel || provider.name;
+            flowAiInputSha256 = aiInputSha256;
+            // Static gate warnings/failures cannot be overridden upward by LLM
+            const worseStatus =
+              rank[staticRes.aiStatus] > rank[llmRes.aiStatus] ? staticRes.aiStatus : llmRes.aiStatus;
+            const combinedScore = Math.min(staticRes.aiScore, llmRes.aiScore);
+            finalRes = {
+              aiStatus: worseStatus,
+              aiScore: combinedScore,
+              notes: llmRes.notes,
+            };
+            break;
+          } catch (err) {
+            console.warn(`[WARN] ${provider.name} failed for ${slug}: ${err.message}`);
+          }
         }
       }
     }
@@ -487,9 +713,9 @@ async function main() {
       hasFail = true;
     }
 
-    const prev = prevFlows[slug] || {};
     nextFlows[slug] = {
       sha256,
+      ...(flowAiInputSha256 ? { aiInputSha256: flowAiInputSha256 } : {}),
       scopesCount,
       vtClean: Boolean(prev.vtClean),
       aiStatus: finalRes.aiStatus,

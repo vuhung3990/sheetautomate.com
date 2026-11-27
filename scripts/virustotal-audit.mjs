@@ -248,6 +248,9 @@ async function main() {
     const prev = prevFlows[slug] || {};
     nextFlows[slug] = {
       sha256,
+      ...(typeof prev.aiInputSha256 === 'string' && prev.aiInputSha256.length > 0
+        ? { aiInputSha256: prev.aiInputSha256 }
+        : {}),
       scopesCount,
       vtClean: preserveVerifiedVt ? Boolean(prev.vtClean) : false,
       aiStatus: prev.aiStatus || 'PENDING',

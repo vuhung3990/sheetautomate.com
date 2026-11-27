@@ -31,7 +31,7 @@ Every flow change goes through an automated 3-layer security pipeline before dep
 
 1. **Schema & Static Gate (`scripts/validate-flows.mjs`)**: Verifies `flows/schema.json` compliance, `appsscript.json` (`V8`, least-privilege OAuth scopes—rejects `https://mail.google.com/` and full `drive`), `Code.gs` safety (blocks `eval`, `new Function`, `document.write`, hardcoded external `UrlFetchApp.fetch` URLs, checks `onOpen` and `LockService`), and SVG XSS safety.
 2. **VirusTotal & Integrity Audit (`scripts/virustotal-audit.mjs`)**: Builds a deterministic archive of `flows/`, computes per-flow and bundle SHA-256 hashes, queries/uploads to VirusTotal API v3 (when `VT_API_KEY` is configured), and updates `flows/audit-status.json`.
-3. **AI + Static AST Security Audit (`scripts/ai-security-audit.mjs`)**: Audits `Code.gs` and `appsscript.json` via GitHub Models (`gpt-4o-mini`), Google Gemini (`gemini-2.5-flash`), OpenAI (`gpt-4o-mini`), or the Local Deep Static Security Analyzer fallback, failing the build on any `FAIL` verdict.
+3. **AI + Static AST Security Audit (`scripts/ai-security-audit.mjs`)**: Audits `Code.gs` and `appsscript.json` via Google Gemini (free-tier Flash models via `GEMINI_API_KEY`), Groq (`GROQ_API_KEY`), OpenRouter (`OPENROUTER_API_KEY`), OpenAI (`OPENAI_API_KEY`), or the Local Deep Static Security Analyzer fallback, with SHA-256 incremental caching and failing the build on any `FAIL` verdict.
 
 ---
 

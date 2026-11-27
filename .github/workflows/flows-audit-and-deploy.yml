@@ -26,7 +26,6 @@ concurrency:
 
 permissions:
   contents: write
-  models: read
   pull-requests: write
 
 jobs:
@@ -68,8 +67,9 @@ jobs:
 
       - name: Run AI + Static AST security audit
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node scripts/ai-security-audit.mjs --output-md /tmp/ai-audit-report.md
 
