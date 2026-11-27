@@ -12,7 +12,7 @@
 ## Zero-Server Security & Triple-Audit Model
 1. **In-Tenant Execution**: Workflows run exclusively inside Google's Apps Script sandbox attached to your own Google Spreadsheet. No external APIs or SaaS servers receive your sheet rows, client names, or invoices unless you explicitly configure a webhook URL in `PropertiesService`.
 2. **Community Open Source**: Every flow folder under `flows/<slug>/` contains unminified `Code.gs`, `appsscript.json`, `flow.json`, `thumbnail.svg`, and `README.md`.
-3. **AI & AST Static Security Gate**: AI Verified (100%) (Local Deep Static Security Analyzer). Blocks `eval`, `new Function`, obfuscated strings, and broad Drive/Gmail scopes while enforcing `LockService` idempotency.
+3. **AI & AST Static Security Gate**: AI Warning (98%) (Google Gemini (gemini-3.5-flash-lite) + Static AST Gate). Blocks `eval`, `new Function`, obfuscated strings, and broad Drive/Gmail scopes while enforcing `LockService` idempotency.
 4. **VirusTotal Multi-Engine Scan**: 0/64 Clean across 64 engines.
 5. **Chrome Extension (Manifest V3)**: Lightweight in-Sheets assistant drawer with offline `flows-bundle.json`, zero cell-data access, and zero analytics cookies.
 

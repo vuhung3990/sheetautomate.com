@@ -1,6 +1,6 @@
 {
   "version": "2.0.0",
-  "updatedAt": "2026-11-27T03:38:32.832Z",
+  "updatedAt": "2026-11-27T10:07:51.387Z",
   "repository": "https://github.com/vuhung3990/sheetautomate.com",
   "totalFlows": 12,
   "virustotal": {
@@ -12,108 +12,120 @@
     "reportUrl": "https://www.virustotal.com/gui/file/6d50f202c3e1d6b997e2efdf16e939d1166b9e4a74c193c23018b6943ab63715"
   },
   "aiSecurity": {
-    "status": "passed",
-    "provider": "Local Deep Static Security Analyzer",
-    "score": 100,
-    "label": "AI Verified (100%)",
+    "status": "warning",
+    "provider": "Google Gemini (gemini-3.5-flash-lite) + Static AST Gate",
+    "score": 98,
+    "label": "AI Warning (98%)",
     "summary": "Zero external data exfiltration, least-privilege OAuth scopes, LockService idempotency verified."
   },
   "flows": {
     "b2b-client-invoice": {
       "sha256": "f21e76b5fe2942ab261400cebfac37da84b2309d2bf37519d9274d35a5cbe44a",
+      "aiInputSha256": "1d8e8fb1c4ca600cfd0ec4604e6a66237cdcaa0c0a234ef2dce20db62fe678f0",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The script demonstrates robust security practices with least-privilege OAuth scopes, proper LockService concurrency handling, idempotency checks, and zero external telemetry or exfiltration risks."
     },
     "completion-certificate-batch": {
       "sha256": "0aa3d1063a00897e177080cce4080a58efd05244d1e5a1859b3affa52c3e9195",
+      "aiInputSha256": "0ae26b617a043b7e19f113e6ff45eb12b29261918c8810b236fed359b7468610",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The script adheres strictly to security best practices, using least-privilege OAuth scopes, LockService concurrency locks, idempotency controls, and document replacement escaping."
     },
     "field-service-work-order": {
       "sha256": "79e8e78aa9331a6f67bae68638273d53f8c9ef2dc9f30ae63b6c4e9123c6359b",
+      "aiInputSha256": "701534b0fd982ef70705d0575a529dccaa80d6518e975fa0cbf873a7c49e04b0",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The script follows security best practices with minimal OAuth scopes, LockService concurrency protection, idempotency checks, and safe Document/Drive manipulation without data exfiltration risks."
     },
     "form-approval-workflow": {
       "sha256": "d72264908e91ebf607e4e22e1d4c66de6587f460729f9c707b68f77232237a3e",
+      "aiInputSha256": "749f0474b7afadc990a546c177fb5b04fcfe5045f211f91ee8863fe97259ec64",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      "notes": "The approval workflow securely uses least-privilege OAuth scopes, LockService concurrency controls, idempotency checks, and properly escapes HTML in emails."
     },
     "gmail-invoice-extractor": {
       "sha256": "8b6c76060fde1fa8b47256eafcad396d2cab05d64db6c82b4f8f009001040bb6",
+      "aiInputSha256": "16fab778f6f79149075b86954e6f38b72b2e6e998f73c5c1f8f87e41859d5a67",
       "scopesCount": 4,
       "vtClean": true,
-      "aiStatus": "PASS",
-      "aiScore": 100,
-      "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      "aiStatus": "WARN",
+      "aiScore": 78,
+      "notes": "The script adheres to least-privilege OAuth scopes, proper LockService concurrency, and idempotency, but is vulnerable to formula injection when writing untrusted Gmail senders and subjects directly to Sheets without escaping leading charac"
     },
     "hr-offer-letter-onboarding": {
       "sha256": "7d72cf74ac508ad6909187c6a1da3d651371196683f546d6115e6c26e8b86d91",
+      "aiInputSha256": "d4fc320f52d31e96894ea1d1d060c22bb9f8a57ac75372c07f4e0977ef6dd88c",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The code correctly implements LockService for concurrency, follows least-privilege scopes, sanitizes inputs, and contains no exfiltration vectors."
     },
     "inventory-low-stock-alert": {
       "sha256": "c32620ea4cc823ae436e2a88abaa1d971b5d360d66077b851214d938b74955b4",
+      "aiInputSha256": "871543fc10a9be50696c9a26a544968514f999e683a39f1169372260a5757d3b",
       "scopesCount": 4,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 4 least-privilege scope(s); Least-privilege ScriptApp trigger scope, Webhook URL guarded via PropertiesService."
+      "notes": "The codebase uses appropriate LockService concurrency, properly escapes HTML, adheres to least-privilege scopes, and contains no exfiltration vectors."
     },
     "monthly-ot-sheet-locker": {
       "sha256": "188b5f5e033ed229dc20f45ede50d6186ef84edc11845fedadeff7289d76fe08",
+      "aiInputSha256": "ebfd2a5ef16ff41e386357163845b5e1757e835ed1fc6adbf8816ef607420a61",
       "scopesCount": 2,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 2 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      "notes": "The code follows strict security practices with proper OAuth scopes, concurrency control via LockService, and no exfiltration risks."
     },
     "multi-item-sales-quote": {
       "sha256": "632e2c29ab9e2aa37838813a57770283b95af2ad91619b92cf37696f867a2035",
+      "aiInputSha256": "9fb46835b028bd160f9f9f018fbe99e7d28059066050bbd717708c6b917f46c8",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The code exhibits no data exfiltration, implements proper locking, least-privilege scopes, and robust input parsing."
     },
     "overdue-payment-reminder": {
       "sha256": "8b8583154cee110806c3b230b7fb0eddca983f61c1076d988662e3a7b8a776b5",
+      "aiInputSha256": "8dddc74b1bf6b78128bfae96deac67d4c06ee03aa1b3075e639a1fafec63f385",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      "notes": "The code demonstrates robust security controls with strict scope usage, proper locking, HTML escaping, and no malicious patterns."
     },
     "packing-slip-dispatch": {
       "sha256": "355df7f023887c80cd5079c8d6a4420f23f15d62b790ed19afabe6a31ad069e3",
+      "aiInputSha256": "4f579049b143895d15db33613aad062e19ee379e17982d212f83428c5f1bd5c9",
       "scopesCount": 2,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 2 least-privilege scope(s); LockService idempotency, Least-privilege Sheet I/O."
+      "notes": "The code demonstrates proper use of LockService, scoping, sanitization, and completely lacks external telemetry or exfiltration vectors."
     },
     "weekly-kpi-digest-mailer": {
       "sha256": "f9adf790577627907f7793ac9c33ee50817d01fab763637bfef3a26ff68ab559",
+      "aiInputSha256": "a36fa7dca07f5c2fb90ba25aeba26d81407be4d5f2d74a4ec341bfe944c96642",
       "scopesCount": 3,
       "vtClean": true,
       "aiStatus": "PASS",
       "aiScore": 100,
-      "notes": "Zero external exfiltration; 3 least-privilege scope(s); Least-privilege ScriptApp trigger scope, LockService idempotency."
+      "notes": "The script follows secure coding standards with proper lock concurrency, least-privilege scopes, and HTML escaping."
     }
   }
 }

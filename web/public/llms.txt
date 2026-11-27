@@ -7,7 +7,7 @@
 - **Zero Server Proxy**: No external backend, database, or third-party SaaS middleware ever accesses spreadsheet data.
 - **Least-Privilege OAuth**: Every flow declares minimal scopes in `appsscript.json` (for example `spreadsheets.currentonly` and `drive.file`).
 - **Concurrency Safety**: All flows use `LockService.getDocumentLock()` and idempotent audit status columns to prevent duplicate runs.
-- **Triple Audit**: Public unminified `Code.gs` on GitHub, AI Verified (100%), and VirusTotal (0/64 Clean).
+- **Triple Audit**: Public unminified `Code.gs` on GitHub, AI Warning (98%), and VirusTotal (0/64 Clean).
 
 ## Key Resources
 - [Live Flow Catalog & Interactive Workbench](https://sheetautomate.com/)
