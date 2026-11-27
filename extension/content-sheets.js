@@ -189,7 +189,7 @@
   drawerTitle.textContent = 'SheetAutomate Flows';
   const drawerSub = document.createElement('div');
   drawerSub.className = 'sa-ext-drawer-sub';
-  drawerSub.textContent = 'Free, VT & AI-audited Apps Script';
+  drawerSub.textContent = 'Free, VT & AI-audited • Runs in your account';
   brandTitleWrap.append(drawerTitle, drawerSub);
   drawerBrand.append(iconBrand(20), brandTitleWrap);
 
@@ -226,8 +226,9 @@
   tipText.append(
     document.createTextNode('Paste headers in '),
     (() => { const s = document.createElement('strong'); s.textContent = 'A1'; return s; })(),
-    document.createTextNode(', then paste script in '),
-    (() => { const s = document.createElement('strong'); s.textContent = 'Extensions > Apps Script'; return s; })()
+    document.createTextNode(', then script in '),
+    (() => { const s = document.createElement('strong'); s.textContent = 'Extensions > Apps Script'; return s; })(),
+    document.createTextNode(' (runs only when you click)')
   );
   tipBar.append(iconInfo(), tipText);
 

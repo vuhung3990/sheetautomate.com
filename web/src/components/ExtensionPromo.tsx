@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Github,
 } from 'lucide-react';
-import { FLOWS, GITHUB_REPO_URL } from '../lib/flowRegistry';
+import { AUDIT_STATUS, FLOWS, GITHUB_REPO_URL } from '../lib/flowRegistry';
 
 export const ExtensionPromo: React.FC = () => {
   return (
@@ -71,7 +71,7 @@ export const ExtensionPromo: React.FC = () => {
                   Auto-Synced Catalog
                 </h3>
                 <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
-                  Bundled with <code className="font-mono">flows-bundle.json</code> via GitHub CI.
+                  Automatically stays up to date with our GitHub library (works offline too).
                 </p>
               </div>
             </div>
@@ -79,8 +79,11 @@ export const ExtensionPromo: React.FC = () => {
             {/* 3-Step Unpacked Install Instructions */}
             <div className="rounded-2xl bg-white dark:bg-dark-950 border border-slate-200 dark:border-slate-800 p-5 space-y-3 shadow-xs">
               <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
-                60-Second Unpacked Chrome Install
+                60-Second Chrome Install (Open-Source Zip)
               </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Install directly from our audited open-source folder — no Chrome Web Store wait, and it never reads your spreadsheet cells or browsing history.
+              </p>
               <ol className="space-y-2 text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                 <li className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-brand-500/20 text-emerald-800 dark:text-brand-300 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -173,7 +176,7 @@ export const ExtensionPromo: React.FC = () => {
                       </span>
                     </div>
                     <span className="text-[10px] font-mono text-emerald-800 dark:text-brand-300 font-bold">
-                      VT 0/72 Clean
+                      VT {AUDIT_STATUS.virustotal.label}
                     </span>
                   </div>
 
@@ -195,7 +198,7 @@ export const ExtensionPromo: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Generates branded Drive PDFs with LockService duplicate protection.
+                      Creates branded Drive PDFs with built-in duplicate-run protection (LockService).
                     </p>
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <span className="inline-flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg bg-brand-500 text-slate-950 font-bold text-[11px]">

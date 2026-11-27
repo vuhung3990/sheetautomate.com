@@ -188,7 +188,7 @@ function readExistingAuditStatus() {
     return {
       version: '2.0.0',
       updatedAt: new Date().toISOString(),
-      repository: 'https://github.com/hungvvinfinity/sheetautomate.com',
+      repository: 'https://github.com/vuhung3990/sheetautomate.com',
       totalFlows: 0,
       virustotal: {
         status: 'pending',
@@ -311,7 +311,7 @@ async function main() {
   let updatedAt = new Date().toISOString();
   const updatedBody = {
     version: existing.version || '2.0.0',
-    repository: existing.repository || 'https://github.com/hungvvinfinity/sheetautomate.com',
+    repository: existing.repository || 'https://github.com/vuhung3990/sheetautomate.com',
     totalFlows: slugs.length,
     virustotal: vtResult,
     aiSecurity: existing.aiSecurity,

@@ -27,13 +27,19 @@ export const FAQ_ITEMS: FaqItem[] = [
     id: 'faq-triple-audit',
     question: 'How is every flow audited by the Community, AI, and VirusTotal?',
     answer:
-      'First, all Code.gs scripts are published unminified on GitHub for public review. Second, our CI pipeline runs static AST security checks and AI multi-model auditing to enforce least-privilege OAuth scopes and LockService idempotency. Third, release artifacts are scanned across 70+ security engines on VirusTotal with 0 detections.',
+      'First, all Code.gs scripts are published readable and unminified on GitHub for public review. Second, our CI pipeline checks every line for dangerous patterns and enforces minimum Google permissions (least-privilege OAuth scopes) plus duplicate-run protection (LockService). Third, release bundles are scanned across 60+ security engines on VirusTotal with 0 detections.',
   },
   {
     id: 'faq-data-privacy',
     question: 'Does any spreadsheet or customer data leave my Google Workspace?',
     answer:
-      'Never. SheetAutomate does not run any backend proxy or database. All scripts execute natively inside Google Apps Script under your own Google Account, moving data directly between your Google Sheets, Docs, Drive, and Gmail.',
+      'Never. SheetAutomate does not run any backend server or database. All scripts execute privately inside Google Apps Script under your own Google Account, moving data directly between your Google Sheets, Docs, Drive, and Gmail.',
+  },
+  {
+    id: 'faq-unverified-app',
+    question: 'Why does Google show "Google hasn’t verified this app" the first time I run a script?',
+    answer:
+      'That screen is completely normal when you paste your own Apps Script into a Google Sheet. Google shows it for any personal script that has not been submitted to the public Google Workspace Marketplace. You are only authorizing yourself to run your own copy inside your Google Drive — SheetAutomate never sees your data or credentials. Simply click Advanced → Go to [project name] (unsafe) once to continue, and you can inspect, delete the script, or revoke access anytime in your Google Account permissions.',
   },
   {
     id: 'faq-limits',

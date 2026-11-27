@@ -660,6 +660,10 @@ export const FlowWorkbenchModal: React.FC<FlowWorkbenchModalProps> = ({
                   </button>
                 </div>
 
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+                  Google permissions in plain English: this script only asks for the minimum access listed below inside your own Google account. Nothing runs until you click the menu or set a trigger.
+                </p>
+
                 <div className="grid sm:grid-cols-2 gap-3">
                   {flow.oauthScopes.map((scope) => {
                     const info = describeOAuthScope(scope);
@@ -792,9 +796,14 @@ export const FlowWorkbenchModal: React.FC<FlowWorkbenchModalProps> = ({
             >
               {/* 3-Step Setup Guide */}
               <div className="md:col-span-7 rounded-2xl bg-slate-50 dark:bg-dark-900/70 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  60-Second Workspace Deployment
-                </h3>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    60-Second Workspace Deployment
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                    Nothing runs automatically in the background — the script only runs when you click the <strong>SheetAutomate</strong> menu in your Sheet (or optionally turn on a schedule/form trigger).
+                  </p>
+                </div>
 
                 <ol className="space-y-3">
                   {flow.setupSteps.map((step, index) => (
@@ -811,6 +820,17 @@ export const FlowWorkbenchModal: React.FC<FlowWorkbenchModalProps> = ({
                     </li>
                   ))}
                 </ol>
+
+                {/* Reassuring First-Time Google Authorization Callout */}
+                <div className="p-4 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/70 space-y-1.5">
+                  <div className="flex items-center gap-2 text-xs font-bold text-sky-950 dark:text-sky-200">
+                    <ShieldCheck className="w-4 h-4 text-sky-700 dark:text-sky-400 shrink-0" aria-hidden="true" />
+                    <span>First-time notice: &ldquo;Google hasn&rsquo;t verified this app&rdquo; is normal</span>
+                  </div>
+                  <p className="text-xs text-sky-900/90 dark:text-sky-200/90 leading-relaxed">
+                    Google displays this standard screen simply because you pasted a private script that runs inside <strong>your own Google account</strong> (not a third-party SaaS app). Click <strong>Advanced &rarr; Go to [project name] (unsafe)</strong> to authorize <strong>only yourself</strong>. You can read every line of code, delete the script, or revoke access anytime in your Google Account settings.
+                  </p>
+                </div>
 
                 <div className="pt-2 flex flex-wrap gap-3">
                   <button
@@ -874,9 +894,12 @@ export const FlowWorkbenchModal: React.FC<FlowWorkbenchModalProps> = ({
                     <div className="text-slate-400 font-mono text-[11px] mb-1">
                       Code.gs SHA-256 Checksum
                     </div>
-                    <code className="block font-mono text-[11px] text-slate-200 break-all">
+                    <code className="block font-mono text-[11px] text-slate-200 break-all mb-1">
                       {flow.audit.sha256}
                     </code>
+                    <p className="text-[11px] text-slate-400 leading-snug">
+                      Tamper-proof digital fingerprint verifying this code matches our audited GitHub release.
+                    </p>
                   </div>
                 </div>
               </div>

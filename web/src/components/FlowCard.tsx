@@ -17,6 +17,7 @@ import {
   Webhook,
 } from 'lucide-react';
 import type { FlowItem, FlowService } from '../types/flow';
+import { AUDIT_STATUS } from '../lib/flowRegistry';
 
 interface FlowCardProps {
   flow: FlowItem;
@@ -144,7 +145,7 @@ export const FlowCard: React.FC<FlowCardProps> = ({ flow, index, onOpenWorkbench
           <div className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-[11px] font-mono">
             <span className="inline-flex items-center gap-1 text-emerald-800 dark:text-brand-300 font-semibold">
               <ShieldCheck className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-              <span>{flow.audit.vtClean ? 'VT 0/72 Clean' : 'SHA-256 Verified'}</span>
+              <span>{flow.audit.vtClean ? `VT ${AUDIT_STATUS.virustotal.label}` : 'SHA-256 Verified'}</span>
             </span>
             <span className="text-slate-300 dark:text-slate-700" aria-hidden="true">•</span>
             <span className="inline-flex items-center gap-1 text-sky-800 dark:text-accent-300 font-semibold">

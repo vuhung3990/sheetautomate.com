@@ -39,3 +39,4 @@ coverage/
 __pycache__/
 *.py[cod]
 *$py.class
+web/public/downloads/sheetautomate-chrome-extension.zip

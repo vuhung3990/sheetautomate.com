@@ -16,7 +16,7 @@ export const HowItWorks: React.FC = () => {
             60-Second Setup Inside Your Google Workspace
           </h2>
           <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg">
-            Every flow runs natively on Google Apps Script V8. Copy the starter table, paste <code className="font-mono text-sm">Code.gs</code>, and run directly from Google Sheets.
+            Every flow runs inside your own Google Sheets using Google&rsquo;s built-in Apps Script. Copy the starter table, paste <code className="font-mono text-sm">Code.gs</code>, and run directly from Google Sheets — nothing runs until you click the menu or set a trigger.
           </p>
         </div>
 
@@ -77,21 +77,21 @@ export const HowItWorks: React.FC = () => {
               <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300 pt-2">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-sky-700 dark:text-accent-400 shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>LockService Guard:</strong> Prevents race conditions across concurrent users.</span>
+                  <span><strong>Duplicate-Run Lock (LockService):</strong> Prevents double-clicks or concurrent edits from processing the same row twice.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-sky-700 dark:text-accent-400 shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Duplicate Prevention:</strong> Skips rows already marked <code className="font-mono">COMPLETED</code>.</span>
+                  <span><strong>Safe Re-Runs (Idempotency):</strong> Automatically skips rows already marked <code className="font-mono">COMPLETED</code>.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-sky-700 dark:text-accent-400 shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Required Checks:</strong> Flags missing fields as <code className="font-mono">NEEDS_CORRECTION</code>.</span>
+                  <span><strong>Required Checks:</strong> Flags missing fields as <code className="font-mono">NEEDS_CORRECTION</code> before sending or creating files.</span>
                 </li>
               </ul>
             </div>
 
             <div className="mt-5 p-2.5 rounded-lg bg-slate-50 dark:bg-dark-950/60 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-400">
-              Least-privilege OAuth scopes declared in appsscript.json.
+              Minimum Google permissions only — reviewable in appsscript.json before you run.
             </div>
           </div>
 

@@ -33,7 +33,7 @@ export const SecurityArchitecture: React.FC = () => {
             Audited For Trust. Verified Safe For Your Business.
           </h2>
           <p className="text-slate-700 dark:text-slate-300 text-base sm:text-lg">
-            Every flow in <code className="font-mono text-sm">flows/</code> undergoes three independent verification layers: open-source peer inspection, AI static gate analysis, and VirusTotal multi-engine scanning.
+            Every script runs privately inside your own Google account, and every flow in <code className="font-mono text-sm">flows/</code> passes three independent checks before publishing: public source review, automated safety scanning, and VirusTotal multi-engine verification.
           </p>
         </div>
 
@@ -54,7 +54,7 @@ export const SecurityArchitecture: React.FC = () => {
                 Community Audited
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                100% open-source on GitHub under the MIT license. Unminified <code className="font-mono text-[11px]">Code.gs</code> with zero obfuscation or telemetry.
+                100% open-source on GitHub under the MIT license. Plain, readable <code className="font-mono text-[11px]">Code.gs</code> with zero hidden code or tracking.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] font-mono text-purple-800 dark:text-purple-300 flex items-center gap-1.5 font-semibold">
@@ -130,7 +130,7 @@ export const SecurityArchitecture: React.FC = () => {
                 In-Tenant Data Isolation
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                Executes 100% inside your Google Workspace. No third-party middleware, no external databases, and zero intermediate copies.
+                Runs 100% inside your Google account. Your spreadsheet rows never pass through our servers, third-party middleware, or external databases.
               </p>
             </div>
             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] font-mono text-amber-800 dark:text-amber-300 flex items-center gap-1.5 font-semibold">
@@ -162,7 +162,7 @@ export const SecurityArchitecture: React.FC = () => {
                 Transparent CI/CD Verification &amp; Live Badges
               </h3>
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
-                Every commit touching <code className="font-mono text-brand-300">flows/</code> triggers automated schema validation, AST danger checks, AI security auditing, and VirusTotal scanning before publishing.
+                Every commit touching <code className="font-mono text-brand-300">flows/</code> automatically validates schemas, blocks unsafe code patterns, enforces minimal Google permissions, and scans release bundles on VirusTotal. Seeing &ldquo;Google hasn&rsquo;t verified this app&rdquo; on first run? That&rsquo;s normal for any private script pasted into your own Drive — you only authorize yourself.
               </p>
             </div>
 

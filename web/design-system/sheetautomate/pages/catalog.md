@@ -22,7 +22,7 @@
 | :--- | :--- | :--- |
 | **Visual Header** | `thumbnail.svg` rendered via safe `data:image/svg+xml;utf8,...` `<img>` | `aspect-video` frame on `#0F172A` (`bg-slate-900`), subtle `border-b`, zero inline SVG script risk |
 | **Meta Strip** | Category pill, Trigger chip, `timeSavedPerWeek` pill | Single-line compact pills; emerald for time saved, sky for trigger |
-| **Security Micro-Badges** | `VT 0/72` (or `VT Clean`), `AI 100%`, `N Scopes` | Monospace `text-[11px]`, >= 4.5:1 contrast in light & dark |
+| **Security Micro-Badges** | `VT 0/N` (or `VT Clean`), `AI 100%`, `N Scopes` | Monospace `text-[11px]`, >= 4.5:1 contrast in light & dark |
 | **Body** | Title (`text-lg font-bold`) + 2-line description (`line-clamp-2`) | Max 2 lines description for uniform card heights |
 | **Services Row** | Google Workspace service chips (`Sheets`, `Drive`, `Gmail`, etc.) | Crisp bordered pills with Lucide icons |
 | **Action Footer** | 3 immediate action buttons | `min-h-[40px]` touch targets: `Live Demo`, `Copy Script`, `GitHub` |

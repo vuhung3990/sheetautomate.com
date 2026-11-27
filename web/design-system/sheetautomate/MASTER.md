@@ -3,8 +3,8 @@
 > **Source of Truth:** Authoritative design tokens, visual hierarchy, and component rules for SheetAutomate.com.
 > **Architecture:** Catalog-First Open-Source Hub (12+ auto-discovered Google Workspace flows, interactive workbench modal, Manifest V3 Chrome Extension, CI/CD verification badges).
 > **Theme Support:** Light Mode (Default) + Dark Mode (Toggleable via Sun/Moon icon in Navbar, persisted in `localStorage`).
-> **Distribution Model:** 100% Free Forever & Open Source (MIT License on GitHub: `hungvvinfinity/sheetautomate.com`).
-> **Verification & Trust:** Triple-audited by Open Source Community, AI Multi-Model Static Gate, and VirusTotal (0/72 Clean).
+> **Distribution Model:** 100% Free Forever & Open Source (MIT License on GitHub: `vuhung3990/sheetautomate.com`).
+> **Verification & Trust:** Triple-audited by Open Source Community, AI Multi-Model Static Gate, and VirusTotal (0/N Clean).
 > **Accessibility Standard:** WCAG 2.2 AA compliant across all interactive controls, contrast ratios, keyboard navigation, and reduced-motion preferences.
 > **Iconography Standard:** Lucide React (`lucide-react`) SVG icons ONLY. Zero emojis used as structural UI icons.
 
@@ -64,4 +64,4 @@
    - Companion floating assistant inside Google Sheets synced with `flows-bundle.json` / `flows-manifest.json`.
    - Zero tracking, zero telemetry, 1-click unpacked installation from `/downloads/sheetautomate-chrome-extension.zip`.
 4. **CI/CD Triple-Audit Verification:**
-   - Static AST Gate + AI Security Audit + VirusTotal 0/72 scan badges (`/badges/virustotal.svg`, `/badges/ai-security.svg`, `/badges/flows-count.svg`) published with `flows/audit-status.json`.
+   - Static AST Gate + AI Security Audit + VirusTotal Clean scan badges (`/badges/virustotal.svg`, `/badges/ai-security.svg`, `/badges/flows-count.svg`) published with `flows/audit-status.json`.

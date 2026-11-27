@@ -184,7 +184,7 @@
 
     els.flowCountBadge.textContent = `${total} ${total === 1 ? 'Flow' : 'Flows'}`;
 
-    const vtRaw = manifest?.auditSummary?.virustotalLabel || '0/72 Clean';
+    const vtRaw = manifest?.auditSummary?.virustotalLabel || '0/64 Clean';
     els.vtBadgeText.textContent = vtRaw.toUpperCase().startsWith('VT') ? vtRaw : `VT ${vtRaw}`;
   }
 
@@ -399,7 +399,7 @@
     state.manifest = pickPreferredManifest(bundled, cached) || {
       generatedAt: '',
       totalFlows: 0,
-      auditSummary: { virustotalLabel: '0/72 Clean', aiLabel: 'AI Verified (100%)' },
+      auditSummary: { virustotalLabel: '0/64 Clean', aiLabel: 'AI Verified (100%)' },
       flows: [],
     };
     renderHeaderMeta();

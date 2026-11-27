@@ -51,10 +51,10 @@ function loadAuditStatus() {
     return {
       version: '2.0.0',
       updatedAt: '2026-11-14T00:00:00.000Z',
-      repository: 'https://github.com/hungvvinfinity/sheetautomate.com',
+      repository: 'https://github.com/vuhung3990/sheetautomate.com',
       virustotal: {
-        label: '0/72 Clean',
-        engines: 72,
+        label: '0/64 Clean',
+        engines: 64,
         detections: 0,
         reportUrl: 'https://www.virustotal.com/gui/home/search',
       },
@@ -94,7 +94,7 @@ function loadFlows(auditStatus) {
       ...meta,
       oauthScopes,
       audit,
-      githubUrl: `${auditStatus.repository || 'https://github.com/hungvvinfinity/sheetautomate.com'}/tree/main/flows/${meta.id}`,
+      githubUrl: `${auditStatus.repository || 'https://github.com/vuhung3990/sheetautomate.com'}/tree/main/flows/${meta.id}`,
     });
   }
 
@@ -175,7 +175,7 @@ ${entries}
 }
 
 function buildLlmsTxt(flows, auditStatus) {
-  const repoUrl = auditStatus.repository || 'https://github.com/hungvvinfinity/sheetautomate.com';
+  const repoUrl = auditStatus.repository || 'https://github.com/vuhung3990/sheetautomate.com';
   const flowLines = flows
     .map(
       (flow) =>
@@ -206,7 +206,7 @@ ${flowLines}
 }
 
 function buildLlmsFullTxt(flows, auditStatus, faqItems) {
-  const repoUrl = auditStatus.repository || 'https://github.com/hungvvinfinity/sheetautomate.com';
+  const repoUrl = auditStatus.repository || 'https://github.com/vuhung3990/sheetautomate.com';
   const lastmod = (auditStatus.updatedAt || '2026-11-14').slice(0, 10);
 
   const flowSections = flows
@@ -252,7 +252,7 @@ ${steps}
 1. **In-Tenant Execution**: Workflows run exclusively inside Google's Apps Script sandbox attached to your own Google Spreadsheet. No external APIs or SaaS servers receive your sheet rows, client names, or invoices unless you explicitly configure a webhook URL in \`PropertiesService\`.
 2. **Community Open Source**: Every flow folder under \`flows/<slug>/\` contains unminified \`Code.gs\`, \`appsscript.json\`, \`flow.json\`, \`thumbnail.svg\`, and \`README.md\`.
 3. **AI & AST Static Security Gate**: ${auditStatus.aiSecurity?.label || 'AI Verified (100%)'} (${auditStatus.aiSecurity?.provider || 'Local Deep Static Security Analyzer'}). Blocks \`eval\`, \`new Function\`, obfuscated strings, and broad Drive/Gmail scopes while enforcing \`LockService\` idempotency.
-4. **VirusTotal Multi-Engine Scan**: ${auditStatus.virustotal?.label || 'SHA-256 Verified'} across ${auditStatus.virustotal?.engines || 72} engines.
+4. **VirusTotal Multi-Engine Scan**: ${auditStatus.virustotal?.label || 'SHA-256 Verified'} across ${auditStatus.virustotal?.engines || 64} engines.
 5. **Chrome Extension (Manifest V3)**: Lightweight in-Sheets assistant drawer with offline \`flows-bundle.json\`, zero cell-data access, and zero analytics cookies.
 
 ## Complete Flow Catalog (${flows.length} Flows)
@@ -496,7 +496,7 @@ with open(output_path, 'wb') as f:
 }
 
 function buildSchemaGraphJson(flows, auditStatus, faqItems) {
-  const repoUrl = auditStatus.repository || 'https://github.com/hungvvinfinity/sheetautomate.com';
+  const repoUrl = auditStatus.repository || 'https://github.com/vuhung3990/sheetautomate.com';
   const lastmod = (auditStatus.updatedAt || '2026-11-14').slice(0, 10);
 
   const graph = {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, XCircle, Zap, Shield, Infinity, Github, Sparkles } from 'lucide-react';
+import { AUDIT_STATUS } from '../lib/flowRegistry';
 
 export const WhenFit: React.FC = () => {
   return (
@@ -43,7 +44,7 @@ export const WhenFit: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Shield className="w-4 h-4 text-emerald-700 dark:text-brand-400 shrink-0 mt-0.5" aria-hidden="true" />
-                  <span><strong>Triple-Audited Code:</strong> Unminified <code className="font-mono text-xs">Code.gs</code>, AI static audit, and VirusTotal 0/72 verified.</span>
+                  <span><strong>Triple-Audited Code:</strong> Readable <code className="font-mono text-xs">Code.gs</code>, AI static safety audit, and VirusTotal {AUDIT_STATUS.virustotal.label} verified.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Shield className="w-4 h-4 text-emerald-700 dark:text-brand-400 shrink-0 mt-0.5" aria-hidden="true" />

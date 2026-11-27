@@ -1,6 +1,6 @@
 # SheetAutomate.com
 
-[![Audit Flows & Deploy SheetAutomate](https://github.com/hungvvinfinity/sheetautomate.com/actions/workflows/flows-audit-and-deploy.yml/badge.svg)](https://github.com/hungvvinfinity/sheetautomate.com/actions/workflows/flows-audit-and-deploy.yml)
+[![Audit Flows & Deploy SheetAutomate](https://github.com/vuhung3990/sheetautomate.com/actions/workflows/flows-audit-and-deploy.yml/badge.svg)](https://github.com/vuhung3990/sheetautomate.com/actions/workflows/flows-audit-and-deploy.yml)
 ![Open-Source Flows](./web/public/badges/flows-count.svg)
 ![VirusTotal Security](./web/public/badges/virustotal.svg)
 ![AI Security Gate](./web/public/badges/ai-security.svg)

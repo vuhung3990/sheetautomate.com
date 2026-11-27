@@ -9,7 +9,7 @@ import type {
 } from '../types/flow';
 import auditStatusRaw from '../../../flows/audit-status.json';
 
-export const GITHUB_REPO_URL = 'https://github.com/hungvvinfinity/sheetautomate.com';
+export const GITHUB_REPO_URL = 'https://github.com/vuhung3990/sheetautomate.com';
 
 export const CATEGORIES: FlowCategory[] = [
   'Document & PDF',
@@ -158,8 +158,8 @@ export const AUDIT_STATUS: AuditStatusManifest = {
   virustotal: {
     status: rawAudit?.virustotal?.status ?? 'clean',
     detections: rawAudit?.virustotal?.detections ?? 0,
-    engines: rawAudit?.virustotal?.engines ?? 72,
-    label: rawAudit?.virustotal?.label ?? '0/72 Clean',
+    engines: rawAudit?.virustotal?.engines ?? 64,
+    label: rawAudit?.virustotal?.label ?? '0/64 Clean',
     bundleSha256: rawAudit?.virustotal?.bundleSha256 ?? '',
     reportUrl: rawAudit?.virustotal?.reportUrl ?? 'https://www.virustotal.com/gui/home/search',
   },

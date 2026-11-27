@@ -13,7 +13,7 @@
 - [Live Flow Catalog & Interactive Workbench](https://sheetautomate.com/)
 - [Full Technical Specification for LLMs](https://sheetautomate.com/llms-full.txt)
 - [XML Sitemap](https://sheetautomate.com/sitemap.xml)
-- [GitHub Repository](https://github.com/hungvvinfinity/sheetautomate.com)
+- [GitHub Repository](https://github.com/vuhung3990/sheetautomate.com)
 
 ## Automation Flows (12)
 - [B2B Client Invoice PDF Generator](https://sheetautomate.com/?flow=b2b-client-invoice): Merge approved Google Sheets invoice rows into a branded Google Docs template, export PDFs to Drive, and log links back with LockService idempotency. (Category: Document & PDF, Trigger: Sheet Menu / Status Change, Time Saved: 6 hrs/wk, Scopes: 3)

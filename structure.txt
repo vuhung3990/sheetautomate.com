@@ -147,6 +147,10 @@ sheetautomate.com/
 │   └── tech/
 │       └── 04-huong-dan-tich-hop-paypal-bao-mat.md
 │
+├── competitors/                     <-- PHÂN TÍCH ĐỐI THỦ & BÁM SÁT MỤC TIÊU (.md)
+│   ├── README.md                    <-- Mục lục đối thủ & quy ước cập nhật hồ sơ
+│   └── sheetautomation-com.md       <-- Hồ sơ đối chiếu chi tiết sheetautomation.com
+│
 └── decision/                        <-- CÁC QUYẾT ĐỊNH ĐÃ CHỐT (.txt, <= 20 dòng, bullet list)
     ├── README.txt
     ├── 001-mo-hinh-productized-service-truoc-saas.txt
@@ -170,6 +174,7 @@ sheetautomate.com/
 | `web/`      | .tsx, .ts, .css| Website Catalog, Workbench & Test| Tự nạp `flows/*/`, 0 findings MWG, E2E PASS  |
 | `idea/`     | .txt           | Ý tưởng mới nảy sinh             | Đặt tên [stt]-[tên].txt, <= 20 dòng bullet   |
 | `plan/`     | .md (Markdown) | Kế hoạch sản phẩm & thương hiệu  | Tài liệu chuyên sâu                           |
+| `competitors/` | .md (Markdown) | Phân tích đối thủ & bám sát mục tiêu | Đối chiếu thực tế + Checklist hành động      |
 | `decision/` | .txt           | Quyết định kiến trúc/kinh doanh  | Đặt tên [stt]-[tên].txt, <= 20 dòng bullet   |
 
 --------------------------------------------------------------------------------

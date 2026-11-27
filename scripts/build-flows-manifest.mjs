@@ -153,7 +153,7 @@ function main() {
 
   const manifestBody = {
     totalFlows: flows.length,
-    repository: auditStatus.repository || 'https://github.com/hungvvinfinity/sheetautomate.com',
+    repository: auditStatus.repository || 'https://github.com/vuhung3990/sheetautomate.com',
     auditSummary: {
       virustotalLabel: vt.label || 'Pending VT_API_KEY (SHA-256 Verified)',
       virustotalUrl: vt.reportUrl || 'https://www.virustotal.com/gui/home/search',
